@@ -1,0 +1,47 @@
+em = .
+
+$(em)/edgeMesh.cu
+$(em)/edgeMeshIO.cu
+$(em)/edgeMeshNew.cu
+
+
+edgeMeshFormats = $(em)/edgeMeshFormats
+$(edgeMeshFormats)/edgeMeshFormatsCore.cu
+
+$(edgeMeshFormats)/edgeMesh/edgeMeshFormat.cu
+$(edgeMeshFormats)/edgeMesh/edgeMeshFormatRunTime.cu
+
+$(edgeMeshFormats)/extendedFeatureEdgeMesh/extendedFeatureEdgeMeshFormat.cu
+$(edgeMeshFormats)/extendedFeatureEdgeMesh/extendedFeatureEdgeMeshFormatRunTime.cu
+
+
+$(edgeMeshFormats)/nas/NASedgeFormat.cu
+$(edgeMeshFormats)/nas/NASedgeFormatRunTime.cu
+
+$(edgeMeshFormats)/obj/OBJedgeFormat.cu
+$(edgeMeshFormats)/obj/OBJedgeFormatRunTime.cu
+
+$(edgeMeshFormats)/starcd/STARCDedgeFormat.cu
+$(edgeMeshFormats)/starcd/STARCDedgeFormatRunTime.cu
+
+$(edgeMeshFormats)/vtk/VTKedgeFormat.cu
+$(edgeMeshFormats)/vtk/VTKedgeFormatRunTime.cu
+
+
+$(em)/featureEdgeMesh/featureEdgeMesh.cu
+
+eem = $(em)/extendedEdgeMesh
+
+$(eem)/extendedEdgeMesh.cu
+$(eem)/extendedEdgeMeshNew.cu
+
+$(eem)/extendedEdgeMeshFormats/extendedEdgeMeshFormat/extendedEdgeMeshFormat.cu
+$(eem)/extendedEdgeMeshFormats/extendedEdgeMeshFormat/extendedEdgeMeshFormatRunTime.cu
+
+efm = $(eem)/extendedFeatureEdgeMesh
+
+$(efm)/extendedFeatureEdgeMesh.cu
+
+
+
+LIB = $(FOAM_LIBBIN)/libedgeMesh

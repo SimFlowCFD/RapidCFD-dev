@@ -1,0 +1,4 @@
+tractionDisplacement/tractionDisplacementFvPatchVectorField.cu
+solidDisplacementFoam.cu
+
+EXE = $(FOAM_APPBIN)/solidDisplacementFoam

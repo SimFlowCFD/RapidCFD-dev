@@ -1,0 +1,16 @@
+.SUFFIXES: .c .h
+
+cWARN        = -Xcompiler -Wall
+
+cc          = nvcc -m64 -arch=sm_30 
+
+include $(RULES)/c$(WM_COMPILE_OPTION)
+
+cFLAGS      = $(GFLAGS) $(cWARN) $(cOPT) $(cDBUG) $(LIB_HEADER_DIRS) -Xcompiler -fPIC
+
+ctoo        = $(WM_SCHEDULER) $(cc) $(cFLAGS) -o $@ -c $$SOURCE
+
+LINK_LIBS   = $(cDBUG)
+
+LINKLIBSO   = $(cc) -shared
+LINKEXE     = $(cc) -Xlinker --add-needed -Xlinker -z -Xlinker nodefs

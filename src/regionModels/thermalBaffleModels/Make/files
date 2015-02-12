@@ -1,0 +1,9 @@
+thermalBaffleModel/thermalBaffleModel.cu
+thermalBaffleModel/thermalBaffleModelNew.cu
+thermalBaffle/thermalBaffle.cu
+noThermo/noThermo.cu
+
+derivedFvPatchFields/thermalBaffle/thermalBaffleFvPatchScalarField.cu
+
+
+LIB = $(FOAM_LIBBIN)/libthermalBaffleModels

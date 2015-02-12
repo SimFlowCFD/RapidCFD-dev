@@ -1,0 +1,7 @@
+solidThermo/solidThermo.cu
+solidThermo/solidThermos.cu
+/*
+solidReactionThermo/solidReactionThermo.cu
+solidReactionThermo/solidReactionThermos.cu
+*/
+LIB = $(FOAM_LIBBIN)/libsolidThermo

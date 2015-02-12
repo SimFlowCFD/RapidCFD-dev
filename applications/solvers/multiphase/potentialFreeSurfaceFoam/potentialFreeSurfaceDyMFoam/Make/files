@@ -1,0 +1,3 @@
+potentialFreeSurfaceDyMFoam.cu
+
+EXE = $(FOAM_APPBIN)/potentialFreeSurfaceDyMFoam

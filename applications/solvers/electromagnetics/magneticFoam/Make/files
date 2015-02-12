@@ -1,0 +1,3 @@
+magneticFoam.cu
+
+EXE = $(FOAM_APPBIN)/magneticFoam

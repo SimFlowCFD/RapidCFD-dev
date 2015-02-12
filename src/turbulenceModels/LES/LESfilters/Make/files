@@ -1,0 +1,6 @@
+LESfilter/LESfilter.cu
+simpleFilter/simpleFilter.cu
+laplaceFilter/laplaceFilter.cu
+anisotropicFilter/anisotropicFilter.cu
+
+LIB = $(FOAM_LIBBIN)/libLESfilters

@@ -1,0 +1,58 @@
+RASModel/RASModel.cu
+
+laminar/laminar.cu
+kEpsilon/kEpsilon.cu
+RNGkEpsilon/RNGkEpsilon.cu
+realizableKE/realizableKE.cu
+kOmega/kOmega.cu
+kOmegaSST/kOmegaSST.cu
+SpalartAllmaras/SpalartAllmaras.cu
+
+LaunderSharmaKE/LaunderSharmaKE.cu
+qZeta/qZeta.cu
+LienCubicKE/LienCubicKE.cu
+kkLOmega/kkLOmega.cu
+v2f/v2f.cu
+
+/* Wall functions */
+wallFunctions = derivedFvPatchFields/wallFunctions
+
+nutWallFunctions = $(wallFunctions)/nutWallFunctions
+$(nutWallFunctions)/nutWallFunction/nutWallFunctionFvPatchScalarField.cu
+
+$(nutWallFunctions)/nutkWallFunction/nutkWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutkRoughWallFunction/nutkRoughWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutkAtmRoughWallFunction/nutkAtmRoughWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutUWallFunction/nutUWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutUSpaldingWallFunction/nutUSpaldingWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutLowReWallFunction/nutLowReWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutURoughWallFunction/nutURoughWallFunctionFvPatchScalarField.cu
+
+epsilonWallFunctions = $(wallFunctions)/epsilonWallFunctions
+$(epsilonWallFunctions)/epsilonWallFunction/epsilonWallFunctionFvPatchScalarField.cu
+$(epsilonWallFunctions)/epsilonLowReWallFunction/epsilonLowReWallFunctionFvPatchScalarField.cu
+
+fWallFunctions = $(wallFunctions)/fWallFunctions
+$(fWallFunctions)/fWallFunction/fWallFunctionFvPatchScalarField.cu
+
+omegaWallFunctions = $(wallFunctions)/omegaWallFunctions
+$(omegaWallFunctions)/omegaWallFunction/omegaWallFunctionFvPatchScalarField.cu
+
+kqRWallFunctions = $(wallFunctions)/kqRWallFunctions
+$(kqRWallFunctions)/kqRWallFunction/kqRWallFunctionFvPatchFields.cu
+$(kqRWallFunctions)/kLowReWallFunction/kLowReWallFunctionFvPatchScalarField.cu
+
+alphatWallFunctions = $(wallFunctions)/alphatWallFunctions
+$(alphatWallFunctions)/alphatJayatillekeWallFunction/alphatJayatillekeWallFunctionFvPatchScalarField.cu
+
+v2WallFunctions = $(wallFunctions)/v2WallFunctions
+$(v2WallFunctions)/v2WallFunction/v2WallFunctionFvPatchScalarField.cu
+
+/* Patch fields */
+derivedFvPatchFields/turbulentMixingLengthDissipationRateInlet/turbulentMixingLengthDissipationRateInletFvPatchScalarField.cu
+derivedFvPatchFields/turbulentMixingLengthFrequencyInlet/turbulentMixingLengthFrequencyInletFvPatchScalarField.cu
+derivedFvPatchFields/atmBoundaryLayerInletEpsilon/atmBoundaryLayerInletEpsilonFvPatchScalarField.cu
+
+backwardsCompatibility/wallFunctions/backwardsCompatibilityWallFunctions.cu
+
+LIB = $(FOAM_LIBBIN)/libincompressibleRASModels

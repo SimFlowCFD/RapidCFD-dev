@@ -1,0 +1,3 @@
+solidMixtureProperties/solidMixtureProperties.cu
+
+LIB = $(FOAM_LIBBIN)/libsolidMixtureProperties

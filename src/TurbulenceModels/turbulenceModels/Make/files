@@ -1,0 +1,53 @@
+turbulenceModel.cu
+
+LESdelta = LES/LESdeltas
+
+$(LESdelta)/LESdelta/LESdelta.cu
+$(LESdelta)/cubeRootVolDelta/cubeRootVolDelta.cu
+$(LESdelta)/PrandtlDelta/PrandtlDelta.cu
+
+LESfilters = LES/LESfilters
+
+$(LESfilters)/LESfilter/LESfilter.cu
+$(LESfilters)/simpleFilter/simpleFilter.cu
+$(LESfilters)/laplaceFilter/laplaceFilter.cu
+$(LESfilters)/anisotropicFilter/anisotropicFilter.cu
+
+
+derivedFvPatchFields/fixedShearStress/fixedShearStressFvPatchVectorField.cu
+derivedFvPatchFields/porousBafflePressure/porousBafflePressureFvPatchField.cu
+
+/* Wall functions */
+wallFunctions = RAS/derivedFvPatchFields/wallFunctions
+
+nutWallFunctions = $(wallFunctions)/nutWallFunctions
+$(nutWallFunctions)/nutWallFunction/nutWallFunctionFvPatchScalarField.cu
+
+$(nutWallFunctions)/nutkWallFunction/nutkWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutkRoughWallFunction/nutkRoughWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutkAtmRoughWallFunction/nutkAtmRoughWallFunctionFvPatchScalarField.cu
+
+$(nutWallFunctions)/nutUWallFunction/nutUWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutUSpaldingWallFunction/nutUSpaldingWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutLowReWallFunction/nutLowReWallFunctionFvPatchScalarField.cu
+$(nutWallFunctions)/nutURoughWallFunction/nutURoughWallFunctionFvPatchScalarField.cu
+
+epsilonWallFunctions = $(wallFunctions)/epsilonWallFunctions
+$(epsilonWallFunctions)/epsilonWallFunction/epsilonWallFunctionFvPatchScalarField.cu
+$(epsilonWallFunctions)/epsilonLowReWallFunction/epsilonLowReWallFunctionFvPatchScalarField.cu
+
+omegaWallFunctions = $(wallFunctions)/omegaWallFunctions
+$(omegaWallFunctions)/omegaWallFunction/omegaWallFunctionFvPatchScalarField.cu
+
+kqRWallFunctions = $(wallFunctions)/kqRWallFunctions
+$(kqRWallFunctions)/kqRWallFunction/kqRWallFunctionFvPatchFields.cu
+$(kqRWallFunctions)/kLowReWallFunction/kLowReWallFunctionFvPatchScalarField.cu
+
+
+/* Patch fields */
+RAS/derivedFvPatchFields/turbulentMixingLengthDissipationRateInlet/turbulentMixingLengthDissipationRateInletFvPatchScalarField.cu
+RAS/derivedFvPatchFields/turbulentMixingLengthFrequencyInlet/turbulentMixingLengthFrequencyInletFvPatchScalarField.cu
+RAS/derivedFvPatchFields/atmBoundaryLayerInletEpsilon/atmBoundaryLayerInletEpsilonFvPatchScalarField.cu
+RAS/derivedFvPatchFields/atmBoundaryLayerInletVelocity/atmBoundaryLayerInletVelocityFvPatchVectorField.cu
+
+LIB = $(FOAM_LIBBIN)/libturbulenceModels

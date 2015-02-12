@@ -1,0 +1,3 @@
+potentialFoam.cu
+
+EXE = $(FOAM_APPBIN)/potentialFoam

@@ -1,0 +1,7 @@
+barotropicCompressibilityModel/barotropicCompressibilityModel.cu
+barotropicCompressibilityModel/barotropicCompressibilityModelNew.cu
+linear/linear.cu
+Wallis/Wallis.cu
+Chung/Chung.cu
+
+LIB = $(FOAM_LIBBIN)/libbarotropicCompressibilityModel

@@ -1,0 +1,51 @@
+/* Radiation model */
+radiationModel/radiationModel/radiationModel.cu
+radiationModel/radiationModel/radiationModelNew.cu
+radiationModel/noRadiation/noRadiation.cu
+radiationModel/P1/P1.cu
+/*
+radiationModel/fvDOM/fvDOM/fvDOM.cu
+radiationModel/fvDOM/radiativeIntensityRay/radiativeIntensityRay.cu
+radiationModel/fvDOM/blackBodyEmission/blackBodyEmission.cu
+radiationModel/fvDOM/absorptionCoeffs/absorptionCoeffs.cu
+radiationModel/viewFactor/viewFactor.cu
+*/
+radiationModel/opaqueSolid/opaqueSolid.cu
+
+/* Scatter model */
+submodels/scatterModel/scatterModel/scatterModel.cu
+submodels/scatterModel/scatterModel/scatterModelNew.cu
+submodels/scatterModel/noScatter/noScatter.cu
+submodels/scatterModel/constantScatter/constantScatter.cu
+
+
+/* Absorption/Emission model */
+submodels/absorptionEmissionModel/absorptionEmissionModel/absorptionEmissionModel.cu
+submodels/absorptionEmissionModel/absorptionEmissionModel/absorptionEmissionModelNew.cu
+submodels/absorptionEmissionModel/noAbsorptionEmission/noAbsorptionEmission.cu
+submodels/absorptionEmissionModel/constantAbsorptionEmission/constantAbsorptionEmission.cu
+submodels/absorptionEmissionModel/binaryAbsorptionEmission/binaryAbsorptionEmission.cu
+/*
+submodels/absorptionEmissionModel/greyMeanAbsorptionEmission/greyMeanAbsorptionEmission.cu
+submodels/absorptionEmissionModel/wideBandAbsorptionEmission/wideBandAbsorptionEmission.cu
+submodels/absorptionEmissionModel/greyMeanSolidAbsorptionEmission/greyMeanSolidAbsorptionEmission.cu
+*/
+/* Soot model */
+
+submodels/sootModel/sootModel/sootModel.cu
+submodels/sootModel/sootModel/sootModelNew.cu
+/*
+submodels/sootModel/mixtureFractionSoot/mixtureFractionSoots.cu
+*/
+submodels/sootModel/noSoot/noSoot.cu
+
+/* Boundary conditions */
+/*
+derivedFvPatchFields/MarshakRadiation/MarshakRadiationFvPatchScalarField.cu
+derivedFvPatchFields/MarshakRadiationFixedTemperature/MarshakRadiationFixedTemperatureFvPatchScalarField.cu
+derivedFvPatchFields/greyDiffusiveRadiation/greyDiffusiveRadiationMixedFvPatchScalarField.cu
+derivedFvPatchFields/wideBandDiffusiveRadiation/wideBandDiffusiveRadiationMixedFvPatchScalarField.cu
+derivedFvPatchFields/radiationCoupledBase/radiationCoupledBase.cu
+derivedFvPatchFields/greyDiffusiveViewFactor/greyDiffusiveViewFactorFixedValueFvPatchScalarField.cu
+*/
+LIB = $(FOAM_LIBBIN)/libradiationModels

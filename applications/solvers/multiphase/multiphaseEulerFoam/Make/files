@@ -1,0 +1,3 @@
+multiphaseEulerFoam.cu
+
+EXE = $(FOAM_APPBIN)/multiphaseEulerFoam

@@ -1,0 +1,7 @@
+atomicWeights/atomicWeights.cu
+specie/specie.cu
+/*
+reaction/reactions/makeReactions.cu
+reaction/reactions/makeLangmuirHinshelwoodReactions.cu
+*/
+LIB = $(FOAM_LIBBIN)/libspecie

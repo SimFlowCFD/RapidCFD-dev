@@ -1,0 +1,17 @@
+dragModels/dragModel/dragModel.cu
+dragModels/dragModel/newDragModel.cu
+dragModels/Ergun/Ergun.cu
+dragModels/GidaspowErgunWenYu/GidaspowErgunWenYu.cu
+dragModels/GidaspowSchillerNaumann/GidaspowSchillerNaumann.cu
+dragModels/SchillerNaumann/SchillerNaumann.cu
+dragModels/Gibilaro/Gibilaro.cu
+dragModels/WenYu/WenYu.cu
+dragModels/SyamlalOBrien/SyamlalOBrien.cu
+dragModels/blended/blended.cu
+dragModels/interface/interface.cu
+
+heatTransferModels/heatTransferModel/heatTransferModel.cu
+heatTransferModels/heatTransferModel/newHeatTransferModel.cu
+heatTransferModels/RanzMarshall/RanzMarshall.cu
+
+LIB = $(FOAM_LIBBIN)/libcompressibleMultiphaseEulerianInterfacialModels

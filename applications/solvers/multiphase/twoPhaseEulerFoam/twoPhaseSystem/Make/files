@@ -1,0 +1,25 @@
+phaseModel/phaseModel.cu
+diameterModels/diameterModel/diameterModel.cu
+diameterModels/diameterModel/newDiameterModel.cu
+diameterModels/constantDiameter/constantDiameter.cu
+diameterModels/isothermalDiameter/isothermalDiameter.cu
+
+diameterModels/IATE/IATE.cu
+diameterModels/IATE/IATEsources/IATEsource/IATEsource.cu
+diameterModels/IATE/IATEsources/wakeEntrainmentCoalescence/wakeEntrainmentCoalescence.cu
+diameterModels/IATE/IATEsources/turbulentBreakUp/turbulentBreakUp.cu
+diameterModels/IATE/IATEsources/randomCoalescence/randomCoalescence.cu
+
+BlendedInterfacialModel/blendingMethods/blendingMethod/blendingMethod.cu
+BlendedInterfacialModel/blendingMethods/blendingMethod/newBlendingMethod.cu
+BlendedInterfacialModel/blendingMethods/noBlending/noBlending.cu
+BlendedInterfacialModel/blendingMethods/linear/linear.cu
+BlendedInterfacialModel/blendingMethods/hyperbolic/hyperbolic.cu
+
+phasePair/phasePairKey/phasePairKey.cu
+phasePair/phasePair/phasePair.cu
+phasePair/orderedPhasePair/orderedPhasePair.cu
+
+twoPhaseSystem.cu
+
+LIB = $(FOAM_LIBBIN)/libcompressibleTwoPhaseSystem

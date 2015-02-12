@@ -1,0 +1,3 @@
+shallowWaterFoam.cu
+
+EXE = $(FOAM_APPBIN)/shallowWaterFoam

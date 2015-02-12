@@ -1,0 +1,3 @@
+interDyMFoam.cu
+
+EXE = $(FOAM_APPBIN)/interDyMFoam

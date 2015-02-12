@@ -1,0 +1,3 @@
+laplacianFoam.cu
+
+EXE = $(FOAM_APPBIN)/laplacianFoam

@@ -1,0 +1,5 @@
+phase/phase.cu
+alphaContactAngle/alphaContactAngleFvPatchScalarField.cu
+multiphaseMixture.cu
+
+LIB = $(FOAM_LIBBIN)/libmultiphaseInterFoam

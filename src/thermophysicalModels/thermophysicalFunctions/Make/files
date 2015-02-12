@@ -1,0 +1,17 @@
+thermophysicalFunction = thermophysicalFunction
+NSRDSfunctions         = NSRDSfunctions
+APIfunctions           = APIfunctions
+
+$(thermophysicalFunction)/thermophysicalFunction.cu
+$(NSRDSfunctions)/NSRDSfunc0/NSRDSfunc0.cu
+$(NSRDSfunctions)/NSRDSfunc1/NSRDSfunc1.cu
+$(NSRDSfunctions)/NSRDSfunc2/NSRDSfunc2.cu
+$(NSRDSfunctions)/NSRDSfunc3/NSRDSfunc3.cu
+$(NSRDSfunctions)/NSRDSfunc4/NSRDSfunc4.cu
+$(NSRDSfunctions)/NSRDSfunc5/NSRDSfunc5.cu
+$(NSRDSfunctions)/NSRDSfunc6/NSRDSfunc6.cu
+$(NSRDSfunctions)/NSRDSfunc7/NSRDSfunc7.cu
+$(NSRDSfunctions)/NSRDSfunc14/NSRDSfunc14.cu
+$(APIfunctions)/APIdiffCoefFunc/APIdiffCoefFunc.cu
+
+LIB = $(FOAM_LIBBIN)/libthermophysicalFunctions

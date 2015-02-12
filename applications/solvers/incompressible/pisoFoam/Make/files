@@ -1,0 +1,3 @@
+pisoFoam.cu
+
+EXE = $(FOAM_APPBIN)/pisoFoam

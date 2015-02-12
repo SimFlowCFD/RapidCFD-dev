@@ -1,0 +1,3 @@
+compressibleMultiphaseInterFoam.cu
+
+EXE = $(FOAM_APPBIN)/compressibleMultiphaseInterFoam

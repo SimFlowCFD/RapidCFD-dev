@@ -1,0 +1,3 @@
+porousInterFoam.cu
+
+EXE = $(FOAM_APPBIN)/porousInterFoam

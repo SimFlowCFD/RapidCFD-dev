@@ -1,0 +1,3 @@
+electrostaticFoam.cu
+
+EXE = $(FOAM_APPBIN)/electrostaticFoam

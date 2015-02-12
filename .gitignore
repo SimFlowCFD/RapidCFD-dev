@@ -1,0 +1,97 @@
+# git-ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+
+# editor and misc backup files - anywhere
+*~
+.*~
+*.bak
+*.bak[0-9][0-9]
+*.orig
+*.orig[0-9][0-9]
+\#*\#
+
+# file-browser settings - anywhere
+.directory
+
+# CVS recovered versions - anywhere
+.#*
+
+# objects and archives - anywhere
+*.[oa]
+*.la
+*.so
+*.jar
+*.cpp
+*.cu
+
+# derived files
+lex.yy.c
+*.cu
+
+# Corefiles
+core
+
+# dependency files - anywhere
+*.dep
+
+# lnInclude (symlink) directories - anywhere
+lnInclude
+
+# build directories - anywhere
+linux*Clang*/
+linux*Gcc*/
+linux*Nvcc*/
+linux*Icc*/
+linuxming*/
+SiCortex*Gcc*/
+solaris*Gcc*/
+SunOS*Gcc*/
+platforms/
+
+# reinstate wmake/rules that might look like build directories
+!wmake/rules/*/
+
+# doxygen generated documentation
+doc/Doxygen/html
+doc/Doxygen/latex
+doc/Doxygen/man
+doc/Doxygen/DTAGS
+
+# generated files in the main directory (e.g. ReleaseNotes-?.?.html)
+# and in the doc directory
+/*.html
+/doc/*.html
+
+# untracked configuration files
+/etc/prefs.csh
+/etc/prefs.sh
+/etc/config/prefs.csh
+/etc/config/prefs.sh
+
+# source packages - anywhere
+*.tar.bz2
+*.tar.gz
+*.tar
+*.tgz
+*.gtgz
+
+# eclipse project files
+/.metadata/
+.cproject
+.project
+.settings/
+
+# ignore the persistent .build tag in the main directory
+/.build
+
+# ignore .timeStamp in the main directory
+/.timeStamp
+
+# ignore .tags in the main directory
+/.tags
+
+# ignore eclipse project files in the main directory
+/.cproject
+/.project
+
+# end-of-file

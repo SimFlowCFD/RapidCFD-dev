@@ -1,0 +1,4 @@
+abortCalculation/abortCalculation.cu
+abortCalculation/abortCalculationFunctionObject.cu
+
+LIB = $(FOAM_LIBBIN)/libjobControl

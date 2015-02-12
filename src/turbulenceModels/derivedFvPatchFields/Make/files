@@ -1,0 +1,4 @@
+porousBafflePressure/porousBafflePressureFvPatchFields.cu
+fixedShearStress/fixedShearStressFvPatchVectorField.cu
+
+LIB = $(FOAM_LIBBIN)/libturbulenceDerivedFvPatchFields

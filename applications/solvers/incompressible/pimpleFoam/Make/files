@@ -1,0 +1,3 @@
+pimpleFoam.cu
+
+EXE = $(FOAM_APPBIN)/pimpleFoam

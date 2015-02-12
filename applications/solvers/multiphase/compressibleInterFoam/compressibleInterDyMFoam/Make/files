@@ -1,0 +1,3 @@
+compressibleInterDyMFoam.cu
+
+EXE = $(FOAM_APPBIN)/compressibleInterDyMFoam

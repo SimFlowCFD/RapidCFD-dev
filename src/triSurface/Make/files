@@ -1,0 +1,40 @@
+triSurfaceTools                       = triSurface/triSurfaceTools
+geometricSurfacePatch                 = triSurface/geometricSurfacePatch
+
+faceTriangulation/faceTriangulation.cu
+meshTriangulation/meshTriangulation.cu
+
+triSurface/triSurface.cu
+triSurface/triSurfaceAddressing.cu
+triSurface/stitchTriangles.cu
+
+interfaces = triSurface/interfaces
+$(interfaces)/STL/writeSTL.cu
+$(interfaces)/STL/readSTL.cu
+$(interfaces)/STL/readSTLASCII.L
+$(interfaces)/STL/readSTLBINARY.cu
+$(interfaces)/GTS/writeGTS.cu
+$(interfaces)/GTS/readGTS.cu
+$(interfaces)/OBJ/readOBJ.cu
+$(interfaces)/OBJ/writeOBJ.cu
+$(interfaces)/SMESH/writeSMESH.cu
+$(interfaces)/OFF/readOFF.cu
+$(interfaces)/OFF/writeOFF.cu
+$(interfaces)/TRI/writeTRI.cu
+$(interfaces)/TRI/readTRI.cu
+$(interfaces)/DX/writeDX.cu
+$(interfaces)/AC3D/readAC.cu
+$(interfaces)/AC3D/writeAC.cu
+$(interfaces)/VTK/readVTK.cu
+$(interfaces)/VTK/writeVTK.cu
+$(interfaces)/NAS/readNAS.cu
+
+triSurface/geometricSurfacePatch/geometricSurfacePatch.cu
+triSurface/surfacePatch/surfacePatch.cu
+triSurface/surfacePatch/surfacePatchIOList.cu
+
+tools/labelledTri/sortLabelledTri.cu
+
+triSurfaceFields/triSurfaceFields.cu
+
+LIB = $(FOAM_LIBBIN)/libtriSurface

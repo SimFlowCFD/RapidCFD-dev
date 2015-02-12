@@ -1,0 +1,27 @@
+.SUFFIXES: .cu .c .cc .cxx .cpp .C .F .f .dep
+
+MKDEP       = $(WMAKE_BIN)/wmkdep -I$(*D) $(LIB_HEADER_DIRS)
+
+%.dep : %.cu
+	$(MAKE_DEP)
+
+.c.dep:
+	$(MAKE_DEP)
+
+.cc.dep:
+	$(MAKE_DEP)
+
+.cxx.dep:
+	$(MAKE_DEP)
+
+.cpp.dep:
+	$(MAKE_DEP)
+
+.C.dep:
+	$(MAKE_DEP)
+
+.F.dep:
+	$(MAKE_DEP)
+
+.f.dep:
+	$(MAKE_DEP)

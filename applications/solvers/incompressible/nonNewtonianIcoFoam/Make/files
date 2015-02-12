@@ -1,0 +1,3 @@
+nonNewtonianIcoFoam.cu
+
+EXE = $(FOAM_APPBIN)/nonNewtonianIcoFoam

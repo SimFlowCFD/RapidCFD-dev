@@ -1,0 +1,56 @@
+fvOptions/fvOption.cu
+fvOptions/fvOptionIO.cu
+fvOptions/fvOptionList.cu
+fvOptions/fvIOoptionList.cu
+
+
+/* sources */
+
+generalSources=sources/general
+$(generalSources)/codedSource/codedSource.cu
+$(generalSources)/semiImplicitSource/semiImplicitSource.cu
+
+derivedSources=sources/derived
+$(derivedSources)/actuationDiskSource/actuationDiskSource.cu
+/*
+$(derivedSources)/effectivenessHeatExchangerSource/effectivenessHeatExchangerSource.cu
+*/
+$(derivedSources)/explicitPorositySource/explicitPorositySource.cu
+$(derivedSources)/MRFSource/MRFSource.cu
+/*
+$(derivedSources)/pressureGradientExplicitSource/pressureGradientExplicitSource.cu
+$(derivedSources)/pressureGradientExplicitSource/pressureGradientExplicitSourceIO.cu
+$(derivedSources)/radialActuationDiskSource/radialActuationDiskSource.cu
+$(derivedSources)/rotorDiskSource/rotorDiskSource.cu
+$(derivedSources)/rotorDiskSource/bladeModel/bladeModel.cu
+$(derivedSources)/rotorDiskSource/profileModel/profileModel.cu
+$(derivedSources)/rotorDiskSource/profileModel/profileModelList.cu
+$(derivedSources)/rotorDiskSource/profileModel/lookup/lookupProfile.cu
+$(derivedSources)/rotorDiskSource/profileModel/series/seriesProfile.cu
+$(derivedSources)/rotorDiskSource/trimModel/trimModel/trimModel.cu
+$(derivedSources)/rotorDiskSource/trimModel/trimModel/trimModelNew.cu
+$(derivedSources)/rotorDiskSource/trimModel/fixed/fixedTrim.cu
+$(derivedSources)/rotorDiskSource/trimModel/targetCoeff/targetCoeffTrim.cu
+$(derivedSources)/solidificationMeltingSource/solidificationMeltingSource.cu
+$(derivedSources)/solidificationMeltingSource/solidificationMeltingSourceIO.cu
+
+interRegion = sources/interRegion
+$(interRegion)/interRegionHeatTransferModel/constantHeatTransfer/constantHeatTransfer.cu
+$(interRegion)/interRegionHeatTransferModel/interRegionHeatTransferModel/interRegionHeatTransferModel.cu
+$(interRegion)/interRegionHeatTransferModel/tabulatedHeatTransfer/tabulatedHeatTransfer.cu
+$(interRegion)/interRegionHeatTransferModel/variableHeatTransfer/variableHeatTransfer.cu
+$(interRegion)/interRegionExplicitPorositySource/interRegionExplicitPorositySource.cu
+*/
+
+
+/* constraints */
+/*
+generalConstraints=constraints/general
+$(generalConstraints)/explicitSetValue/explicitSetValue.cu
+
+derivedConstraints=constraints/derived
+$(derivedConstraints)/fixedTemperatureConstraint/fixedTemperatureConstraint.cu
+$(derivedConstraints)/temperatureLimitsConstraint/temperatureLimitsConstraint.cu
+*/
+
+LIB = $(FOAM_LIBBIN)/libfvOptions

@@ -1,0 +1,3 @@
+rhoPimplecFoam.cu
+
+EXE = $(FOAM_APPBIN)/rhoPimplecFoam

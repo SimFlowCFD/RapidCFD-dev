@@ -1,0 +1,8 @@
+solidProperties/solidProperties.cu
+solidProperties/solidPropertiesNew.cu
+
+ash/ash.cu
+C/C.cu
+CaCO3/CaCO3.cu
+
+LIB = $(FOAM_LIBBIN)/libsolidProperties

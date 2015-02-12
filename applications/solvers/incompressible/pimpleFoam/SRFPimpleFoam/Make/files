@@ -1,0 +1,3 @@
+SRFPimpleFoam.cu
+
+EXE = $(FOAM_APPBIN)/SRFPimpleFoam

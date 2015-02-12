@@ -1,0 +1,3 @@
+mhdFoam.cu
+
+EXE = $(FOAM_APPBIN)/mhdFoam

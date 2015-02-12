@@ -1,0 +1,7 @@
+mixtureViscosityModel/mixtureViscosityModel.cu
+mixtureViscosityModel/mixtureViscosityModelNew.cu
+plastic/plastic.cu
+BinghamPlastic/BinghamPlastic.cu
+slurry/slurry.cu
+
+LIB = $(FOAM_LIBBIN)/libdriftFluxTransportModels

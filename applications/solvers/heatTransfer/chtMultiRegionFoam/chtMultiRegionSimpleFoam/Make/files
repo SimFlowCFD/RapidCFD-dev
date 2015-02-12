@@ -1,0 +1,4 @@
+chtMultiRegionSimpleFoam.cu
+
+EXE = $(FOAM_APPBIN)/chtMultiRegionSimpleFoam
+

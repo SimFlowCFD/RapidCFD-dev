@@ -1,0 +1,13 @@
+partialWrite/partialWrite.cu
+partialWrite/partialWriteFunctionObject.cu
+
+removeRegisteredObject/removeRegisteredObject.cu
+removeRegisteredObject/removeRegisteredObjectFunctionObject.cu
+
+writeDictionary/writeDictionary.cu
+writeDictionary/writeDictionaryFunctionObject.cu
+
+writeRegisteredObject/writeRegisteredObject.cu
+writeRegisteredObject/writeRegisteredObjectFunctionObject.cu
+
+LIB = $(FOAM_LIBBIN)/libIOFunctionObjects

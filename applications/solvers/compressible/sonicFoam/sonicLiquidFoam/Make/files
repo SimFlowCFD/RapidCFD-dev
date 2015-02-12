@@ -1,0 +1,3 @@
+sonicLiquidFoam.cu
+
+EXE = $(FOAM_APPBIN)/sonicLiquidFoam

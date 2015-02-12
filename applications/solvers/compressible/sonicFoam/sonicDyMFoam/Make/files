@@ -1,0 +1,3 @@
+sonicDyMFoam.cu
+
+EXE = $(FOAM_APPBIN)/sonicDyMFoam

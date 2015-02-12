@@ -1,0 +1,7 @@
+phaseChangeTwoPhaseMixture/phaseChangeTwoPhaseMixture.cu
+phaseChangeTwoPhaseMixture/newPhaseChangeTwoPhaseMixture.cu
+Kunz/Kunz.cu
+Merkle/Merkle.cu
+SchnerrSauer/SchnerrSauer.cu
+
+LIB = $(FOAM_LIBBIN)/libphaseChangeTwoPhaseMixtures

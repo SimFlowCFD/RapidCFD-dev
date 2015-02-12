@@ -1,0 +1,15 @@
+/* Region models */
+regionModel/regionModel.cu
+singleLayerRegion/singleLayerRegion.cu
+regionModel1D/regionModel1D.cu
+
+/* Boundary conditions */
+derivedFvPatches/mappedVariableThicknessWall/mappedVariableThicknessWallFvPatch.cu
+
+regionProperties/regionProperties.cu
+
+regionModelFunctionObject/regionModelFunctionObject/regionModelFunctionObject.cu
+regionModelFunctionObject/regionModelFunctionObject/regionModelFunctionObjectNew.cu
+regionModelFunctionObject/regionModelFunctionObject/regionModelFunctionObjectList.cu
+
+LIB = $(FOAM_LIBBIN)/libregionModels

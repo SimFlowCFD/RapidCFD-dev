@@ -1,0 +1,4 @@
+compressibleTurbulenceModel.cu
+compressibleTurbulenceModels.cu
+
+LIB = $(FOAM_LIBBIN)/libcompressibleTurbulenceModels

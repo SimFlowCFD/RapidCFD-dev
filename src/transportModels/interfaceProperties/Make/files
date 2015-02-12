@@ -1,0 +1,4 @@
+interfaceProperties.cu
+interfaceCompression/interfaceCompression.cu
+
+LIB = $(FOAM_LIBBIN)/libinterfaceProperties

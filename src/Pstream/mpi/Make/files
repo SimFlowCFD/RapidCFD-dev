@@ -1,0 +1,6 @@
+UOPwrite.cu
+UIPread.cu
+UPstream.cu
+PstreamGlobals.cu
+
+LIB = $(FOAM_LIBBIN)/$(FOAM_MPI)/libPstream

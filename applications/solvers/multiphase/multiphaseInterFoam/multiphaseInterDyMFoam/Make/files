@@ -1,0 +1,3 @@
+multiphaseInterDyMFoam.cu
+
+EXE = $(FOAM_APPBIN)/multiphaseInterDyMFoam

@@ -1,0 +1,5 @@
+UPstream.cu
+UIPread.cu
+UOPwrite.cu
+
+LIB = $(FOAM_LIBBIN)/dummy/libPstream

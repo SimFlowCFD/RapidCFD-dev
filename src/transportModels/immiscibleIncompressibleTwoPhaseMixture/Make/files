@@ -1,0 +1,3 @@
+immiscibleIncompressibleTwoPhaseMixture.cu
+
+LIB = $(FOAM_LIBBIN)/libimmiscibleIncompressibleTwoPhaseMixture

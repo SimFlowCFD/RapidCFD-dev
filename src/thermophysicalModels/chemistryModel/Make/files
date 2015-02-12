@@ -1,0 +1,11 @@
+chemistryModel/basicChemistryModel/basicChemistryModel.cu
+
+chemistryModel/psiChemistryModel/psiChemistryModel.cu
+chemistryModel/psiChemistryModel/psiChemistryModels.cu
+
+chemistryModel/rhoChemistryModel/rhoChemistryModel.cu
+chemistryModel/rhoChemistryModel/rhoChemistryModels.cu
+
+chemistrySolver/chemistrySolver/makeChemistrySolvers.cu
+
+LIB = $(FOAM_LIBBIN)/libchemistryModel

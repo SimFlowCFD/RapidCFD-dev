@@ -1,0 +1,9 @@
+LESdelta/LESdelta.cu
+cubeRootVolDelta/cubeRootVolDelta.cu
+PrandtlDelta/PrandtlDelta.cu
+/*
+smoothDelta/smoothDelta.cu
+*/
+maxDeltaxyz/maxDeltaxyz.cu
+
+LIB = $(FOAM_LIBBIN)/libLESdeltas

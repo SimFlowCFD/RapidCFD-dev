@@ -1,0 +1,3 @@
+derivedFvPatchFields/energyRegionCoupled/energyRegionCoupledFvPatchScalarField.cu
+
+LIB = $(FOAM_LIBBIN)/libregionCoupled

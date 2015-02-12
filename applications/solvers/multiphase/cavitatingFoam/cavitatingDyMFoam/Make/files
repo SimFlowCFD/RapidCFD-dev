@@ -1,0 +1,3 @@
+cavitatingDyMFoam.cu
+
+EXE = $(FOAM_APPBIN)/cavitatingDyMFoam

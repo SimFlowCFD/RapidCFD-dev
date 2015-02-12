@@ -1,0 +1,3 @@
+reaction/reactions/makeSolidReactions.cu
+
+LIB = $(FOAM_LIBBIN)/libsolidSpecie

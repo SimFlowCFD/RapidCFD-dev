@@ -1,0 +1,6 @@
+mixedFixedValueSlip/mixedFixedValueSlipFvPatchFields.cu
+U/maxwellSlipUFvPatchVectorField.cu
+T/smoluchowskiJumpTFvPatchScalarField.cu
+rho/fixedRhoFvPatchScalarField.cu
+
+LIB = $(FOAM_LIBBIN)/librhoCentralFoam

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,28 +23,46 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "TJacobiSmoother.H"
-#include "TGaussSeidelSmoother.H"
-#include "fieldTypes.H"
+#include "GaussSeidelSmoother.H"
 
-#define makeLduSmoothers(Type, DType, LUType)                            \
-                                                                         \
-    makeLduSmoother(TJacobiSmoother, Type, DType, LUType);               \
-    makeLduSymSmoother(TJacobiSmoother, Type, DType, LUType);            \
-    makeLduAsymSmoother(TJacobiSmoother, Type, DType, LUType);           \
-                                                                         \
-    makeLduSmoother(TGaussSeidelSmoother, Type, DType, LUType);          \
-    makeLduSymSmoother(TGaussSeidelSmoother, Type, DType, LUType);       \
-    makeLduAsymSmoother(TGaussSeidelSmoother, Type, DType, LUType);
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    makeLduSmoothers(scalar, scalar, scalar);
-    makeLduSmoothers(vector, scalar, scalar);
-    makeLduSmoothers(sphericalTensor, scalar, scalar);
-    makeLduSmoothers(symmTensor, scalar, scalar);
-    makeLduSmoothers(tensor, scalar, scalar);
-};
+    defineTypeNameAndDebug(GaussSeidelSmoother, 0);
 
+    lduMatrix::smoother::addsymMatrixConstructorToTable<GaussSeidelSmoother>
+        addGaussSeidelSmootherSymMatrixConstructorToTable_;
+
+    lduMatrix::smoother::addasymMatrixConstructorToTable<GaussSeidelSmoother>
+        addGaussSeidelSmootherAsymMatrixConstructorToTable_;
+}
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::GaussSeidelSmoother::GaussSeidelSmoother
+(
+    const word& fieldName,
+    const lduMatrix& matrix,
+    const FieldField<gpuField, scalar>& interfaceBouCoeffs,
+    const FieldField<gpuField, scalar>& interfaceIntCoeffs,
+    const lduInterfaceFieldPtrsList& interfaces
+)
+:
+    JacobiSmoother
+    (
+        fieldName,
+        matrix,
+        interfaceBouCoeffs,
+        interfaceIntCoeffs,
+        interfaces
+    )
+{
+    if(debug)
+    {
+        Info<<"Using Jacobi smoother instead of GaussSeidel."<<endl;
+    }
+}
 
 // ************************************************************************* //

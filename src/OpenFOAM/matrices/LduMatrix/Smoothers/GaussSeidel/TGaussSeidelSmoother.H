@@ -21,30 +21,68 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Class
+    Foam::TGaussSeidelSmoother
+
+Description
+    Foam::TGaussSeidelSmoother
+
+SourceFiles
+    TGaussSeidelSmoother.C
+
 \*---------------------------------------------------------------------------*/
 
-#include "TJacobiSmoother.H"
-#include "TGaussSeidelSmoother.H"
-#include "fieldTypes.H"
+#ifndef TGaussSeidelSmoother_H
+#define TGaussSeidelSmoother_H
 
-#define makeLduSmoothers(Type, DType, LUType)                            \
-                                                                         \
-    makeLduSmoother(TJacobiSmoother, Type, DType, LUType);               \
-    makeLduSymSmoother(TJacobiSmoother, Type, DType, LUType);            \
-    makeLduAsymSmoother(TJacobiSmoother, Type, DType, LUType);           \
-                                                                         \
-    makeLduSmoother(TGaussSeidelSmoother, Type, DType, LUType);          \
-    makeLduSymSmoother(TGaussSeidelSmoother, Type, DType, LUType);       \
-    makeLduAsymSmoother(TGaussSeidelSmoother, Type, DType, LUType);
+#include "LduMatrix.H"
+#include "TJacobiSmoother.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    makeLduSmoothers(scalar, scalar, scalar);
-    makeLduSmoothers(vector, scalar, scalar);
-    makeLduSmoothers(sphericalTensor, scalar, scalar);
-    makeLduSmoothers(symmTensor, scalar, scalar);
-    makeLduSmoothers(tensor, scalar, scalar);
+
+/*---------------------------------------------------------------------------*\
+                           Class TGaussSeidelSmoother Declaration
+\*---------------------------------------------------------------------------*/
+
+template<class Type, class DType, class LUType>
+class TGaussSeidelSmoother
+:
+    public TJacobiSmoother<Type, DType, LUType>
+{
+
+public:
+
+    //- Runtime type information
+    TypeName("GaussSeidel");
+
+
+    // Constructors
+
+        //- Construct from components
+        TGaussSeidelSmoother
+        (
+            const word& fieldName,
+            const LduMatrix<Type, DType, LUType>& matrix
+        );
+
 };
 
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#ifdef NoRepository
+#   include "TGaussSeidelSmoother.C"
+#endif
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
 
 // ************************************************************************* //

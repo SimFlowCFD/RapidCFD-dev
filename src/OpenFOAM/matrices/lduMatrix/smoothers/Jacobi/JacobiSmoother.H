@@ -3,7 +3,6 @@
 
 #include "lduMatrix.H"
 
-
 namespace Foam
 {
 
@@ -26,7 +25,7 @@ public:
     );
 
 
-    void smooth
+    virtual void smooth
     (
         scalargpuField& psi,
         const scalargpuField& source,

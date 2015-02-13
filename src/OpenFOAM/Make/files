@@ -252,9 +252,12 @@ $(lduMatrix)/solvers/ICCG/ICCG.cu
 $(lduMatrix)/solvers/BICCG/BICCG.cu
 
 $(lduMatrix)/smoothers/Jacobi/JacobiSmoother.cu
+$(lduMatrix)/smoothers/GaussSeidel/GaussSeidelSmoother.cu
 
 $(lduMatrix)/preconditioners/noPreconditioner/noPreconditioner.cu
 $(lduMatrix)/preconditioners/diagonalPreconditioner/diagonalPreconditioner.cu
+$(lduMatrix)/preconditioners/DICPreconditioner/DICPreconditioner.cu
+$(lduMatrix)/preconditioners/DILUPreconditioner/DILUPreconditioner.cu
 
 lduAddressing = $(lduMatrix)/lduAddressing
 $(lduAddressing)/lduAddressing.cu

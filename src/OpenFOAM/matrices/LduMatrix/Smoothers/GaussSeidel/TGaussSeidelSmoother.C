@@ -23,28 +23,27 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "TJacobiSmoother.H"
 #include "TGaussSeidelSmoother.H"
-#include "fieldTypes.H"
 
-#define makeLduSmoothers(Type, DType, LUType)                            \
-                                                                         \
-    makeLduSmoother(TJacobiSmoother, Type, DType, LUType);               \
-    makeLduSymSmoother(TJacobiSmoother, Type, DType, LUType);            \
-    makeLduAsymSmoother(TJacobiSmoother, Type, DType, LUType);           \
-                                                                         \
-    makeLduSmoother(TGaussSeidelSmoother, Type, DType, LUType);          \
-    makeLduSymSmoother(TGaussSeidelSmoother, Type, DType, LUType);       \
-    makeLduAsymSmoother(TGaussSeidelSmoother, Type, DType, LUType);
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-namespace Foam
+template<class Type, class DType, class LUType>
+Foam::TGaussSeidelSmoother<Type, DType, LUType>::TGaussSeidelSmoother
+(
+    const word& fieldName,
+    const LduMatrix<Type, DType, LUType>& matrix
+)
+:
+    TJacobiSmoother<Type, DType, LUType>
+    (
+        fieldName,
+        matrix
+    )
 {
-    makeLduSmoothers(scalar, scalar, scalar);
-    makeLduSmoothers(vector, scalar, scalar);
-    makeLduSmoothers(sphericalTensor, scalar, scalar);
-    makeLduSmoothers(symmTensor, scalar, scalar);
-    makeLduSmoothers(tensor, scalar, scalar);
-};
-
+    if(debug)
+    {
+        Info<<"Using Jacobi smoother instead of GaussSeidel."<<endl;
+    }
+}
 
 // ************************************************************************* //

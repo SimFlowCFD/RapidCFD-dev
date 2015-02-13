@@ -25,6 +25,7 @@ License
 
 #include "NoPreconditioner.H"
 #include "DiagonalPreconditioner.H"
+#include "TDILUPreconditioner.H"
 #include "fieldTypes.H"
 
 #define makeLduPreconditioners(Type, DType, LUType)                           \
@@ -35,7 +36,11 @@ License
                                                                               \
     makeLduPreconditioner(DiagonalPreconditioner, Type, DType, LUType);       \
     makeLduSymPreconditioner(DiagonalPreconditioner, Type, DType, LUType);    \
-    makeLduAsymPreconditioner(DiagonalPreconditioner, Type, DType, LUType); 
+    makeLduAsymPreconditioner(DiagonalPreconditioner, Type, DType, LUType);   \
+                                                                              \
+    makeLduPreconditioner(TDILUPreconditioner, Type, DType, LUType);          \
+    makeLduSymPreconditioner(TDILUPreconditioner, Type, DType, LUType);       \
+    makeLduAsymPreconditioner(TDILUPreconditioner, Type, DType, LUType); 
 
 namespace Foam
 {

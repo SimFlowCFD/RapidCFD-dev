@@ -23,28 +23,24 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "TJacobiSmoother.H"
-#include "TGaussSeidelSmoother.H"
-#include "fieldTypes.H"
+#include "TDILUPreconditioner.H"
 
-#define makeLduSmoothers(Type, DType, LUType)                            \
-                                                                         \
-    makeLduSmoother(TJacobiSmoother, Type, DType, LUType);               \
-    makeLduSymSmoother(TJacobiSmoother, Type, DType, LUType);            \
-    makeLduAsymSmoother(TJacobiSmoother, Type, DType, LUType);           \
-                                                                         \
-    makeLduSmoother(TGaussSeidelSmoother, Type, DType, LUType);          \
-    makeLduSymSmoother(TGaussSeidelSmoother, Type, DType, LUType);       \
-    makeLduAsymSmoother(TGaussSeidelSmoother, Type, DType, LUType);
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-namespace Foam
+template<class Type, class DType, class LUType>
+Foam::TDILUPreconditioner<Type, DType, LUType>::TDILUPreconditioner
+(
+    const typename LduMatrix<Type, DType, LUType>::solver& sol,
+    const dictionary& dic
+)
+:
+    DiagonalPreconditioner<Type, DType, LUType>(sol,dic)
 {
-    makeLduSmoothers(scalar, scalar, scalar);
-    makeLduSmoothers(vector, scalar, scalar);
-    makeLduSmoothers(sphericalTensor, scalar, scalar);
-    makeLduSmoothers(symmTensor, scalar, scalar);
-    makeLduSmoothers(tensor, scalar, scalar);
-};
+    if(debug)
+    {
+        Info<<"Using diagonal preconditioner instead of DILU."<<endl;
+    }
+}
 
 
 // ************************************************************************* //

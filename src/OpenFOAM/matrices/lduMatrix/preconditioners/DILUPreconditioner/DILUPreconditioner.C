@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,28 +23,38 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "TJacobiSmoother.H"
-#include "TGaussSeidelSmoother.H"
-#include "fieldTypes.H"
+#include "DILUPreconditioner.H"
 
-#define makeLduSmoothers(Type, DType, LUType)                            \
-                                                                         \
-    makeLduSmoother(TJacobiSmoother, Type, DType, LUType);               \
-    makeLduSymSmoother(TJacobiSmoother, Type, DType, LUType);            \
-    makeLduAsymSmoother(TJacobiSmoother, Type, DType, LUType);           \
-                                                                         \
-    makeLduSmoother(TGaussSeidelSmoother, Type, DType, LUType);          \
-    makeLduSymSmoother(TGaussSeidelSmoother, Type, DType, LUType);       \
-    makeLduAsymSmoother(TGaussSeidelSmoother, Type, DType, LUType);
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    makeLduSmoothers(scalar, scalar, scalar);
-    makeLduSmoothers(vector, scalar, scalar);
-    makeLduSmoothers(sphericalTensor, scalar, scalar);
-    makeLduSmoothers(symmTensor, scalar, scalar);
-    makeLduSmoothers(tensor, scalar, scalar);
-};
+    defineTypeNameAndDebug(DILUPreconditioner, 0);
 
+    lduMatrix::preconditioner::
+        addasymMatrixConstructorToTable<DILUPreconditioner>
+        addDILUPreconditionerAsymMatrixConstructorToTable_;
+}
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::DILUPreconditioner::DILUPreconditioner
+(
+    const lduMatrix::solver& sol,
+    const dictionary& dic
+)
+:
+    diagonalPreconditioner
+    (
+        sol,
+        dic
+    )
+{
+    if(debug)
+    {
+        Info<<"Using diagonal preconditioner instead of DILU."<<endl;
+    }
+}
 
 // ************************************************************************* //

@@ -70,6 +70,20 @@ Foam::argList::initValidTables::initValidTables()
         "do not execute functionObjects"
     );
 
+    argList::addOption
+    (
+        "device",
+        "devID",
+        "use specified device"
+    );
+
+    argList::addOption
+    (
+        "devices", "(devID1 .. devIDN)",
+        "assign device to each processor"
+    );
+    validParOptions.set("devices", "(devID1 .. devIDN)");
+
     Pstream::addValidParOptions(validParOptions);
 }
 
@@ -147,6 +161,7 @@ void Foam::argList::noParallel()
 {
     removeOption("parallel");
     removeOption("roots");
+    removeOption("devices");
     validParOptions.clear();
 }
 
@@ -571,6 +586,8 @@ void Foam::argList::parse
     // Case is a single processor run unless it is running parallel
     int nProcs = 1;
 
+    int deviceCount = getGpuDeviceCount();
+
     // Roots if running distributed
     fileNameList roots;
 
@@ -753,12 +770,66 @@ void Foam::argList::parse
 
         nProcs = Pstream::nProcs();
         case_ = globalCase_/(word("processor") + name(Pstream::myProcNo()));
+
+        if (options_.found("devices"))
+        {
+            IStringStream is(options_["devices"]);
+            List<int> devices = readList<int>(is);
+
+            if (devices.size() != Pstream::nProcs())
+            {
+                FatalError
+                    <<"Device list size is different than number of processors."
+                    << endl;
+                FatalError.exit();
+            }
+            else
+            {
+                int device = devices[Pstream::myProcNo()];
+
+                if(device < 0 || device >= deviceCount)
+                {
+                    FatalError
+                        <<"Invalid device ID: "<<device
+                        <<" for processor "<<Pstream::myProcNo()<<endl;
+                    FatalError.exit();
+                }
+
+                setGpuDevice(device);
+            }
+        }
+        else
+        {
+            if(Pstream::myProcNo() >= deviceCount)
+            {
+                FatalError
+                    <<"Specify device IDs with 'devices' argument"<<endl;
+                FatalError.exit();
+            }
+
+            setGpuDevice(Pstream::myProcNo());
+        }
     }
     else
     {
         // establish rootPath_/globalCase_/case_
         getRootCase();
         case_ = globalCase_;
+
+        if (options_.found("device"))
+        {
+            int device = optionRead<int>("device");
+
+            if(device < 0 || device >= deviceCount)
+            {
+                FatalError
+                    <<"Invalid device ID: "<<device<<endl;
+                FatalError.exit();
+            }
+
+            setGpuDevice(device);
+
+        }
     }
 
 

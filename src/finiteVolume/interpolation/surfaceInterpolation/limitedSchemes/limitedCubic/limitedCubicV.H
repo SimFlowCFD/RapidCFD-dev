@@ -76,6 +76,7 @@ public:
         twoByk_ = 2.0/max(k_, SMALL);
     }
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar cdWeight,

@@ -61,6 +61,7 @@ public:
     vanLeerLimiter(Istream&)
     {}
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar,

@@ -76,6 +76,7 @@ public:
         k_ = max(k_/2.0, SMALL);
     }
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar cdWeight,

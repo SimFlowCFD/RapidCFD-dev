@@ -61,6 +61,7 @@ public:
     SFCDLimiter(Istream&)
     {}
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar cdWeight,

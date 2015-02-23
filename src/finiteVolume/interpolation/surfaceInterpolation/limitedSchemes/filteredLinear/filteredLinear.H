@@ -66,6 +66,7 @@ public:
     filteredLinearLimiter(Istream&)
     {}
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar cdWeight,

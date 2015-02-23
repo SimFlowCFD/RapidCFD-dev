@@ -101,6 +101,7 @@ public:
         l_ += 1.0;
     }
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar cdWeight,

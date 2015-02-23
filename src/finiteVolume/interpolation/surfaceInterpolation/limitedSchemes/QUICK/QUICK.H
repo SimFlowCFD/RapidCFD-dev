@@ -65,6 +65,7 @@ public:
     QUICKLimiter(Istream&)
     {}
 
+    __HOST____DEVICE__
     scalar limiter
     (
         const scalar cdWeight,

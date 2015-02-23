@@ -274,16 +274,13 @@ limitedSchemes = $(surfaceInterpolation)/limitedSchemes
 $(limitedSchemes)/limitedSurfaceInterpolationScheme/limitedSurfaceInterpolationSchemes.cu
 $(limitedSchemes)/upwind/upwind.cu
 $(limitedSchemes)/blended/blended.cu
-/*
 $(limitedSchemes)/Gamma/Gamma.cu
 $(limitedSchemes)/SFCD/SFCD.cu
 $(limitedSchemes)/Minmod/Minmod.cu
 $(limitedSchemes)/vanLeer/vanLeer.cu
 $(limitedSchemes)/vanAlbada/vanAlbada.cu
 $(limitedSchemes)/OSPRE/OSPRE.cu
-*/
 $(limitedSchemes)/limitedLinear/limitedLinear.cu
-/*
 $(limitedSchemes)/limitedCubic/limitedCubic.cu
 $(limitedSchemes)/SuperBee/SuperBee.cu
 $(limitedSchemes)/QUICK/QUICK.cu
@@ -294,7 +291,6 @@ $(limitedSchemes)/filteredLinear/filteredLinear.cu
 $(limitedSchemes)/filteredLinear2/filteredLinear2.cu
 $(limitedSchemes)/filteredLinear3/filteredLinear3.cu
 $(limitedSchemes)/limitWith/limitWith.cu
-*/
 
 multivariateSchemes = $(surfaceInterpolation)/multivariateSchemes
 $(multivariateSchemes)/multivariateSurfaceInterpolationScheme/multivariateSurfaceInterpolationSchemes.cu

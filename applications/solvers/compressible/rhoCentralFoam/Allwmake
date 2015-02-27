@@ -2,6 +2,6 @@
 cd ${0%/*} || exit 1    # run from this directory
 set -x
 
-(wmake libso BCs && wmake && wmake rhoCentralDyMFoam)
+#(wmake libso BCs && wmake && wmake rhoCentralDyMFoam)
 
 # ----------------------------------------------------------------- end-of-file

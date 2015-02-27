@@ -2,7 +2,7 @@
 cd ${0%/*} || exit 1    # run from this directory
 set -x
 
-wmake
-wmake chtMultiRegionSimpleFoam
+#wmake
+#wmake chtMultiRegionSimpleFoam
 
 # ----------------------------------------------------------------- end-of-file

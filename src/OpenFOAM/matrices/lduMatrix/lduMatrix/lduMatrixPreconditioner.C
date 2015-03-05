@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "lduMatrix.H"
+#include "diagonalPreconditioner.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -52,6 +53,11 @@ Foam::word Foam::lduMatrix::preconditioner::getName
     else
     {
         e.stream() >> name;
+    }
+
+    if(name != "none")
+    {
+        return diagonalPreconditioner::typeName;
     }
 
     return name;

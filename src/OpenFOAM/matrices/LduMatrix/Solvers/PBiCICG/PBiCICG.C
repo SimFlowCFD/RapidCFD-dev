@@ -52,6 +52,9 @@ Foam::PBiCICG<Type, DType, LUType>::solve(gpuField<Type>& psi) const
 {
     word preconditionerName(this->controlDict_.lookup("preconditioner"));
 
+    if(preconditionerName != "none")
+        preconditionerName = "diagonal";
+
     // --- Setup class containing solver performance data
     SolverPerformance<Type> solverPerf
     (

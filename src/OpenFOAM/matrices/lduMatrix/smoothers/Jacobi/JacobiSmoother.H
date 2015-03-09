@@ -10,6 +10,7 @@ class JacobiSmoother
 :
     public lduMatrix::smoother
 {
+    scalar omega_;
 
 public:
 
@@ -21,7 +22,8 @@ public:
         const lduMatrix& matrix,
         const FieldField<gpuField, scalar>& interfaceBouCoeffs,
         const FieldField<gpuField, scalar>& interfaceIntCoeffs,
-        const lduInterfaceFieldPtrsList& interfaces
+        const lduInterfaceFieldPtrsList& interfaces,
+        const dictionary& solverControls
     );
 
 

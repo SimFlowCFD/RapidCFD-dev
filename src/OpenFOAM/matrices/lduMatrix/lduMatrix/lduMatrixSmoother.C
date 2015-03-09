@@ -109,7 +109,8 @@ Foam::autoPtr<Foam::lduMatrix::smoother> Foam::lduMatrix::smoother::New
                 matrix,
                 interfaceBouCoeffs,
                 interfaceIntCoeffs,
-                interfaces
+                interfaces,
+                solverControls
             )
         );
     }
@@ -138,7 +139,8 @@ Foam::autoPtr<Foam::lduMatrix::smoother> Foam::lduMatrix::smoother::New
                 matrix,
                 interfaceBouCoeffs,
                 interfaceIntCoeffs,
-                interfaces
+                interfaces,
+                solverControls
             )
         );
     }

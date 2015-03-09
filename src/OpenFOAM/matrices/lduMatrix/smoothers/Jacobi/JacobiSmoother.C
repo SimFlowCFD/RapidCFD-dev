@@ -122,7 +122,8 @@ Foam::JacobiSmoother::JacobiSmoother
     const lduMatrix& matrix,
     const FieldField<gpuField, scalar>& interfaceBouCoeffs,
     const FieldField<gpuField, scalar>& interfaceIntCoeffs,
-    const lduInterfaceFieldPtrsList& interfaces
+    const lduInterfaceFieldPtrsList& interfaces,
+    const dictionary& solverControls
 )
 :
     lduMatrix::smoother
@@ -132,8 +133,10 @@ Foam::JacobiSmoother::JacobiSmoother
         interfaceBouCoeffs,
         interfaceIntCoeffs,
         interfaces
-    )
+    ),
+    omega_(0.8)
 {
+    solverControls.readIfPresent("omega", omega_);
 }
 
 
@@ -211,7 +214,7 @@ void Foam::JacobiSmoother::smooth
             Apsi.begin(),
             JacobiSmootherFunctor<true>
             (
-                4.0/5.0,
+                omega_,
                 psi.data(),
                 Diag.data(),
                 sourceTmp.data(),
@@ -238,7 +241,7 @@ void Foam::JacobiSmoother::smooth
             Apsi.begin(),
             JacobiSmootherFunctor<false>
             (
-                4.0/5.0,
+                omega_,
                 psi.data(),
                 Diag.data(),
                 sourceTmp.data(),
@@ -253,7 +256,6 @@ void Foam::JacobiSmoother::smooth
         );
 
         }
-
 
         psi = Apsi;
     }

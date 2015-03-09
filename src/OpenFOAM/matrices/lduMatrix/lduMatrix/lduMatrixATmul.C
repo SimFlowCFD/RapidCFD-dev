@@ -28,29 +28,16 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "lduMatrix.H"
-
-#ifdef CUSP_USE_TEXTURE_MEMORY
-#include <cusp/detail/device/texture.h>
-#endif
+#include "textureConfig.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
-{  
-
-#ifdef __CUDA_ARCH__ 
-  #ifdef CUSP_USE_TEXTURE_MEMORY        
-    #define fetch(i,x) fetch_x<true>(i,x)   
-  #else
-    #define fetch(i,x) x[i]
-  #endif
-#else
-  #define fetch(i,x) x[i]  
-#endif                
+{                
         
 #define MAX_NEI_SIZE 3
 	
-template<bool addOffDiagonal, bool normalMult>
+template<bool normalMult,bool useTexture>
 struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<label,label,label,label>,scalar>
 {
     const scalar* psi;
@@ -77,9 +64,7 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
         losort(_losort)
     {}
 
-    #ifdef __CUDA_ARCH__ 
-    __device__
-    #endif
+    __HOST____DEVICE__
     scalar operator()(const scalar& d,const thrust::tuple<label,label,label,label>& t)
     {
         scalar out = d;
@@ -97,20 +82,11 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
             if(i<oSize)
             {
                 label face = oStart + i;
-                if(addOffDiagonal)
-                {
-                    if(normalMult)
-                        tmpSum[i] = upper[face]*fetch(nei[face], psi); 
-                    else
-                        tmpSum[i] = lower[face]*fetch(nei[face], psi); 
-                }
+
+                if(normalMult)
+                    tmpSum[i] = upper[face]*fetch<useTexture>(nei[face], psi); 
                 else
-                {
-                    if(normalMult)
-                        tmpSum[i] = - upper[face]*fetch(nei[face], psi); 
-                    else
-                        tmpSum[i] = - lower[face]*fetch(nei[face], psi); 
-                }
+                    tmpSum[i] = lower[face]*fetch<useTexture>(nei[face], psi); 
             }
         }
 
@@ -120,20 +96,10 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
             {
                  label face = losort[nStart + i];
                    
-                  if(addOffDiagonal)
-                  {
-                      if(normalMult)
-                          tmpSum[i+MAX_NEI_SIZE] = lower[face]*fetch(own[face], psi); 
-                      else
-                          tmpSum[i+MAX_NEI_SIZE] = upper[face]*fetch(own[face], psi);
-                  }
-                  else
-                  {
-                      if(normalMult)
-                          tmpSum[i+MAX_NEI_SIZE] = -lower[face]*fetch(own[face], psi); 
-                      else
-                          tmpSum[i+MAX_NEI_SIZE] = -upper[face]*fetch(own[face], psi); 
-                  }
+                 if(normalMult)
+                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*fetch<useTexture>(own[face], psi); 
+                 else
+                     tmpSum[i+MAX_NEI_SIZE] = upper[face]*fetch<useTexture>(own[face], psi);
             }
         }
 
@@ -146,41 +112,21 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
         {
             label face = oStart + i;
                 
-            if(addOffDiagonal)
-            {
-                if(normalMult)
-                    out += upper[face]*fetch(nei[face], psi); 
-                else
-                    out += lower[face]*fetch(nei[face], psi); 
-            }
+            if(normalMult)
+                out += upper[face]*fetch<useTexture>(nei[face], psi); 
             else
-            {
-                if(normalMult)
-                    out -= upper[face]*fetch(nei[face], psi); 
-                else
-                    out -= lower[face]*fetch(nei[face], psi); 
-            }
+                out += lower[face]*fetch<useTexture>(nei[face], psi); 
         }
             
             
         for(label i = MAX_NEI_SIZE; i<nSize; i++)
         {
             label face = losort[nStart + i];
-                 
-            if(addOffDiagonal)
-            {
-                if(normalMult)
-                    nExtra += lower[face]*fetch(own[face], psi); 
-                else
-                    nExtra += upper[face]*fetch(own[face], psi);
-            }
+
+            if(normalMult)
+                nExtra += lower[face]*fetch<useTexture>(own[face], psi); 
             else
-            {
-                if(normalMult)
-                    nExtra -= lower[face]*fetch(own[face], psi); 
-                else
-                    nExtra -= upper[face]*fetch(own[face], psi); 
-            }
+                nExtra += upper[face]*fetch<useTexture>(own[face], psi);
         }  
             
         return out + nExtra;
@@ -188,45 +134,25 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
 };
     
 #undef MAX_NEI_SIZE
-#undef fetch
 
-}
-
-void Foam::lduMatrix::Amul
+template<bool normalMult,bool useTexture>
+inline void callMultiply
 (
     scalargpuField& Apsi,
-    const tmp<scalargpuField>& tpsi,
-    const FieldField<gpuField, scalar>& interfaceBouCoeffs,
-    const lduInterfaceFieldPtrsList& interfaces,
-    const direction cmpt
-) const
+    const scalargpuField& psi,
+
+    const labelgpuList& l,
+    const labelgpuList& u,
+    const labelgpuList& losort,
+
+    const labelgpuList& ownStart,
+    const labelgpuList& losortStart,
+
+    const scalargpuField& Lower,
+    const scalargpuField& Upper,
+    const scalargpuField& Diag
+)
 {
-    const labelgpuList& l = lduAddr().lowerAddr();
-    const labelgpuList& u = lduAddr().upperAddr();
-    const labelgpuList& losort = lduAddr().losortAddr();
-
-    const labelgpuList& ownStart = lduAddr().ownerStartAddr();
-    const labelgpuList& losortStart = lduAddr().losortStartAddr();
-
-    const scalargpuField& Lower = lower();
-    const scalargpuField& Upper = upper();
-    const scalargpuField& Diag = diag();
-
-    const scalargpuField& psi = tpsi();
-
-    // Initialise the update of interfaced interfaces
-    initMatrixInterfaces
-    (
-        interfaceBouCoeffs,
-        interfaces,
-        psi,
-        Apsi,
-        cmpt
-    );
-
-    #ifdef CUSP_USE_TEXTURE_MEMORY
-    bind_x(psi.data());
-    #endif 
 
     thrust::transform
     (
@@ -256,7 +182,7 @@ void Foam::lduMatrix::Amul
             losortStart.begin()+1
         )),
         Apsi.begin(),
-        matrixMultiplyFunctor<true,true>
+        matrixMultiplyFunctor<normalMult,useTexture>
         (
             psi.data(),
             Lower.data(),
@@ -266,10 +192,82 @@ void Foam::lduMatrix::Amul
             losort.data()
         )
     );
-                                               
-    #ifdef CUSP_USE_TEXTURE_MEMORY
-    unbind_x(psi.data());
-    #endif 
+
+}
+
+
+}
+
+void Foam::lduMatrix::Amul
+(
+    scalargpuField& Apsi,
+    const tmp<scalargpuField>& tpsi,
+    const FieldField<gpuField, scalar>& interfaceBouCoeffs,
+    const lduInterfaceFieldPtrsList& interfaces,
+    const direction cmpt
+) const
+{
+    const labelgpuList& l = lduAddr().lowerAddr();
+    const labelgpuList& u = lduAddr().upperAddr();
+    const labelgpuList& losort = lduAddr().losortAddr();
+
+    const labelgpuList& ownStart = lduAddr().ownerStartAddr();
+    const labelgpuList& losortStart = lduAddr().losortStartAddr();
+
+    const scalargpuField& Lower = lower();
+    const scalargpuField& Upper = upper();
+    const scalargpuField& Diag = diag();
+
+    const scalargpuField& psi = tpsi();
+
+    const bool textureCanBeUsed = psi.size() > TEXTURE_MINIMUM_SIZE;
+
+    // Initialise the update of interfaced interfaces
+    initMatrixInterfaces
+    (
+        interfaceBouCoeffs,
+        interfaces,
+        psi,
+        Apsi,
+        cmpt
+    );
+
+    if(textureCanBeUsed)
+    {
+        bind(psi.data());
+
+        callMultiply<true,true>
+        (
+            Apsi,
+            psi,
+            l,
+            u,
+            losort,
+            ownStart,
+            losortStart,
+            Lower,
+            Upper,
+            Diag
+        );
+
+        unbind(psi.data());
+    }
+    else
+    {
+        callMultiply<true,false>
+        (
+            Apsi,
+            psi,
+            l,
+            u,
+            losort,
+            ownStart,
+            losortStart,
+            Lower,
+            Upper,
+            Diag
+        );
+    }
 
     updateMatrixInterfaces
     (
@@ -305,6 +303,9 @@ void Foam::lduMatrix::Tmul
     const scalargpuField& Diag = diag();
 
     const scalargpuField& psi = tpsi();
+
+    const bool textureCanBeUsed = psi.size() > TEXTURE_MINIMUM_SIZE;
+
     // Initialise the update of interfaced interfaces
     initMatrixInterfaces
     (
@@ -315,52 +316,42 @@ void Foam::lduMatrix::Tmul
         cmpt
     );
       
-    #ifdef CUSP_USE_TEXTURE_MEMORY
-    bind_x(psi.data());
-    #endif 
-                               
-    thrust::transform
-    (
-        thrust::make_transform_iterator
+    if(textureCanBeUsed)
+    {
+        bind(psi.data());
+
+        callMultiply<false,true>
         (
-            thrust::make_zip_iterator(thrust::make_tuple
-            (
-                Diag.begin(),
-                psi.begin()
-            )),
-            lduMatrixDiagonalFunctor()
-        ),
-        thrust::make_transform_iterator
+            Tpsi,
+            psi,
+            l,
+            u,
+            losort,
+            ownStart,
+            losortStart,
+            Lower,
+            Upper,
+            Diag
+        );
+
+        unbind(psi.data());
+    }
+    else
+    {
+        callMultiply<false,false>
         (
-            thrust::make_zip_iterator(thrust::make_tuple
-            (
-                Diag.end(),
-                psi.end()
-            )),
-            lduMatrixDiagonalFunctor()
-        ),
-        thrust::make_zip_iterator(thrust::make_tuple
-        (
-            ownStart.begin(),
-            ownStart.begin()+1,
-            losortStart.begin(),
-            losortStart.begin()+1
-        )),
-        Tpsi.begin(),
-        matrixMultiplyFunctor<true,false>
-        (
-            psi.data(),
-            Lower.data(),
-            Upper.data(),
-            l.data(),
-            u.data(),
-            losort.data()
-        )
-    );
-                                               
-    #ifdef CUSP_USE_TEXTURE_MEMORY
-    unbind_x(psi.data());
-    #endif 
+            Tpsi,
+            psi,
+            l,
+            u,
+            losort,
+            ownStart,
+            losortStart,
+            Lower,
+            Upper,
+            Diag
+        );
+    }
 
     // Update interface interfaces
     updateMatrixInterfaces

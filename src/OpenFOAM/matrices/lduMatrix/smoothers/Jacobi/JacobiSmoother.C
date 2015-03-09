@@ -1,4 +1,5 @@
 #include "JacobiSmoother.H"
+#include "textureConfig.H"
 
 namespace Foam
 {
@@ -8,10 +9,11 @@ namespace Foam
         addJacobiSmootherSymMatrixConstructorToTable_;
 
     lduMatrix::smoother::addasymMatrixConstructorToTable<JacobiSmoother>
-        addJacobiSmootherAsymMatrixConstructorToTable_;
+        addJacobiSmootherAsymMatrixConstructorToTable_;   
 
     #define MAX_NEI_SIZE 3
 	
+    template<bool useTexture>
     struct JacobiSmootherFunctor 
     {
         const scalar* psi;
@@ -73,7 +75,7 @@ namespace Foam
                 if(i<oSize)
                 {
                     label face = oStart + i;
-                    tmpSum[i] = upper[face]*psi[nei[face]]; 
+                    tmpSum[i] = upper[face]*fetch<useTexture>(nei[face],psi);
                 }
             }
 
@@ -82,7 +84,7 @@ namespace Foam
                 if(i<nSize)
                 {
                      label face = losort[nStart + i];
-                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]]; 
+                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*fetch<useTexture>(own[face],psi); 
                 }
             }
 
@@ -94,7 +96,7 @@ namespace Foam
             for(label i = MAX_NEI_SIZE; i<oSize; i++)
             {
                 label face = oStart + i;
-                out += upper[face]*psi[nei[face]]; 
+                out += upper[face]*fetch<useTexture>(nei[face],psi);
             }
             
             
@@ -102,7 +104,7 @@ namespace Foam
             {
                  label face = losort[nStart + i];
 
-                 out += lower[face]*psi[own[face]]; 
+                 out += lower[face]*fetch<useTexture>(own[face],psi);
             }
 
             
@@ -158,6 +160,8 @@ void Foam::JacobiSmoother::smooth
     const scalargpuField& Upper = matrix_.upper();
     const scalargpuField& Diag = matrix_.diag();
 
+    const bool textureCanBeUsed = psi.size() > TEXTURE_MINIMUM_SIZE;
+
 
     FieldField<gpuField, scalar>& mBouCoeffs =
         const_cast<FieldField<gpuField, scalar>&>
@@ -172,7 +176,6 @@ void Foam::JacobiSmoother::smooth
             mBouCoeffs[patchi].negate();
         }
     }
-
 
     for (label sweep=0; sweep<nSweeps; sweep++)
     {
@@ -196,12 +199,17 @@ void Foam::JacobiSmoother::smooth
             cmpt
         );
 
+        if(textureCanBeUsed)
+        {
+
+        bind(psi.data());
+
         thrust::transform
         (
             thrust::make_counting_iterator(0),
             thrust::make_counting_iterator(0)+psi.size(),
             Apsi.begin(),
-            JacobiSmootherFunctor
+            JacobiSmootherFunctor<true>
             (
                 4.0/5.0,
                 psi.data(),
@@ -216,6 +224,36 @@ void Foam::JacobiSmoother::smooth
                 losortStart.data()
             )
         );
+
+        unbind(psi.data());
+
+        }
+        else
+        {
+
+        thrust::transform
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+psi.size(),
+            Apsi.begin(),
+            JacobiSmootherFunctor<false>
+            (
+                4.0/5.0,
+                psi.data(),
+                Diag.data(),
+                sourceTmp.data(),
+                Lower.data(),
+                Upper.data(),
+                l.data(),
+                u.data(),
+                losort.data(),
+                ownStart.data(),
+                losortStart.data()
+            )
+        );
+
+        }
+
 
         psi = Apsi;
     }

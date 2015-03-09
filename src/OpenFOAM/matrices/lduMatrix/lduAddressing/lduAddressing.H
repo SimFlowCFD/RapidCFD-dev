@@ -128,11 +128,11 @@ class lduAddressing
         //- Losort start addressing
         mutable labelgpuList* losortStartPtr_;
 
-        mutable List<const labelgpuList*> patchSortCells_;
+        mutable PtrList<const labelgpuList> patchSortCells_;
 
-        mutable List<const labelgpuList*> patchSortAddr_;
+        mutable PtrList<const labelgpuList> patchSortAddr_;
 
-        mutable List<const labelgpuList*> patchSortStartAddr_;
+        mutable PtrList<const labelgpuList> patchSortStartAddr_;
 
 
     // Private Member Functions
@@ -195,6 +195,11 @@ public:
         virtual const labelList& upperAddrHost() const = 0;
 
         //- Return patch to internal addressing given patch number
+        virtual bool patchAvailable
+        (
+            const label patchNo
+        ) const = 0;
+
         virtual const labelgpuList& patchAddr
         (
             const label patchNo

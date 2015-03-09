@@ -261,6 +261,11 @@ public:
             }
 
             //- Return patch addressing
+            virtual bool patchAvailable(const label i) const
+            {
+                return interfaces_.set(i);
+            }
+
             virtual const labelgpuList& patchAddr(const label i) const
             {
                 return interfaces_[i].faceCells();

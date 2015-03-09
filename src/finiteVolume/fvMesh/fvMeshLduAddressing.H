@@ -151,6 +151,11 @@ public:
         }
 
         //- Return patch addressing
+        bool patchAvailable(const label i) const
+        {
+            return true;
+        }
+
         const labelgpuList& patchAddr(const label i) const
         {
             return *patchAddr_[i];

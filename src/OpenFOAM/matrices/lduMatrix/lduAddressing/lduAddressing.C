@@ -45,9 +45,12 @@ void Foam::lduAddressing::calcPatchSort() const
 
     for(label i = 0; i < nPatches(); i++)
     {
+        if( ! patchAvailable(i))
+            continue;
+
         const labelgpuList& nbr = patchAddr(i);
         labelgpuList* sortPtr_ = new labelgpuList(nbr.size(), -1);
-        patchSortAddr_[i] = sortPtr_;
+        patchSortAddr_.set(i,sortPtr_);
 
         labelgpuList& lst = *sortPtr_;
 
@@ -69,7 +72,7 @@ void Foam::lduAddressing::calcPatchSort() const
         );
          
         labelgpuList* cellsSortPtr= new labelgpuList(nbr.size());
-        patchSortCells_[i] = cellsSortPtr;
+        patchSortCells_.set(i,cellsSortPtr);
         labelgpuList& cellsSort = *cellsSortPtr;
 
         thrust::copy
@@ -108,13 +111,16 @@ void Foam::lduAddressing::calcPatchSortStart() const
 
     for(label i = 0; i < nPatches(); i++)
     {
+        if( ! patchAvailable(i))
+            continue;
+
         const labelgpuList& nbr = patchAddr(i);
 
         const labelgpuList& lsrt = patchSortAddr(i);
 
         labelgpuList* patchSortStartPtr_ = new labelgpuList(nbr.size() + 1, nbr.size());
 
-        patchSortStartAddr_[i] = patchSortStartPtr_;
+        patchSortStartAddr_.set(i,patchSortStartPtr_);
 
         labelgpuList& lsrtStart = *patchSortStartPtr_;
 
@@ -346,20 +352,9 @@ Foam::lduAddressing::~lduAddressing()
     deleteDemandDrivenData(ownerStartPtr_);
     deleteDemandDrivenData(losortStartPtr_);
     
-    forAll(patchSortCells_,i)
-    {
-        deleteDemandDrivenData(patchSortCells_[i]);
-    }
-	
-    forAll(patchSortAddr_,i)
-    {
-        deleteDemandDrivenData(patchSortAddr_[i]);
-    }
-	
-    forAll(patchSortStartAddr_,i)
-    {
-        deleteDemandDrivenData(patchSortStartAddr_[i]);
-    }
+    patchSortCells_.clear();
+    patchSortAddr_.clear();
+    patchSortStartAddr_.clear();
 }
 
 
@@ -404,7 +399,7 @@ const Foam::labelgpuList& Foam::lduAddressing::patchSortCells(const label i) con
         calcPatchSort();
     }
 
-    return *(patchSortCells_[i]);
+    return patchSortCells_[i];
 }
 
 const Foam::labelgpuList& Foam::lduAddressing::patchSortAddr(const label i) const
@@ -414,7 +409,7 @@ const Foam::labelgpuList& Foam::lduAddressing::patchSortAddr(const label i) cons
         calcPatchSort();
     }
 
-    return *(patchSortAddr_[i]);
+    return patchSortAddr_[i];
 }
 
 const Foam::labelgpuList& Foam::lduAddressing::patchSortStartAddr(const label i) const
@@ -424,7 +419,7 @@ const Foam::labelgpuList& Foam::lduAddressing::patchSortStartAddr(const label i)
         calcPatchSortStart();
     }
 
-    return *(patchSortStartAddr_[i]);
+    return patchSortStartAddr_[i];
 }
 
 Foam::Tuple2<Foam::label, Foam::scalar> Foam::lduAddressing::band() const

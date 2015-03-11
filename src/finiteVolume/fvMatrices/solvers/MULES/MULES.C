@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "MULES.H"
+#include "geometricOneField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -68,52 +69,153 @@ void Foam::MULES::explicitLTSSolve
     );
 }
 
-
-void Foam::MULES::limitSum(UPtrList<scalargpuField>& phiPsiCorrs)
+namespace Foam
 {
-    forAll(phiPsiCorrs[0], facei)
-    {
-        scalar sumPos = 0;
-        scalar sumNeg = 0;
 
-        for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+struct sumPosSumNegMULESFunctor
+{
+    __HOST____DEVICE__
+    thrust::tuple<scalar,scalar> operator()
+    (
+        const scalar& phiPsiCorrs, 
+        const thrust::tuple<scalar,scalar>& t
+    )
+    {
+        scalar sumPos = thrust::get<0>(t);
+        scalar sumNeg = thrust::get<1>(t);
+
+        if (phiPsiCorrs > 0)
         {
-            if (phiPsiCorrs[phasei][facei] > 0)
-            {
-                sumPos += phiPsiCorrs[phasei][facei];
-            }
-            else
-            {
-                sumNeg += phiPsiCorrs[phasei][facei];
-            }
+            sumPos += phiPsiCorrs;
+        }
+        else
+        {
+            sumNeg += phiPsiCorrs;
         }
 
+        return thrust::make_tuple(sumPos,sumNeg);
+    }
+};
+
+struct lambdaMULESFunctor
+{
+    __HOST____DEVICE__
+    thrust::tuple<scalar,bool,bool> operator()(const scalar& sumPos,const scalar& sumNeg)
+    {
         scalar sum = sumPos + sumNeg;
+        scalar lambda = 1;
+        bool positive = false;
+        bool negative = false;
 
         if (sum > 0 && sumPos > VSMALL)
         {
-            scalar lambda = -sumNeg/sumPos;
-
-            for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
-            {
-                if (phiPsiCorrs[phasei][facei] > 0)
-                {
-                    phiPsiCorrs[phasei][facei] *= lambda;
-                }
-            }
+            lambda = -sumNeg/sumPos;
+            positive = true;
         }
         else if (sum < 0 && sumNeg < -VSMALL)
         {
-            scalar lambda = -sumPos/sumNeg;
+            lambda = -sumPos/sumNeg;
+            negative = true;
+        }
 
-            for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+        return thrust::make_tuple(lambda,positive,negative);
+    }
+};
+
+struct phiPsiCorrsMULESFunctor
+{
+    __HOST____DEVICE__
+    scalar operator()(const scalar& phiPsiCorrs, const thrust::tuple<scalar,bool,bool>& t)
+    {
+        scalar out = phiPsiCorrs; 
+        const scalar lambda = thrust::get<0>(t);
+        const bool positive = thrust::get<1>(t);
+        const bool negative = thrust::get<2>(t);
+
+        if (positive)
+        {
+            if(phiPsiCorrs > 0)
             {
-                if (phiPsiCorrs[phasei][facei] < 0)
-                {
-                    phiPsiCorrs[phasei][facei] *= lambda;
-                }
+                out = phiPsiCorrs * lambda;
             }
         }
+        else if (negative)
+        {
+            if(phiPsiCorrs > 0)
+            {
+                out = phiPsiCorrs * lambda;
+            }
+        }
+        
+        return out;
+    } 
+};
+
+}
+
+void Foam::MULES::limitSum(UPtrList<scalargpuField>& phiPsiCorrs)
+{
+    label size = phiPsiCorrs[0].size();
+
+    scalargpuField sumPos(size,0);
+    scalargpuField sumNeg(size,0);
+
+    scalargpuField lambda(size,0);
+
+    boolgpuList positive(size,false);
+    boolgpuList negative(size,false);
+
+    for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+    {
+        thrust::transform
+        (
+            phiPsiCorrs[phasei].begin(),
+            phiPsiCorrs[phasei].end(),
+            thrust::make_zip_iterator(thrust::make_tuple
+            (
+                sumPos.begin(),
+                sumNeg.begin()
+            )),
+            thrust::make_zip_iterator(thrust::make_tuple
+            (
+                sumPos.begin(),
+                sumNeg.begin()
+            )),
+            sumPosSumNegMULESFunctor()
+        );
+    }
+
+
+    thrust::transform
+    (
+        sumPos.begin(),
+        sumPos.end(),
+        sumNeg.begin(),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            lambda.begin(),
+            positive.begin(),
+            negative.begin()
+        )),
+        lambdaMULESFunctor()
+    );
+
+
+    for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+    {
+        thrust::transform
+        (
+            phiPsiCorrs[phasei].begin(),
+            phiPsiCorrs[phasei].end(),
+            thrust::make_zip_iterator(thrust::make_tuple
+            (
+                lambda.begin(),
+                positive.begin(),
+                negative.begin()
+            )),
+            phiPsiCorrs[phasei].begin(),
+            phiPsiCorrsMULESFunctor()
+        );
     }
 }
 

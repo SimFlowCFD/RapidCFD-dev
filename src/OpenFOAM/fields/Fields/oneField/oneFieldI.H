@@ -38,7 +38,7 @@ inline Foam::scalar Foam::oneField::get(const label) const
 }
 
 
-inline Foam::oneField Foam::oneField::field() const
+inline Foam::oneField Foam::oneField::getField() const
 {
     return oneField();
 }

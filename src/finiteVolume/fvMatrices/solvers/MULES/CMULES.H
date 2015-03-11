@@ -120,7 +120,7 @@ void LTScorrect
 template<class RdeltaTType, class RhoType, class SpType, class SuType>
 void limiterCorr
 (
-    scalarField& allLambda,
+    scalargpuField& allLambda,
     const RdeltaTType& rDeltaT,
     const RhoType& rho,
     const volScalarField& psi,

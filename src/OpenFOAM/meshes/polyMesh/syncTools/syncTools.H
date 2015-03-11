@@ -400,6 +400,32 @@ public:
                 );
             }
 
+            template<class T, class CombineOp>
+            static void syncFaceList
+            (
+                const polyMesh& mesh,
+                gpuList<T>& l,
+                const CombineOp& cop
+            )
+            {
+                label start = mesh.nFaces()-mesh.nInternalFaces();
+                label size = mesh.nInternalFaces();
+                
+                List<T> bndValues(size);
+
+                thrust::copy(l.begin()+start,l.end(),bndValues.begin());
+
+                syncBoundaryFaceList
+                (
+                    mesh,
+                    bndValues,
+                    cop,
+                    mapDistribute::transform()
+                );
+
+                thrust::copy(bndValues.begin(),bndValues.end(),l.begin()+start);
+            }
+
             //- Synchronize locations on all mesh faces.
             template<class CombineOp>
             static void syncFacePositions

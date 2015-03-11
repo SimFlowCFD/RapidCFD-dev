@@ -67,7 +67,7 @@ public:
         inline scalar operator[](const label) const;
         inline scalar get(const label) const;
 
-        inline oneField field() const;
+        inline oneField getField() const;
 
         inline thrust::constant_iterator<Foam::scalar, thrust::use_default, thrust::use_default> 
         begin() const;

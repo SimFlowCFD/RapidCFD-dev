@@ -67,7 +67,7 @@ public:
         inline scalar operator[](const label) const;
 
         __HOST____DEVICE__
-        inline zeroField field() const;
+        inline zeroField getField() const;
 };
 
 

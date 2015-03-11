@@ -29,6 +29,7 @@ License
 #include "slicedSurfaceFields.H"
 #include "wedgeFvPatch.H"
 #include "syncTools.H"
+#include "MULESFunctors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -57,7 +58,7 @@ void Foam::MULES::explicitSolve
     {
         psiIf =
         (
-            mesh.Vsc0()().field()*rho.oldTime().getField()
+            mesh.Vsc0()().getField()*rho.oldTime().getField()
            *psi0*rDeltaT/mesh.Vsc()().getField()
           + Su.getField()
           - psiIf
@@ -137,6 +138,245 @@ void Foam::MULES::explicitLTSSolve
     explicitSolve(rDeltaT, rho, psi, phiPsi, Sp, Su);
 }
 
+namespace Foam
+{
+
+struct limiterMULESFunctor
+{
+    const label* own;
+    const label* nei;
+    const label* ownStart;
+    const label* neiStart;
+    const label* losort;
+
+    const scalar* psiIf;
+    const scalar* phiBDIf;
+    const scalar* phiCorrIf;
+
+    scalar* psiMaxn;
+    scalar* psiMinn;
+    scalar* sumPhiBD;
+    scalar* sumPhip;
+    scalar* mSumPhim;
+
+    limiterMULESFunctor
+    (
+        const label* _own,
+        const label* _nei,
+        const label* _ownStart,
+        const label* _neiStart,
+        const label* _losort,
+
+        const scalar* _psiIf,
+        const scalar* _phiBDIf,
+        const scalar* _phiCorrIf,
+
+        scalar* _psiMaxn,
+        scalar* _psiMinn,
+        scalar* _sumPhiBD,
+        scalar* _sumPhip,
+        scalar* _mSumPhim
+    ):
+        own(_own),
+        nei(_nei),
+        ownStart(_ownStart),
+        neiStart(_neiStart),
+        losort(_losort),
+
+        psiIf(_psiIf),
+        phiBDIf(_phiBDIf),
+        phiCorrIf(_phiCorrIf),
+
+        psiMaxn(_psiMaxn),
+        psiMinn(_psiMinn),
+        sumPhiBD(_sumPhiBD),
+        sumPhip(_sumPhip),
+        mSumPhim(_mSumPhim)
+    {}
+
+    __HOST____DEVICE__
+    void operator()(const label& id)
+    {
+        label oStart = ownStart[id];
+        label oSize = ownStart[id+1] - oStart;
+		
+        label nStart = neiStart[id];
+        label nSize = neiStart[id+1] - nStart;
+
+        scalar psiMin = psiMinn[id];
+        scalar psiMax = psiMaxn[id];
+        scalar sumPhiBDTmp = 0;
+        scalar sumPhipTmp = VSMALL;
+        scalar mSumPhimTmp = VSMALL;
+
+        for(label i = 0; i<oSize; i++)
+        {
+            label face = oStart + i;
+
+            psiMax = max(psiMax,psiIf[nei[face]]);
+            psiMin = max(psiMin,psiIf[nei[face]]);
+            
+            sumPhiBDTmp += phiBDIf[face];
+
+            scalar phiCorrf = phiCorrIf[face];
+            if(phiCorrf > 0.0)
+            {
+                sumPhipTmp += phiCorrf;
+            }
+            else
+            {
+                mSumPhimTmp -= phiCorrf;
+            }
+        }
+
+        for(label i = 0; i<nSize; i++)
+        {
+            label face = losort[nStart + i];
+
+            psiMax = max(psiMax,psiIf[own[face]]);
+            psiMin = max(psiMin,psiIf[own[face]]);
+
+            sumPhiBDTmp -= phiBDIf[face];
+
+            scalar phiCorrf = phiCorrIf[face];
+            if(phiCorrf > 0.0)
+            {
+                mSumPhimTmp += phiCorrf;
+            }
+            else
+            {
+                sumPhipTmp -= phiCorrf;
+            }
+        }
+
+        psiMaxn[id] = psiMax;
+        psiMinn[id] = psiMin;
+        sumPhiBD[id] = sumPhiBDTmp;
+        sumPhip[id]  = sumPhipTmp;
+        mSumPhim[id] = mSumPhimTmp;
+    }
+};
+
+struct patchMinMaxMULESFunctor
+{
+    const label* neiStart;
+    const label* losort;
+    const label* pCell;
+
+    const scalar* psiPf;
+    const scalar* phiBDPf;
+    const scalar* phiCorrPf;
+
+    scalar* psiMaxn;
+    scalar* psiMinn;
+    scalar* sumPhiBD;
+    scalar* sumPhip;
+    scalar* mSumPhim;
+
+    patchMinMaxMULESFunctor
+    (
+        const label* _neiStart,
+        const label* _losort,
+        const label* _pCell,
+
+        const scalar* _psiPf,
+        const scalar* _phiBDPf,
+        const scalar* _phiCorrPf,
+
+        scalar* _psiMaxn,
+        scalar* _psiMinn,
+        scalar* _sumPhiBD,
+        scalar* _sumPhip,
+        scalar* _mSumPhim
+    ):
+        neiStart(_neiStart),
+        losort(_losort),
+        pCell(_pCell),
+
+        psiPf(_psiPf),
+        phiBDPf(_phiBDPf),
+        phiCorrPf(_phiCorrPf),
+
+        psiMaxn(_psiMaxn),
+        psiMinn(_psiMinn),
+        sumPhiBD(_sumPhiBD),
+        sumPhip(_sumPhip),
+        mSumPhim(_mSumPhim)
+    {}
+
+    __HOST____DEVICE__
+    void operator()(const label& id)
+    {
+        label nStart = neiStart[id];
+        label nSize = neiStart[id+1] - nStart;
+
+        label globalId = pCell[id];
+
+        scalar psiMax = psiMaxn[globalId];
+        scalar psiMin = psiMinn[globalId];
+        scalar sumPhiBDTmp = sumPhiBD[globalId];
+        scalar sumPhipTmp = sumPhip[globalId];
+        scalar mSumPhimTmp = mSumPhim[globalId];
+
+        for(label i = 0; i<nSize; i++)
+        {
+            label face = losort[nStart + i];
+
+            psiMax = max(psiMax,psiPf[face]);
+            psiMin = min(psiMin,psiPf[face]);
+
+            sumPhiBDTmp += phiBDPf[face];
+
+            scalar phiCorrf = phiCorrPf[face];
+
+            if (phiCorrf > 0.0)
+            {
+                sumPhipTmp += phiCorrf;
+            }
+            else
+            {
+                mSumPhimTmp -= phiCorrf;
+            }
+        }
+
+        psiMaxn[globalId] = psiMax;
+        psiMinn[globalId] = psiMin;
+        sumPhiBD[globalId] = sumPhiBDTmp;
+        sumPhip[globalId] = sumPhipTmp;
+        mSumPhim[globalId] = mSumPhimTmp;
+    }
+};
+
+struct patchLambdaPfMULESFunctor
+{
+    template<class Tuple>
+    __HOST____DEVICE__
+    scalar operator()(const scalar& phiCorrfPf, const Tuple& t)
+    {
+        const scalar& lambdaPf = thrust::get<0>(t);
+        const scalar& phiBDPf = thrust::get<1>(t);
+        const scalar& phiCorrPf = thrust::get<2>(t);
+
+        scalar out = lambdaPf;
+
+        // Limit outlet faces only
+        if ((phiBDPf + phiCorrPf) > SMALL*SMALL)
+        {
+            if (phiCorrfPf > 0.0)
+            {
+                out = min(lambdaPf, thrust::get<3>(t));
+            }
+            else
+            {
+                out = min(lambdaPf, thrust::get<4>(t));
+            }
+        }
+        
+        return out;
+    }
+};
+
+}
 
 template<class RdeltaTType, class RhoType, class SpType, class SuType>
 void Foam::MULES::limiter
@@ -163,6 +403,11 @@ void Foam::MULES::limiter
 
     const labelgpuList& owner = mesh.owner();
     const labelgpuList& neighb = mesh.neighbour();
+    const labelgpuList& losort = mesh.lduAddr().losortAddr();
+
+    const labelgpuList& ownStart = mesh.lduAddr().ownerStartAddr();
+    const labelgpuList& losortStart = mesh.lduAddr().losortStartAddr();
+
     tmp<volScalarField::DimensionedInternalField> tVsc = mesh.Vsc();
     const scalargpuField& V = tVsc().getField();
 
@@ -203,82 +448,60 @@ void Foam::MULES::limiter
     scalargpuField sumPhip(psiIf.size(), VSMALL);
     scalargpuField mSumPhim(psiIf.size(), VSMALL);
 
-    forAll(phiCorrIf, facei)
-    {
-        label own = owner[facei];
-        label nei = neighb[facei];
+    thrust::for_each
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+psiIf.size(),
+        limiterMULESFunctor
+        (
+            owner.data(),
+            neighb.data(),
+            ownStart.data(),
+            losortStart.data(),
+            losort.data(),
+            psiIf.data(),
+            phiBDIf.data(),
+            phiCorrIf.data(),
+            psiMaxn.data(),
+            psiMinn.data(),
+            sumPhiBD.data(),
+            sumPhip.data(),
+            mSumPhim.data()
+        )
+    );
 
-        psiMaxn[own] = max(psiMaxn[own], psiIf[nei]);
-        psiMinn[own] = min(psiMinn[own], psiIf[nei]);
-
-        psiMaxn[nei] = max(psiMaxn[nei], psiIf[own]);
-        psiMinn[nei] = min(psiMinn[nei], psiIf[own]);
-
-        sumPhiBD[own] += phiBDIf[facei];
-        sumPhiBD[nei] -= phiBDIf[facei];
-
-        scalar phiCorrf = phiCorrIf[facei];
-
-        if (phiCorrf > 0.0)
-        {
-            sumPhip[own] += phiCorrf;
-            mSumPhim[nei] += phiCorrf;
-        }
-        else
-        {
-            mSumPhim[own] -= phiCorrf;
-            sumPhip[nei] -= phiCorrf;
-        }
-    }
 
     forAll(phiCorrBf, patchi)
     {
         const fvPatchScalarField& psiPf = psiBf[patchi];
-        const scalarField& phiBDPf = phiBDBf[patchi];
-        const scalarField& phiCorrPf = phiCorrBf[patchi];
+        const scalargpuField& phiBDPf = phiBDBf[patchi];
+        const scalargpuField& phiCorrPf = phiCorrBf[patchi];
 
-        const labelList& pFaceCells = mesh.boundary()[patchi].faceCells();
+        const labelgpuList& pcells = mesh.lduAddr().patchSortCells(patchi);
 
-        if (psiPf.coupled())
-        {
-            const scalarField psiPNf(psiPf.patchNeighbourField());
+        const labelgpuList& losort = mesh.lduAddr().patchSortAddr(patchi);
+        const labelgpuList& losortStart = mesh.lduAddr().patchSortStartAddr(patchi);
 
-            forAll(phiCorrPf, pFacei)
-            {
-                label pfCelli = pFaceCells[pFacei];
+        thrust::for_each
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+pcells.size(),
+            patchMinMaxMULESFunctor
+            (
+                losortStart.data(),
+                losort.data(),
+                pcells.data(),
+                psiPf.coupled()?psiPf.patchNeighbourField()().data():psiPf.data(),
+                phiBDPf.data(),
+                phiCorrPf.data(),
+                psiMaxn.data(),
+                psiMinn.data(),
+                sumPhiBD.data(),
+                sumPhip.data(),
+                mSumPhim.data()
+            )
+        );
 
-                psiMaxn[pfCelli] = max(psiMaxn[pfCelli], psiPNf[pFacei]);
-                psiMinn[pfCelli] = min(psiMinn[pfCelli], psiPNf[pFacei]);
-            }
-        }
-        else
-        {
-            forAll(phiCorrPf, pFacei)
-            {
-                label pfCelli = pFaceCells[pFacei];
-
-                psiMaxn[pfCelli] = max(psiMaxn[pfCelli], psiPf[pFacei]);
-                psiMinn[pfCelli] = min(psiMinn[pfCelli], psiPf[pFacei]);
-            }
-        }
-
-        forAll(phiCorrPf, pFacei)
-        {
-            label pfCelli = pFaceCells[pFacei];
-
-            sumPhiBD[pfCelli] += phiBDPf[pFacei];
-
-            scalar phiCorrf = phiCorrPf[pFacei];
-
-            if (phiCorrf > 0.0)
-            {
-                sumPhip[pfCelli] += phiCorrf;
-            }
-            else
-            {
-                mSumPhim[pfCelli] -= phiCorrf;
-            }
-        }
     }
 
     psiMaxn = min(psiMaxn, psiMax);
@@ -295,19 +518,19 @@ void Foam::MULES::limiter
         psiMaxn =
             V
            *(
-               (rho.field()*rDeltaT - Sp.field())*psiMaxn
-             - Su.field()
+               (rho.getField()*rDeltaT - Sp.getField())*psiMaxn
+             - Su.getField()
             )
-          - (V0().field()*rDeltaT)*rho.oldTime().field()*psi0
+          - (V0().getField()*rDeltaT)*rho.oldTime().getField()*psi0
           + sumPhiBD;
 
         psiMinn =
             V
            *(
-               Su.field()
-             - (rho.field()*rDeltaT - Sp.field())*psiMinn
+               Su.getField()
+             - (rho.getField()*rDeltaT - Sp.getField())*psiMinn
             )
-          + (V0().field()*rDeltaT)*rho.oldTime().field()*psi0
+          + (V0().getField()*rDeltaT)*rho.oldTime().getField()*psi0
           - sumPhiBD;
     }
     else
@@ -315,120 +538,141 @@ void Foam::MULES::limiter
         psiMaxn =
             V
            *(
-               (rho.field()*rDeltaT - Sp.field())*psiMaxn
-             - Su.field()
-             - (rho.oldTime().field()*rDeltaT)*psi0
+               (rho.getField()*rDeltaT - Sp.getField())*psiMaxn
+             - Su.getField()
+             - (rho.oldTime().getField()*rDeltaT)*psi0
             )
           + sumPhiBD;
 
         psiMinn =
             V
            *(
-               Su.field()
-             - (rho.field()*rDeltaT - Sp.field())*psiMinn
-             + (rho.oldTime().field()*rDeltaT)*psi0
+               Su.getField()
+             - (rho.getField()*rDeltaT - Sp.getField())*psiMinn
+             + (rho.oldTime().getField()*rDeltaT)*psi0
             )
           - sumPhiBD;
     }
 
-    scalarField sumlPhip(psiIf.size());
-    scalarField mSumlPhim(psiIf.size());
+    scalargpuField sumlPhip(psiIf.size());
+    scalargpuField mSumlPhim(psiIf.size());
 
     for (int j=0; j<nLimiterIter; j++)
     {
         sumlPhip = 0.0;
         mSumlPhim = 0.0;
 
-        forAll(lambdaIf, facei)
-        {
-            label own = owner[facei];
-            label nei = neighb[facei];
+        thrust::for_each
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+sumlPhip.size(),
+            sumlPhiMULESFunctor
+            (
+                owner.data(),
+                neighb.data(),
+                ownStart.data(),
+                losortStart.data(),
+                losort.data(),
+                lambdaIf.data(),
+                phiCorrIf.data(),
+                sumlPhip.data(),
+                mSumlPhim.data()
+            )
+        );
 
-            scalar lambdaPhiCorrf = lambdaIf[facei]*phiCorrIf[facei];
-
-            if (lambdaPhiCorrf > 0.0)
-            {
-                sumlPhip[own] += lambdaPhiCorrf;
-                mSumlPhim[nei] += lambdaPhiCorrf;
-            }
-            else
-            {
-                mSumlPhim[own] -= lambdaPhiCorrf;
-                sumlPhip[nei] -= lambdaPhiCorrf;
-            }
-        }
 
         forAll(lambdaBf, patchi)
         {
-            scalarField& lambdaPf = lambdaBf[patchi];
-            const scalarField& phiCorrfPf = phiCorrBf[patchi];
+            scalargpuField& lambdaPf = lambdaBf[patchi];
+            const scalargpuField& phiCorrfPf = phiCorrBf[patchi];
 
-            const labelList& pFaceCells = mesh.boundary()[patchi].faceCells();
+            const labelgpuList& pcells = mesh.lduAddr().patchSortCells(patchi);
 
-            forAll(lambdaPf, pFacei)
-            {
-                label pfCelli = pFaceCells[pFacei];
+            const labelgpuList& losort = mesh.lduAddr().patchSortAddr(patchi);
+            const labelgpuList& losortStart = mesh.lduAddr().patchSortStartAddr(patchi);
 
-                scalar lambdaPhiCorrf = lambdaPf[pFacei]*phiCorrfPf[pFacei];
-
-                if (lambdaPhiCorrf > 0.0)
-                {
-                    sumlPhip[pfCelli] += lambdaPhiCorrf;
-                }
-                else
-                {
-                    mSumlPhim[pfCelli] -= lambdaPhiCorrf;
-                }
-            }
+            thrust::for_each
+            (
+                thrust::make_counting_iterator(0),
+                thrust::make_counting_iterator(0)+pcells.size(),
+                patchSumlPhiMULESFunctor
+                (
+                    losortStart.data(),
+                    losort.data(),
+                    pcells.data(),
+                    lambdaPf.data(),
+                    phiCorrfPf.data(),
+                    sumlPhip.data(),
+                    mSumlPhim.data()
+                )
+            );
         }
 
-        forAll(sumlPhip, celli)
-        {
-            sumlPhip[celli] =
-                max(min
-                (
-                    (sumlPhip[celli] + psiMaxn[celli])
-                   /(mSumPhim[celli] - SMALL),
-                    1.0), 0.0
-                );
+        thrust::transform
+        (
+            sumlPhip.begin(),
+            sumlPhip.end(),
+            thrust::make_zip_iterator(thrust::make_tuple
+            (
+                psiMaxn.begin(),
+                mSumPhim.begin()
+            )),
+            sumlPhip.begin(),
+            sumlPhipFinalMULESFunctor<false>()
+        );
 
-            mSumlPhim[celli] =
-                max(min
-                (
-                    (mSumlPhim[celli] + psiMinn[celli])
-                   /(sumPhip[celli] + SMALL),
-                    1.0), 0.0
-                );
-        }
+        thrust::transform
+        (
+            mSumlPhim.begin(),
+            mSumlPhim.end(),
+            thrust::make_zip_iterator(thrust::make_tuple
+            (
+                psiMinn.begin(),
+                sumPhip.begin()
+            )),
+            mSumlPhim.begin(),
+            sumlPhipFinalMULESFunctor<true>()
+        );
 
-        const scalarField& lambdam = sumlPhip;
-        const scalarField& lambdap = mSumlPhim;
+        const scalargpuField& lambdam = sumlPhip;
+        const scalargpuField& lambdap = mSumlPhim;
 
-        forAll(lambdaIf, facei)
-        {
-            if (phiCorrIf[facei] > 0.0)
-            {
-                lambdaIf[facei] = min
+        thrust::transform
+        (
+            phiCorrIf.begin(),
+            phiCorrIf.end(),
+            thrust::make_zip_iterator(thrust::make_tuple
+            (
+                lambdaIf.begin(),
+                thrust::make_permutation_iterator
                 (
-                    lambdaIf[facei],
-                    min(lambdap[owner[facei]], lambdam[neighb[facei]])
-                );
-            }
-            else
-            {
-                lambdaIf[facei] = min
+                    lambdap.begin(),
+                    owner.begin()
+                ),
+                thrust::make_permutation_iterator
                 (
-                    lambdaIf[facei],
-                    min(lambdam[owner[facei]], lambdap[neighb[facei]])
-                );
-            }
-        }
-
+                    lambdam.begin(),
+                    neighb.begin()
+                ),
+                thrust::make_permutation_iterator
+                (
+                    lambdam.begin(),
+                    owner.begin()
+                ),
+                thrust::make_permutation_iterator
+                (
+                    lambdap.begin(),
+                    neighb.begin()
+                )
+            )),
+            lambdaIf.begin(),
+            lambdaIfMULESFunctor()
+        );
 
         forAll(lambdaBf, patchi)
         {
             fvsPatchScalarField& lambdaPf = lambdaBf[patchi];
-            const scalarField& phiCorrfPf = phiCorrBf[patchi];
+            const scalargpuField& phiCorrfPf = phiCorrBf[patchi];
             const fvPatchScalarField& psiPf = psiBf[patchi];
 
             if (isA<wedgeFvPatch>(mesh.boundary()[patchi]))
@@ -437,51 +681,62 @@ void Foam::MULES::limiter
             }
             else if (psiPf.coupled())
             {
-                const labelList& pFaceCells =
+                const labelgpuList& pFaceCells =
                     mesh.boundary()[patchi].faceCells();
 
-                forAll(lambdaPf, pFacei)
-                {
-                    label pfCelli = pFaceCells[pFacei];
+                thrust::transform
+                (
+                    phiCorrfPf.begin(),
+                    phiCorrfPf.end(),
+                    thrust::make_zip_iterator(thrust::make_tuple
+                    (
+                        lambdaPf.begin(),
+                        thrust::make_permutation_iterator
+                        (
+                            lambdap.begin(),
+                            pFaceCells.begin()
+                        ),
+                        thrust::make_permutation_iterator
+                        (
+                            lambdam.begin(),
+                            pFaceCells.begin()
+                        )
+                    )),
+                    lambdaPf.begin(),
+                    coupledPatchLambdaPfMULESFunctor()
+                );
 
-                    if (phiCorrfPf[pFacei] > 0.0)
-                    {
-                        lambdaPf[pFacei] =
-                            min(lambdaPf[pFacei], lambdap[pfCelli]);
-                    }
-                    else
-                    {
-                        lambdaPf[pFacei] =
-                            min(lambdaPf[pFacei], lambdam[pfCelli]);
-                    }
-                }
             }
             else
             {
-                const labelList& pFaceCells =
+                const labelgpuList& pFaceCells =
                     mesh.boundary()[patchi].faceCells();
-                const scalarField& phiBDPf = phiBDBf[patchi];
-                const scalarField& phiCorrPf = phiCorrBf[patchi];
+                const scalargpuField& phiBDPf = phiBDBf[patchi];
+                const scalargpuField& phiCorrPf = phiCorrBf[patchi];
 
-                forAll(lambdaPf, pFacei)
-                {
-                    // Limit outlet faces only
-                    if ((phiBDPf[pFacei] + phiCorrPf[pFacei]) > SMALL*SMALL)
-                    {
-                        label pfCelli = pFaceCells[pFacei];
-
-                        if (phiCorrfPf[pFacei] > 0.0)
-                        {
-                            lambdaPf[pFacei] =
-                                min(lambdaPf[pFacei], lambdap[pfCelli]);
-                        }
-                        else
-                        {
-                            lambdaPf[pFacei] =
-                                min(lambdaPf[pFacei], lambdam[pfCelli]);
-                        }
-                    }
-                }
+                thrust::transform
+                (
+                    phiCorrfPf.begin(),
+                    phiCorrfPf.end(),
+                    thrust::make_zip_iterator(thrust::make_tuple
+                    (
+                        lambdaPf.begin(),
+                        phiBDPf.begin(),
+                        phiCorrPf.begin(),
+                        thrust::make_permutation_iterator
+                        (
+                            lambdap.begin(),
+                            pFaceCells.begin()
+                        ),
+                        thrust::make_permutation_iterator
+                        (
+                            lambdam.begin(),
+                            pFaceCells.begin()
+                        )
+                    )),
+                    lambdaPf.begin(),
+                    patchLambdaPfMULESFunctor()
+                );
             }
         }
 

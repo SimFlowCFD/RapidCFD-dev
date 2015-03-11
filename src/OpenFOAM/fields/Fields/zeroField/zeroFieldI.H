@@ -35,7 +35,7 @@ inline Foam::scalar Foam::zeroField::operator[](const label) const
 
 
 __HOST____DEVICE__
-inline Foam::zeroField Foam::zeroField::field() const
+inline Foam::zeroField Foam::zeroField::getField() const
 {
     return zeroField();
 }

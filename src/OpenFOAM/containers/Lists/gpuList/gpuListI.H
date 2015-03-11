@@ -170,7 +170,28 @@ void Foam::gpuList<T>::transfer(gpuList<T>& a)
     }
 }
 
+template<class T>
+void Foam::gpuList<T>::setDelegate(gpuList<T>& a, label size, label start)
+{ 
+    if (this->v_) delete this->v_;
+    this->v_ = 0;
 
+    this->delegate_ = &a;
+    this->size_ = size;
+    this->start_ = start;
+}
+
+template<class T>
+void Foam::gpuList<T>::setDelegate(gpuList<T>& a, label size)
+{ 
+    setDelegate(a,size,0);
+}
+
+template<class T>
+void Foam::gpuList<T>::setDelegate(gpuList<T>& a)
+{ 
+    setDelegate(a,a.size(),0);
+}
 
 template<class T>
 inline T* Foam::gpuList<T>::data()

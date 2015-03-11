@@ -223,7 +223,7 @@ struct limiterCMULESFunctor
             label face = oStart + i;
 
             psiMax = max(psiMax,psiIf[nei[face]]);
-            psiMin = max(psiMin,psiIf[nei[face]]);
+            psiMin = min(psiMin,psiIf[nei[face]]);
 
             scalar phiCorrf = phiCorrIf[face];
             if(phiCorrf > 0.0)
@@ -241,7 +241,7 @@ struct limiterCMULESFunctor
             label face = losort[nStart + i];
 
             psiMax = max(psiMax,psiIf[own[face]]);
-            psiMin = max(psiMin,psiIf[own[face]]);
+            psiMin = min(psiMin,psiIf[own[face]]);
 
             scalar phiCorrf = phiCorrIf[face];
             if(phiCorrf > 0.0)
@@ -519,6 +519,16 @@ void Foam::MULES::limiterCorr
     scalargpuField sumlPhip(psiIf.size());
     scalargpuField mSumlPhim(psiIf.size());
 
+    bool hasCoupledPatches = false;
+    forAll(lambdaBf, patchi)
+    {
+        if(lambdaBf[patchi].coupled())
+        {
+            hasCoupledPatches = true;
+            break;
+        }
+    }
+
     for (int j=0; j<nLimiterIter; j++)
     {
         sumlPhip = 0.0;
@@ -698,7 +708,10 @@ void Foam::MULES::limiterCorr
             }
         }
 
-        syncTools::syncFaceList(mesh, allLambda, minEqOp<scalar>());
+        if(hasCoupledPatches)
+        {
+            syncTools::syncFaceList(mesh, allLambda, minEqOp<scalar>());
+        }
     }
 }
 

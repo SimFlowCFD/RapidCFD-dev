@@ -67,6 +67,10 @@ public:
         inline Xfer<gpuList<T> > xfer();
         void transfer(gpuList<T>&);
 
+        void setDelegate(gpuList<T>&);
+        void setDelegate(gpuList<T>&,label);
+        void setDelegate(gpuList<T>&,label,label);
+
         //Requires iterator to have sufficient capacity
         template<class Iterator>
         void copyInto(Iterator it) const;

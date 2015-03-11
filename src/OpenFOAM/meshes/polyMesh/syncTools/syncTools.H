@@ -408,8 +408,8 @@ public:
                 const CombineOp& cop
             )
             {
-                label start = mesh.nFaces()-mesh.nInternalFaces();
-                label size = mesh.nInternalFaces();
+                label size = mesh.nFaces()-mesh.nInternalFaces();
+                label start = mesh.nInternalFaces();
                 
                 List<T> bndValues(size);
 

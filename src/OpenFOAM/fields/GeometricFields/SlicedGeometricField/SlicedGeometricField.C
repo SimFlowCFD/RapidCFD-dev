@@ -160,7 +160,7 @@ slicedBoundaryField
                     DimensionedField<Type, GeoMesh>::null()
                 )
             );
-            bf[patchi].gpuList<Type>::operator=(bField[patchi]);
+            bf[patchi].setDelegate(bField[patchi]);
         }
     }
 
@@ -195,9 +195,9 @@ DimensionedInternalField::DimensionedInternalField
     )
 {
     // Set the internalField to the slice of the complete field
-    GeometricField<Type, PatchField, GeoMesh>::DimensionedInternalField::getField()=
+    GeometricField<Type, PatchField, GeoMesh>::DimensionedInternalField::getField().setDelegate
     (
-        gpuField<Type>(iField, GeoMesh::size(mesh))
+        const_cast<gpuField<Type>&>(iField), GeoMesh::size(mesh)
     );
 }
 
@@ -229,9 +229,9 @@ SlicedGeometricField
     )
 {
     // Set the internalField to the slice of the complete field
-    GeometricField<Type, PatchField, GeoMesh>::internalField()=
+    GeometricField<Type, PatchField, GeoMesh>::internalField().setDelegate
     (
-        gpuField<Type>(completeField, GeoMesh::size(mesh))
+        const_cast<gpuField<Type>&>(completeField), GeoMesh::size(mesh)
     );
 
     correctBoundaryConditions();
@@ -273,9 +273,9 @@ SlicedGeometricField
     )
 {
     // Set the internalField to the slice of the complete field
-    GeometricField<Type, PatchField, GeoMesh>::internalField()=
+    GeometricField<Type, PatchField, GeoMesh>::internalField().setDelegate
     (
-        gpuField<Type>(completeIField, GeoMesh::size(mesh))
+        const_cast<gpuField<Type>&>(completeIField), GeoMesh::size(mesh)
     );
 
     correctBoundaryConditions();
@@ -307,7 +307,7 @@ SlicedGeometricField
     )
 {
     // Set the internalField to the supplied internal field
-    GeometricField<Type, PatchField, GeoMesh>::internalField()=(gf.internalField());
+    GeometricField<Type, PatchField, GeoMesh>::internalField().setDelegate(gf.internalField());
 
     correctBoundaryConditions();
 }
@@ -336,7 +336,7 @@ SlicedGeometricField
     )
 {
     // Set the internalField to the supplied internal field
-    GeometricField<Type, PatchField, GeoMesh>::internalField()=(gf.internalField());
+    GeometricField<Type, PatchField, GeoMesh>::internalField().setDelegate(gf.internalField());
 }
 
 
@@ -352,9 +352,6 @@ template
 Foam::SlicedGeometricField<Type, PatchField, SlicedPatchField, GeoMesh>::
 ~SlicedGeometricField()
 {
-    // Set the internalField storage pointer to NULL before its destruction
-    // to protect the field it a slice of.
-    //UList<Type>::operator=(UList<Type>(NULL, 0));
 }
 
 
@@ -368,9 +365,6 @@ template
 Foam::SlicedGeometricField<Type, PatchField, SlicedPatchField, GeoMesh>::
 DimensionedInternalField::~DimensionedInternalField()
 {
-    // Set the internalField storage pointer to NULL before its destruction
-    // to protect the field it a slice of.
-    //UList<Type>::operator=(UList<Type>(NULL, 0));
 }
 
 

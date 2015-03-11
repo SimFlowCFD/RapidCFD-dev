@@ -214,7 +214,7 @@ struct limiterMULESFunctor
             label face = oStart + i;
 
             psiMax = max(psiMax,psiIf[nei[face]]);
-            psiMin = max(psiMin,psiIf[nei[face]]);
+            psiMin = min(psiMin,psiIf[nei[face]]);
             
             sumPhiBDTmp += phiBDIf[face];
 
@@ -234,7 +234,7 @@ struct limiterMULESFunctor
             label face = losort[nStart + i];
 
             psiMax = max(psiMax,psiIf[own[face]]);
-            psiMin = max(psiMin,psiIf[own[face]]);
+            psiMin = min(psiMin,psiIf[own[face]]);
 
             sumPhiBDTmp -= phiBDIf[face];
 

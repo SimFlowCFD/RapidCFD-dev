@@ -519,16 +519,6 @@ void Foam::MULES::limiterCorr
     scalargpuField sumlPhip(psiIf.size());
     scalargpuField mSumlPhim(psiIf.size());
 
-    bool hasCoupledPatches = false;
-    forAll(lambdaBf, patchi)
-    {
-        if(lambdaBf[patchi].coupled())
-        {
-            hasCoupledPatches = true;
-            break;
-        }
-    }
-
     for (int j=0; j<nLimiterIter; j++)
     {
         sumlPhip = 0.0;
@@ -708,10 +698,7 @@ void Foam::MULES::limiterCorr
             }
         }
 
-        if(hasCoupledPatches)
-        {
-            syncTools::syncFaceList(mesh, allLambda, minEqOp<scalar>());
-        }
+        syncTools::syncFaceList(mesh, allLambda, minOp<scalar>());
     }
 }
 

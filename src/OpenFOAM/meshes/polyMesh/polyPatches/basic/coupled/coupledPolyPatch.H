@@ -301,7 +301,7 @@ public:
                 return forwardT_;
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
                 return gForwardT_;
             }
@@ -312,7 +312,7 @@ public:
                 return reverseT_;
             }
 
-            virtual const tensorgpuField& gReverseT() const
+            virtual const tensorgpuField& getReverseT() const
             {
                 return gReverseT_;
             }

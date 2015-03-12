@@ -80,6 +80,7 @@ public:
         void operator=(const UList<T>&);
         void operator=(const List<T>&);
 
+        std::streamsize byteSize() const;
         inline T* data();
         inline const T* data() const;
 

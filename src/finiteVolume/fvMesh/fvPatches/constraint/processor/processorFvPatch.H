@@ -138,9 +138,9 @@ public:
             return procPolyPatch_.forwardT();
         }
 
-        virtual const tensorgpuField& gForwardT() const
+        virtual const tensorgpuField& getForwardT() const
         {
-            return procPolyPatch_.gForwardT();
+            return procPolyPatch_.getForwardT();
         }
 
         //- Return neighbour-cell transformation tensor.
@@ -149,9 +149,9 @@ public:
             return procPolyPatch_.reverseT();
         }
 
-        virtual const tensorgpuField& gReverseT() const
+        virtual const tensorgpuField& getReverseT() const
         {
-            return procPolyPatch_.gReverseT();
+            return procPolyPatch_.getReverseT();
         }
 
         //- Return delta (P to N) vectors across coupled patch

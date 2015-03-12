@@ -167,6 +167,15 @@ public:
                 const TransformOp& top
             );
 
+            template<class T, class CombineOp, class TransformOp>
+            static void syncBoundaryFaceList
+            (
+                const polyMesh&,
+                gpuList<T>&,
+                const CombineOp& cop,
+                const TransformOp& top
+            );
+
 
         // Synchronise point-wise data
 
@@ -408,12 +417,12 @@ public:
                 const CombineOp& cop
             )
             {
-                label size = mesh.nFaces()-mesh.nInternalFaces();
-                label start = mesh.nInternalFaces();
-                
-                List<T> bndValues(size);
-
-                thrust::copy(l.begin()+start,l.end(),bndValues.begin());
+                gpuList<T> bndValues
+                (
+                    l,
+                    mesh.nFaces()-mesh.nInternalFaces(),
+                    mesh.nInternalFaces()
+                );
 
                 syncBoundaryFaceList
                 (
@@ -422,8 +431,6 @@ public:
                     cop,
                     mapDistribute::transform()
                 );
-
-                thrust::copy(bndValues.begin(),bndValues.end(),l.begin()+start);
             }
 
             //- Synchronize locations on all mesh faces.

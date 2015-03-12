@@ -304,7 +304,7 @@ void Foam::processorFvPatchField<Type>::evaluate
 
         if (doTransform())
         {
-            transform(*this, procPatch_.gForwardT(), *this);
+            transform(*this, procPatch_.getForwardT(), *this);
         }
     }
 }
@@ -383,12 +383,22 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
 namespace Foam
 {
 template<class Type>
-struct processorFvPatchFunctor{
+struct processorFvPatchFunctor
+{
     const scalar* coeffs;
     const Type* val;
-    processorFvPatchFunctor(const scalar* _coeffs, const Type* _val):coeffs(_coeffs),val(_val){}
+    processorFvPatchFunctor
+    (
+        const scalar* _coeffs, 
+        const Type* _val
+    ):
+        coeffs(_coeffs),
+        val(_val)
+    {}
+
     __HOST____DEVICE__
-    Type operator()(const label& id){
+    Type operator()(const label& id)
+    {
         return -coeffs[id]*val[id];
     }
 };
@@ -431,16 +441,17 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
         // Multiply the field by coefficients and add into the result
-/*
-        forAll(faceCells, elemI)
-        {
-            result[faceCells[elemI]] -= coeffs[elemI]*scalarReceiveBuf_[elemI];
-        }
-*/
-        matrixPatchOperation(this->patch().index(),
-                             result,
-                             this->patch().boundaryMesh().mesh().lduAddr(),
-                             processorFvPatchFunctor<scalar>(coeffs.data(),scalargpuReceiveBuf_.data()));
+        matrixPatchOperation
+        (
+            this->patch().index(),
+            result,
+            this->patch().boundaryMesh().mesh().lduAddr(),
+            processorFvPatchFunctor<scalar>
+            (
+                coeffs.data(),
+                scalargpuReceiveBuf_.data()
+            )
+        );
     }
     else
     {
@@ -453,16 +464,17 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
         transformCoupleField(pnf, cmpt);
 
         // Multiply the field by coefficients and add into the result
-/*
-        forAll(faceCells, elemI)
-        {
-            result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-        }
-*/
-        matrixPatchOperation(this->patch().index(),
-                             result,
-                             this->patch().boundaryMesh().mesh().lduAddr(),
-                             processorFvPatchFunctor<scalar>(coeffs.data(),pnf.data()));
+        matrixPatchOperation
+        (
+            this->patch().index(),
+            result,
+            this->patch().boundaryMesh().mesh().lduAddr(),
+            processorFvPatchFunctor<scalar>
+            (
+                coeffs.data(),
+                pnf.data()
+            )
+       );
     }
 
     const_cast<processorFvPatchField<Type>&>(*this).updatedMatrix() = true;
@@ -566,16 +578,17 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
         transformCoupleField(gpuReceiveBuf_);
 
         // Multiply the field by coefficients and add into the result
-/*
-        forAll(faceCells, elemI)
-        {
-            result[faceCells[elemI]] -= coeffs[elemI]*receiveBuf_[elemI];
-        }
-*/
-        matrixPatchOperation(this->patch().index(),
-                             result,
-                             this->patch().boundaryMesh().mesh().lduAddr(),
-                             processorFvPatchFunctor<Type>(coeffs.data(),gpuReceiveBuf_.data()));
+        matrixPatchOperation
+        (
+            this->patch().index(),
+            result,
+            this->patch().boundaryMesh().mesh().lduAddr(),
+            processorFvPatchFunctor<Type>
+            (
+                coeffs.data(),
+                gpuReceiveBuf_.data()
+            )
+        );
     }
     else
     {
@@ -588,16 +601,17 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
         transformCoupleField(pnf);
 
         // Multiply the field by coefficients and add into the result
-/*
-        forAll(faceCells, elemI)
-        {
-            result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-        }
-*/
-        matrixPatchOperation(this->patch().index(),
-                             result,
-                             this->patch().boundaryMesh().mesh().lduAddr(),
-                             processorFvPatchFunctor<Type>(coeffs.data(),pnf.data()));
+        matrixPatchOperation
+        (
+            this->patch().index(),
+            result,
+            this->patch().boundaryMesh().mesh().lduAddr(),
+            processorFvPatchFunctor<Type>
+            (
+                coeffs.data(),
+                pnf.data()
+            )
+        );
     }
 
     const_cast<processorFvPatchField<Type>&>(*this).updatedMatrix() = true;

@@ -85,7 +85,7 @@ public:
 
             //- Return face transformation tensor
             virtual const tensorField& forwardT() const = 0;
-            virtual const tensorgpuField& gForwardT() const = 0;
+            virtual const tensorgpuField& getForwardT() const = 0;
 
             //- Return rank of component for transform
             virtual int rank() const = 0;
@@ -126,7 +126,7 @@ void Foam::processorLduInterfaceField::transformCoupleField
         }
         else
         {
-            transform(f, gForwardT(), f);
+            transform(f, getForwardT(), f);
         }
     }
 }

@@ -184,9 +184,9 @@ public:
                 return procInterface_.forwardT();
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
-                return procInterface_.gForwardT();
+                return procInterface_.getForwardT();
             }
 
             //- Return rank of component for transform

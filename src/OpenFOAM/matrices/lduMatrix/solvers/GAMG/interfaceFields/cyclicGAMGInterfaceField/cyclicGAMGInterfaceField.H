@@ -127,9 +127,9 @@ public:
                 return cyclicInterface_.forwardT();
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
-                return cyclicInterface_.gForwardT();
+                return cyclicInterface_.getForwardT();
             }
 
             //- Return neighbour-cell transformation tensor
@@ -138,9 +138,9 @@ public:
                 return cyclicInterface_.reverseT();
             }
 
-            virtual const tensorgpuField& gReverseT() const
+            virtual const tensorgpuField& getReverseT() const
             {
-                return cyclicInterface_.gReverseT();
+                return cyclicInterface_.getReverseT();
             }
 
             //- Return rank of component for transform

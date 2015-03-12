@@ -740,7 +740,7 @@ void Foam::MULES::limiter
             }
         }
 
-        syncTools::syncFaceList(mesh, allLambda, minEqOp<scalar>());
+        syncTools::syncFaceList(mesh, allLambda, minOp<scalar>());
     }
 }
 

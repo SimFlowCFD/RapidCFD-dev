@@ -231,6 +231,19 @@ Foam::gpuField<Type>::gpuField(const gpuField<Type>& f, label size, label start)
 
 
 template<class Type>
+Foam::gpuField<Type>::gpuField(const gpuList<Type>& l, label size)
+:
+    gpuList<Type>(l, size)
+{}
+
+template<class Type>
+Foam::gpuField<Type>::gpuField(const gpuList<Type>& l, label size, label start)
+:
+    gpuList<Type>(l, size, start)
+{}
+
+
+template<class Type>
 Foam::gpuField<Type>::gpuField(const Xfer<gpuList<Type> >& f)
 :
     gpuList<Type>(f)

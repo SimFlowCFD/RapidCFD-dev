@@ -1434,6 +1434,149 @@ void Foam::syncTools::syncBoundaryFaceList
 }
 
 
+template<class T, class CombineOp, class TransformOp>
+void Foam::syncTools::syncBoundaryFaceList
+(
+    const polyMesh& mesh,
+    gpuList<T>& faceValues,
+    const CombineOp& cop,
+    const TransformOp& top
+)
+{
+    const label nBFaces = mesh.nFaces() - mesh.nInternalFaces();
+
+    if (faceValues.size() != nBFaces)
+    {
+        FatalErrorIn
+        (
+            "syncTools<class T, class CombineOp>::syncBoundaryFaceList"
+            "(const polyMesh&, gpuList<T>&, const CombineOp&"
+            ", const bool)"
+        )   << "Number of values " << faceValues.size()
+            << " is not equal to the number of boundary faces in the mesh "
+            << nBFaces << abort(FatalError);
+    }
+
+    const polyBoundaryMesh& patches = mesh.boundaryMesh();
+
+    if (Pstream::parRun())
+    {
+        PstreamBuffers pBufs(Pstream::nonBlocking);
+
+        // Send
+
+        forAll(patches, patchI)
+        {
+            if
+            (
+                isA<processorPolyPatch>(patches[patchI])
+             && patches[patchI].size() > 0
+            )
+            {
+                const processorPolyPatch& procPatch =
+                    refCast<const processorPolyPatch>(patches[patchI]);
+
+                label patchStart = procPatch.start()-mesh.nInternalFaces();
+
+                UOPstream toNbr(procPatch.neighbProcNo(), pBufs);
+                //Transfer using CPU memory
+                Field<T> buff(procPatch.size());
+                thrust::copy
+                (
+                    faceValues.begin()+patchStart,
+                    faceValues.begin()+(patchStart+procPatch.size()),
+                    buff.begin()
+                );
+                toNbr << buff;
+            }
+        }
+
+
+        pBufs.finishedSends();
+
+
+        // Receive and combine.
+
+        forAll(patches, patchI)
+        {
+            if
+            (
+                isA<processorPolyPatch>(patches[patchI])
+             && patches[patchI].size() > 0
+            )
+            {
+                const processorPolyPatch& procPatch =
+                    refCast<const processorPolyPatch>(patches[patchI]);
+
+                label size = procPatch.size();
+                Field<T> nbrPatchInfo(size);
+
+                UIPstream fromNeighb(procPatch.neighbProcNo(), pBufs);
+                fromNeighb >> nbrPatchInfo;
+
+                label start = procPatch.start()-mesh.nInternalFaces();
+                
+                thrust::copy
+                (
+                    nbrPatchInfo.begin(),
+                    nbrPatchInfo.end(),
+                    faceValues.begin()+start
+                );
+                
+                gpuField<T> subField(faceValues,size,start);
+                top(procPatch, subField);
+            }
+        }
+    }
+
+    // Do the cyclics.
+    forAll(patches, patchI)
+    {
+        if (isA<cyclicPolyPatch>(patches[patchI]))
+        {
+            const cyclicPolyPatch& cycPatch =
+                refCast<const cyclicPolyPatch>(patches[patchI]);
+
+            if (cycPatch.owner())
+            {
+                // Owner does all.
+                const cyclicPolyPatch& nbrPatch = cycPatch.neighbPatch();
+                label ownStart = cycPatch.start()-mesh.nInternalFaces();
+                label nbrStart = nbrPatch.start()-mesh.nInternalFaces();
+
+                label sz = cycPatch.size();
+
+                // Transform (copy of) data on both sides
+                gpuField<T> ownVals(gpuField<T>(faceValues, sz, ownStart));
+                top(nbrPatch, ownVals);
+
+                gpuField<T> nbrVals(gpuField<T>(faceValues, sz, nbrStart));
+                top(cycPatch, nbrVals);
+
+                //NOTE: operator cannot be void
+                thrust::transform
+                (
+                    faceValues.begin()+ownStart,
+                    faceValues.begin()+ownStart+sz,
+                    nbrVals.begin(),
+                    faceValues.begin()+ownStart,
+                    cop
+                );
+
+                thrust::transform
+                (
+                    faceValues.begin()+nbrStart,
+                    faceValues.begin()+nbrStart+sz,
+                    ownVals.begin(),
+                    faceValues.begin()+nbrStart,
+                    cop
+                );
+            }
+        }
+    }
+}
+
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<unsigned nBits, class CombineOp>

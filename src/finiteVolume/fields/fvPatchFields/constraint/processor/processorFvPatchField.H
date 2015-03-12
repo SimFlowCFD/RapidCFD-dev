@@ -281,9 +281,9 @@ public:
                 return procPatch_.forwardT();
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
-                return procPatch_.gForwardT();
+                return procPatch_.getForwardT();
             }
 
             //- Return rank of component for transform

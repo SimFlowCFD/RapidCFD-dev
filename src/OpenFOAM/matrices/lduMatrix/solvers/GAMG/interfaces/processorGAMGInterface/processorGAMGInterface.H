@@ -173,7 +173,7 @@ public:
                 return forwardT_;
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
                 return gForwardT_;
             }

@@ -209,9 +209,9 @@ public:
                 return cyclicPatch_.forwardT();
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
-                return cyclicPatch_.gForwardT();
+                return cyclicPatch_.getForwardT();
             }
 
             //- Return neighbour-cell transformation tensor
@@ -220,9 +220,9 @@ public:
                 return cyclicPatch_.reverseT();
             }
 
-            virtual const tensorgpuField& gReverseT() const
+            virtual const tensorgpuField& getReverseT() const
             {
-                return cyclicPatch_.gReverseT();
+                return cyclicPatch_.getReverseT();
             }
 
             //- Return rank of component for transform

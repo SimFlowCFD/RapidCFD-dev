@@ -211,6 +211,12 @@ public:
         //- Construct as subfield.
         gpuField(const gpuField<Type>&, label size, label start);
 
+        //- Construct as sublist.
+        gpuField(const gpuList<Type>&, label size);
+
+        //- Construct as sublist.
+        gpuField(const gpuList<Type>&, label size, label start);
+
         //- Construct by transferring the gpuField contents
         gpuField(const Xfer<gpuField<Type> >&);
 

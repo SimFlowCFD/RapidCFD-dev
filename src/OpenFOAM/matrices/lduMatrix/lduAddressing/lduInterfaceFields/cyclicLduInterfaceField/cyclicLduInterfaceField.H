@@ -76,11 +76,11 @@ public:
 
             //- Return face transformation tensor
             virtual const tensorField& forwardT() const = 0;
-            virtual const tensorgpuField& gForwardT() const = 0;
+            virtual const tensorgpuField& getForwardT() const = 0;
 
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const = 0;
-            virtual const tensorgpuField& gReverseT() const = 0;
+            virtual const tensorgpuField& getReverseT() const = 0;
 
             //- Return rank of component for transform
             virtual int rank() const = 0;
@@ -121,7 +121,7 @@ void Foam::cyclicLduInterfaceField::transformCoupleField
         }
         else
         {
-            transform(f, gForwardT(), f);
+            transform(f, getForwardT(), f);
         }
     }
 }

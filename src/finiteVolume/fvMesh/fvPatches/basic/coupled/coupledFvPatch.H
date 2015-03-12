@@ -105,11 +105,11 @@ public:
 
             //- Return face transformation tensor.
             virtual const tensorField& forwardT() const = 0;
-            virtual const tensorgpuField& gForwardT() const = 0;
+            virtual const tensorgpuField& getForwardT() const = 0;
 
             //- Return neighbour-cell transformation tensor.
             virtual const tensorField& reverseT() const = 0;
-            virtual const tensorgpuField& gReverseT() const = 0;
+            virtual const tensorgpuField& getReverseT() const = 0;
 
             //- Return faceCell addressing
             virtual const labelgpuList& faceCells() const

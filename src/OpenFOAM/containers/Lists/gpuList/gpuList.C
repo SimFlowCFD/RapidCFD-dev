@@ -23,7 +23,19 @@ Foam::gpuList<T>::~gpuList()
     }
 }
 
+template<class T>
+std::streamsize Foam::gpuList<T>::byteSize() const
+{
+    if (!contiguous<T>())
+    {
+        FatalErrorIn("gpuList<T>::byteSize()")
+            << "Cannot return the binary size of a list of "
+               "non-primitive elements"
+            << abort(FatalError);
+    }
 
+    return this->size()*sizeof(T);
+}
 
 template<class T>
 template<class Iterator>
@@ -31,8 +43,6 @@ void Foam::gpuList<T>::copyInto(Iterator it) const
 {
     gpu_api::copy(this->begin(),this->end(),it);
 }
-
-
 
 template<class T>
 void Foam::gpuList<T>::operator=(const T& t)

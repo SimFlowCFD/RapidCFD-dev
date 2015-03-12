@@ -251,24 +251,24 @@ public:
         {
         public:
 
-            template<class Type>
+            template<class Type,template<class> class ListType>
             void operator()
             (
                 const vectorTensorTransform& vt,
                 const bool forward,
-                List<Type>& fld
+                ListType<Type>& fld
             ) const
             {
                 const tensor T(forward ? vt.R() : vt.R().T());
                 transformList(T, fld);
             }
 
-            template<class Type>
+            template<class Type,template<class> class ListType>
             void operator()
             (
                 const vectorTensorTransform& vt,
                 const bool forward,
-                List<List<Type> >& flds
+                List<ListType<Type> >& flds
             ) const
             {
                 forAll(flds, i)
@@ -284,6 +284,24 @@ public:
                 if (!cpp.parallel())
                 {
                     transformList(cpp.forwardT(), fld);
+                }
+            }
+
+            template<class Type>
+            void operator()(const coupledPolyPatch& cpp, gpuList<Type>& fld) const
+            {
+                if (!cpp.parallel())
+                {
+                    transformList(cpp.getForwardT(), fld);
+                }
+            }
+
+            template<class Type>
+            void operator()(const coupledPolyPatch& cpp, gpuField<Type>& fld) const
+            {
+                if (!cpp.parallel())
+                {
+                    transformList(cpp.getForwardT(), fld);
                 }
             }
 

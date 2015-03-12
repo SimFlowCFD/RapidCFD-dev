@@ -125,9 +125,9 @@ public:
                 return cyclicPolyPatch_.forwardT();
             }
 
-            virtual const tensorgpuField& gForwardT() const
+            virtual const tensorgpuField& getForwardT() const
             {
-                return cyclicPolyPatch_.gForwardT();
+                return cyclicPolyPatch_.getForwardT();
             }
 
             //- Return neighbour-cell transformation tensor
@@ -136,9 +136,9 @@ public:
                 return cyclicPolyPatch_.reverseT();
             }
 
-            virtual const tensorgpuField& gReverseT() const
+            virtual const tensorgpuField& getReverseT() const
             {
-                return cyclicPolyPatch_.gReverseT();
+                return cyclicPolyPatch_.getReverseT();
             }
 
             const cyclicFvPatch& neighbFvPatch() const

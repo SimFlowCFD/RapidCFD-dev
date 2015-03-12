@@ -92,7 +92,7 @@ void Foam::MULES::implicitSolve
         readScalar(MULEScontrols.lookup("CoCoeff"))
     );
 
-    scalarField allCoLambda(mesh.nFaces());
+    scalargpuField allCoLambda(mesh.nFaces());
 
     {
         slicedSurfaceScalarField CoLambda
@@ -130,7 +130,7 @@ void Foam::MULES::implicitSolve
         }
     }
 
-    scalarField allLambda(allCoLambda);
+    scalargpuField allLambda(allCoLambda);
     //scalarField allLambda(mesh.nFaces(), 1.0);
 
     slicedSurfaceScalarField lambda

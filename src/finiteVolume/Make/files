@@ -219,9 +219,8 @@ fvMatrices/fvScalarMatrix/fvScalarMatrix.cu
 
 fvMatrices/solvers/MULES/MULES.cu
 fvMatrices/solvers/MULES/CMULES.cu
-/*
 fvMatrices/solvers/MULES/IMULES.cu
-*/
+
 fvMatrices/solvers/GAMGSymSolver/GAMGAgglomerations/faceAreaPairGAMGAgglomeration/faceAreaPairGAMGAgglomeration.cu
 
 interpolation = interpolation/interpolation

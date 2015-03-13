@@ -20,5 +20,6 @@ wmake all solvers/basic $*
 wmake all solvers/incompressible $*
 wmake all solvers/compressible $*
 wmake all solvers/heatTransfer $*
+wmake all solvers/multiphase/interFoam $*
 
 # ----------------------------------------------------------------- end-of-file

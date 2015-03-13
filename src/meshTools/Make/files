@@ -1,216 +1,216 @@
-cellClassification/cellClassification.cu
-cellClassification/cellInfo.cu
+cellClassification/cellClassification.C
+cellClassification/cellInfo.C
 
-cellQuality/cellQuality.cu
+cellQuality/cellQuality.C
 
-cellDist/cellDistFuncs.cu
-cellDist/patchWave/patchWave.cu
-cellDist/wallPoint/wallPoint.cu
+cellDist/cellDistFuncs.C
+cellDist/patchWave/patchWave.C
+cellDist/wallPoint/wallPoint.C
 
-cellFeatures/cellFeatures.cu
+cellFeatures/cellFeatures.C
 
 csys = coordinateSystems
-$(csys)/coordinateSystem.cu
-$(csys)/coordinateSystemNew.cu
-$(csys)/coordinateSystems.cu
-$(csys)/cylindricalCS.cu
-$(csys)/cartesianCS.cu
+$(csys)/coordinateSystem.C
+$(csys)/coordinateSystemNew.C
+$(csys)/coordinateSystems.C
+$(csys)/cylindricalCS.C
+$(csys)/cartesianCS.C
 
-$(csys)/coordinateRotation/axesRotation.cu
-$(csys)/coordinateRotation/coordinateRotation.cu
-$(csys)/coordinateRotation/coordinateRotationNew.cu
-$(csys)/coordinateRotation/EulerCoordinateRotation.cu
-$(csys)/coordinateRotation/STARCDCoordinateRotation.cu
+$(csys)/coordinateRotation/axesRotation.C
+$(csys)/coordinateRotation/coordinateRotation.C
+$(csys)/coordinateRotation/coordinateRotationNew.C
+$(csys)/coordinateRotation/EulerCoordinateRotation.C
+$(csys)/coordinateRotation/STARCDCoordinateRotation.C
 /*
-$(csys)/coordinateRotation/localAxesRotation.cu
+$(csys)/coordinateRotation/localAxesRotation.C
 */
-edgeFaceCirculator/edgeFaceCirculator.cu
-polyMeshZipUpCells/polyMeshZipUpCells.cu
-primitiveMeshGeometry/primitiveMeshGeometry.cu
+edgeFaceCirculator/edgeFaceCirculator.C
+polyMeshZipUpCells/polyMeshZipUpCells.C
+primitiveMeshGeometry/primitiveMeshGeometry.C
 
-meshSearch/meshSearch.cu
-meshSearch/meshSearchFACECENTRETETSMeshObject.cu
-meshSearch/meshSearchMeshObject.cu
+meshSearch/meshSearch.C
+meshSearch/meshSearchFACECENTRETETSMeshObject.C
+meshSearch/meshSearchMeshObject.C
 
-meshTools/meshTools.cu
+meshTools/meshTools.C
 
 algorithms = algorithms
 
 pWave = $(algorithms)/PointEdgeWave
-$(pWave)/PointEdgeWaveName.cu
-$(pWave)/pointEdgePoint.cu
+$(pWave)/PointEdgeWaveName.C
+$(pWave)/pointEdgePoint.C
 /*
 patchWave = $(algorithms)/PatchEdgeFaceWave
-$(patchWave)/PatchEdgeFaceWaveName.cu
-$(patchWave)/patchEdgeFaceInfo.cu
-$(patchWave)/patchPatchDist.cu
-$(patchWave)/patchEdgeFaceRegion.cu
-$(patchWave)/patchEdgeFaceRegions.cu
+$(patchWave)/PatchEdgeFaceWaveName.C
+$(patchWave)/patchEdgeFaceInfo.C
+$(patchWave)/patchPatchDist.C
+$(patchWave)/patchEdgeFaceRegion.C
+$(patchWave)/patchEdgeFaceRegions.C
 */
 meshWave = $(algorithms)/MeshWave
-$(meshWave)/MeshWaveName.cu
-$(meshWave)/FaceCellWaveName.cu
+$(meshWave)/MeshWaveName.C
+$(meshWave)/FaceCellWaveName.C
 
-regionSplit/regionSplit.cu
-regionSplit/localPointRegion.cu
+regionSplit/regionSplit.C
+regionSplit/localPointRegion.C
 
-indexedOctree/treeDataEdge.cu
-indexedOctree/treeDataFace.cu
-indexedOctree/treeDataPoint.cu
-indexedOctree/treeDataPrimitivePatchName.cu
-indexedOctree/treeDataTriSurface.cu
+indexedOctree/treeDataEdge.C
+indexedOctree/treeDataFace.C
+indexedOctree/treeDataPoint.C
+indexedOctree/treeDataPrimitivePatchName.C
+indexedOctree/treeDataTriSurface.C
 
 searchableSurface = searchableSurface
-$(searchableSurface)/searchableBox.cu
-$(searchableSurface)/searchableCylinder.cu
-$(searchableSurface)/searchableDisk.cu
-$(searchableSurface)/searchablePlane.cu
-$(searchableSurface)/searchablePlate.cu
-$(searchableSurface)/searchableSphere.cu
-$(searchableSurface)/searchableSurface.cu
-$(searchableSurface)/searchableSurfaceCollection.cu
-$(searchableSurface)/searchableSurfaces.cu
-$(searchableSurface)/searchableSurfacesQueries.cu
-$(searchableSurface)/searchableSurfaceWithGaps.cu
-$(searchableSurface)/triSurfaceMesh.cu
-$(searchableSurface)/closedTriSurfaceMesh.cu
+$(searchableSurface)/searchableBox.C
+$(searchableSurface)/searchableCylinder.C
+$(searchableSurface)/searchableDisk.C
+$(searchableSurface)/searchablePlane.C
+$(searchableSurface)/searchablePlate.C
+$(searchableSurface)/searchableSphere.C
+$(searchableSurface)/searchableSurface.C
+$(searchableSurface)/searchableSurfaceCollection.C
+$(searchableSurface)/searchableSurfaces.C
+$(searchableSurface)/searchableSurfacesQueries.C
+$(searchableSurface)/searchableSurfaceWithGaps.C
+$(searchableSurface)/triSurfaceMesh.C
+$(searchableSurface)/closedTriSurfaceMesh.C
 
 topoSets = sets/topoSets
-$(topoSets)/cellSet.cu
-$(topoSets)/topoSet.cu
-$(topoSets)/faceSet.cu
-$(topoSets)/pointSet.cu
-$(topoSets)/cellZoneSet.cu
-$(topoSets)/faceZoneSet.cu
-$(topoSets)/pointZoneSet.cu
+$(topoSets)/cellSet.C
+$(topoSets)/topoSet.C
+$(topoSets)/faceSet.C
+$(topoSets)/pointSet.C
+$(topoSets)/cellZoneSet.C
+$(topoSets)/faceZoneSet.C
+$(topoSets)/pointZoneSet.C
 
-sets/topoSetSource/topoSetSource.cu
+sets/topoSetSource/topoSetSource.C
 
 cellSources =  sets/cellSources
-$(cellSources)/faceToCell/faceToCell.cu
-$(cellSources)/fieldToCell/fieldToCell.cu
-$(cellSources)/pointToCell/pointToCell.cu
-$(cellSources)/shapeToCell/shapeToCell.cu
-$(cellSources)/boxToCell/boxToCell.cu
-$(cellSources)/regionToCell/regionToCell.cu
-$(cellSources)/rotatedBoxToCell/rotatedBoxToCell.cu
-$(cellSources)/labelToCell/labelToCell.cu
-$(cellSources)/surfaceToCell/surfaceToCell.cu
-$(cellSources)/cellToCell/cellToCell.cu
-$(cellSources)/nearestToCell/nearestToCell.cu
-$(cellSources)/nbrToCell/nbrToCell.cu
-$(cellSources)/zoneToCell/zoneToCell.cu
-$(cellSources)/sphereToCell/sphereToCell.cu
-$(cellSources)/cylinderToCell/cylinderToCell.cu
-$(cellSources)/faceZoneToCell/faceZoneToCell.cu
-$(cellSources)/cylinderAnnulusToCell/cylinderAnnulusToCell.cu
-$(cellSources)/targetVolumeToCell/targetVolumeToCell.cu
+$(cellSources)/faceToCell/faceToCell.C
+$(cellSources)/fieldToCell/fieldToCell.C
+$(cellSources)/pointToCell/pointToCell.C
+$(cellSources)/shapeToCell/shapeToCell.C
+$(cellSources)/boxToCell/boxToCell.C
+$(cellSources)/regionToCell/regionToCell.C
+$(cellSources)/rotatedBoxToCell/rotatedBoxToCell.C
+$(cellSources)/labelToCell/labelToCell.C
+$(cellSources)/surfaceToCell/surfaceToCell.C
+$(cellSources)/cellToCell/cellToCell.C
+$(cellSources)/nearestToCell/nearestToCell.C
+$(cellSources)/nbrToCell/nbrToCell.C
+$(cellSources)/zoneToCell/zoneToCell.C
+$(cellSources)/sphereToCell/sphereToCell.C
+$(cellSources)/cylinderToCell/cylinderToCell.C
+$(cellSources)/faceZoneToCell/faceZoneToCell.C
+$(cellSources)/cylinderAnnulusToCell/cylinderAnnulusToCell.C
+$(cellSources)/targetVolumeToCell/targetVolumeToCell.C
 
 faceSources = sets/faceSources
-$(faceSources)/faceToFace/faceToFace.cu
-$(faceSources)/labelToFace/labelToFace.cu
-$(faceSources)/cellToFace/cellToFace.cu
-$(faceSources)/normalToFace/normalToFace.cu
-$(faceSources)/pointToFace/pointToFace.cu
-$(faceSources)/patchToFace/patchToFace.cu
-$(faceSources)/boundaryToFace/boundaryToFace.cu
-$(faceSources)/zoneToFace/zoneToFace.cu
-$(faceSources)/boxToFace/boxToFace.cu
+$(faceSources)/faceToFace/faceToFace.C
+$(faceSources)/labelToFace/labelToFace.C
+$(faceSources)/cellToFace/cellToFace.C
+$(faceSources)/normalToFace/normalToFace.C
+$(faceSources)/pointToFace/pointToFace.C
+$(faceSources)/patchToFace/patchToFace.C
+$(faceSources)/boundaryToFace/boundaryToFace.C
+$(faceSources)/zoneToFace/zoneToFace.C
+$(faceSources)/boxToFace/boxToFace.C
 /*
-$(faceSources)/regionToFace/regionToFace.cu
+$(faceSources)/regionToFace/regionToFace.C
 */
 pointSources = sets/pointSources
-$(pointSources)/labelToPoint/labelToPoint.cu
-$(pointSources)/pointToPoint/pointToPoint.cu
-$(pointSources)/cellToPoint/cellToPoint.cu
-$(pointSources)/faceToPoint/faceToPoint.cu
-$(pointSources)/boxToPoint/boxToPoint.cu
-$(pointSources)/surfaceToPoint/surfaceToPoint.cu
-$(pointSources)/zoneToPoint/zoneToPoint.cu
-$(pointSources)/nearestToPoint/nearestToPoint.cu
+$(pointSources)/labelToPoint/labelToPoint.C
+$(pointSources)/pointToPoint/pointToPoint.C
+$(pointSources)/cellToPoint/cellToPoint.C
+$(pointSources)/faceToPoint/faceToPoint.C
+$(pointSources)/boxToPoint/boxToPoint.C
+$(pointSources)/surfaceToPoint/surfaceToPoint.C
+$(pointSources)/zoneToPoint/zoneToPoint.C
+$(pointSources)/nearestToPoint/nearestToPoint.C
 
 faceZoneSources = sets/faceZoneSources
-$(faceZoneSources)/faceZoneToFaceZone/faceZoneToFaceZone.cu
-$(faceZoneSources)/setsToFaceZone/setsToFaceZone.cu
-$(faceZoneSources)/setToFaceZone/setToFaceZone.cu
-$(faceZoneSources)/setAndNormalToFaceZone/setAndNormalToFaceZone.cu
-$(faceZoneSources)/searchableSurfaceToFaceZone/searchableSurfaceToFaceZone.cu
+$(faceZoneSources)/faceZoneToFaceZone/faceZoneToFaceZone.C
+$(faceZoneSources)/setsToFaceZone/setsToFaceZone.C
+$(faceZoneSources)/setToFaceZone/setToFaceZone.C
+$(faceZoneSources)/setAndNormalToFaceZone/setAndNormalToFaceZone.C
+$(faceZoneSources)/searchableSurfaceToFaceZone/searchableSurfaceToFaceZone.C
 
 cellZoneSources = sets/cellZoneSources
-$(cellZoneSources)/setToCellZone/setToCellZone.cu
+$(cellZoneSources)/setToCellZone/setToCellZone.C
 
 pointZoneSources = sets/pointZoneSources
-$(pointZoneSources)/setToPointZone/setToPointZone.cu
+$(pointZoneSources)/setToPointZone/setToPointZone.C
 
-momentOfInertia/momentOfInertia.cu
+momentOfInertia/momentOfInertia.C
 
-surfaceSets/surfaceSets.cu
+surfaceSets/surfaceSets.C
 
-triSurface/orientedSurface/orientedSurface.cu
-triSurface/surfaceLocation/surfaceLocation.cu
+triSurface/orientedSurface/orientedSurface.C
+triSurface/surfaceLocation/surfaceLocation.C
 
 booleanOps = triSurface/booleanOps
 
 surfaceIntersection = $(booleanOps)/surfaceIntersection
-$(surfaceIntersection)/surfaceIntersection.cu
-$(surfaceIntersection)/surfaceIntersectionFuncs.cu
-$(surfaceIntersection)/edgeIntersections.cu
+$(surfaceIntersection)/surfaceIntersection.C
+$(surfaceIntersection)/surfaceIntersectionFuncs.C
+$(surfaceIntersection)/edgeIntersections.C
 
 booleanSurface = $(booleanOps)/booleanSurface
-$(booleanSurface)/booleanSurface.cu
+$(booleanSurface)/booleanSurface.C
 
 intersectedSurface = $(booleanOps)/intersectedSurface
-$(intersectedSurface)/intersectedSurface.cu
-$(intersectedSurface)/edgeSurface.cu
+$(intersectedSurface)/intersectedSurface.C
+$(intersectedSurface)/edgeSurface.C
 
-triSurface/triSurfaceSearch/triSurfaceSearch.cu
-triSurface/triSurfaceSearch/triSurfaceRegionSearch.cu
-triSurface/triangleFuncs/triangleFuncs.cu
-triSurface/surfaceFeatures/surfaceFeatures.cu
-triSurface/triSurfaceTools/triSurfaceTools.cu
-triSurface/triSurfaceTools/geompack/geompack.cu
-triSurface/triSurfaceTools/pointToPointPlanarInterpolation.cu
+triSurface/triSurfaceSearch/triSurfaceSearch.C
+triSurface/triSurfaceSearch/triSurfaceRegionSearch.C
+triSurface/triangleFuncs/triangleFuncs.C
+triSurface/surfaceFeatures/surfaceFeatures.C
+triSurface/triSurfaceTools/triSurfaceTools.C
+triSurface/triSurfaceTools/geompack/geompack.C
+triSurface/triSurfaceTools/pointToPointPlanarInterpolation.C
 
-twoDPointCorrector/twoDPointCorrector.cu
+twoDPointCorrector/twoDPointCorrector.C
 
 AMI=AMIInterpolation
-$(AMI)/AMIInterpolation/AMIInterpolationName.cu
-$(AMI)/AMIInterpolation/AMIPatchToPatchInterpolation.cu
-$(AMI)/faceAreaIntersect/faceAreaIntersect.cu
+$(AMI)/AMIInterpolation/AMIInterpolationName.C
+$(AMI)/AMIInterpolation/AMIPatchToPatchInterpolation.C
+$(AMI)/faceAreaIntersect/faceAreaIntersect.C
 
 AMICycPatches=$(AMI)/patches/cyclicAMI
-$(AMICycPatches)/cyclicAMILduInterfaceField/cyclicAMILduInterface.cu
-$(AMICycPatches)/cyclicAMILduInterfaceField/cyclicAMILduInterfaceField.cu
-$(AMICycPatches)/cyclicAMIPolyPatch/cyclicAMIPolyPatch.cu
-$(AMICycPatches)/cyclicAMIPointPatch/cyclicAMIPointPatch.cu
-$(AMICycPatches)/cyclicAMIPointPatchField/cyclicAMIPointPatchFields.cu
+$(AMICycPatches)/cyclicAMILduInterfaceField/cyclicAMILduInterface.C
+$(AMICycPatches)/cyclicAMILduInterfaceField/cyclicAMILduInterfaceField.C
+$(AMICycPatches)/cyclicAMIPolyPatch/cyclicAMIPolyPatch.C
+$(AMICycPatches)/cyclicAMIPointPatch/cyclicAMIPointPatch.C
+$(AMICycPatches)/cyclicAMIPointPatchField/cyclicAMIPointPatchFields.C
 
 ACMICycPatches=$(AMI)/patches/cyclicACMI
-$(ACMICycPatches)/cyclicACMILduInterfaceField/cyclicACMILduInterface.cu
-$(ACMICycPatches)/cyclicACMILduInterfaceField/cyclicACMILduInterfaceField.cu
-$(ACMICycPatches)/cyclicACMIPolyPatch/cyclicACMIPolyPatch.cu
-$(ACMICycPatches)/cyclicACMIPointPatch/cyclicACMIPointPatch.cu
-$(ACMICycPatches)/cyclicACMIPointPatchField/cyclicACMIPointPatchFields.cu
+$(ACMICycPatches)/cyclicACMILduInterfaceField/cyclicACMILduInterface.C
+$(ACMICycPatches)/cyclicACMILduInterfaceField/cyclicACMILduInterfaceField.C
+$(ACMICycPatches)/cyclicACMIPolyPatch/cyclicACMIPolyPatch.C
+$(ACMICycPatches)/cyclicACMIPointPatch/cyclicACMIPointPatch.C
+$(ACMICycPatches)/cyclicACMIPointPatchField/cyclicACMIPointPatchFields.C
 
-mappedPatches/mappedPolyPatch/mappedPatchBase.cu
-mappedPatches/mappedPolyPatch/mappedPolyPatch.cu
-mappedPatches/mappedPolyPatch/mappedWallPolyPatch.cu
-mappedPatches/mappedPolyPatch/mappedVariableThicknessWallPolyPatch.cu
+mappedPatches/mappedPolyPatch/mappedPatchBase.C
+mappedPatches/mappedPolyPatch/mappedPolyPatch.C
+mappedPatches/mappedPolyPatch/mappedWallPolyPatch.C
+mappedPatches/mappedPolyPatch/mappedVariableThicknessWallPolyPatch.C
 
-mappedPatches/mappedPointPatch/mappedPointPatch.cu
-mappedPatches/mappedPointPatch/mappedWallPointPatch.cu
+mappedPatches/mappedPointPatch/mappedPointPatch.C
+mappedPatches/mappedPointPatch/mappedWallPointPatch.C
 
-meshStructure/meshStructure.cu
-meshStructure/topoDistanceData.cu
-meshStructure/pointTopoDistanceData.cu
+meshStructure/meshStructure.C
+meshStructure/topoDistanceData.C
+meshStructure/pointTopoDistanceData.C
 /*
-regionCoupled/patches/regionCoupledPolyPatch/regionCoupledBase.cu
-regionCoupled/patches/regionCoupledPolyPatch/regionCoupledPolyPatch.cu
-regionCoupled/patches/regionCoupledPolyPatch/regionCoupledWallPolyPatch.cu
-regionCoupled/patches/regionCoupledLduInterface/regionCoupledLduInterface.cu
-regionCoupled/patches/regionCoupledPointPatch/regionCoupledPointPatch.cu
-regionCoupled/patches/regionCoupledPointPatch/regionCoupledWallPointPatch.cu
+regionCoupled/patches/regionCoupledPolyPatch/regionCoupledBase.C
+regionCoupled/patches/regionCoupledPolyPatch/regionCoupledPolyPatch.C
+regionCoupled/patches/regionCoupledPolyPatch/regionCoupledWallPolyPatch.C
+regionCoupled/patches/regionCoupledLduInterface/regionCoupledLduInterface.C
+regionCoupled/patches/regionCoupledPointPatch/regionCoupledPointPatch.C
+regionCoupled/patches/regionCoupledPointPatch/regionCoupledWallPointPatch.C
 */
-tetOverlapVolume/tetOverlapVolume.cu
+tetOverlapVolume/tetOverlapVolume.C
 
 LIB = $(FOAM_LIBBIN)/libmeshTools

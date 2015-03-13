@@ -1,25 +1,25 @@
-phaseModel/phaseModel.cu
-diameterModels/diameterModel/diameterModel.cu
-diameterModels/diameterModel/newDiameterModel.cu
-diameterModels/constantDiameter/constantDiameter.cu
-diameterModels/isothermalDiameter/isothermalDiameter.cu
+phaseModel/phaseModel.C
+diameterModels/diameterModel/diameterModel.C
+diameterModels/diameterModel/newDiameterModel.C
+diameterModels/constantDiameter/constantDiameter.C
+diameterModels/isothermalDiameter/isothermalDiameter.C
 
-diameterModels/IATE/IATE.cu
-diameterModels/IATE/IATEsources/IATEsource/IATEsource.cu
-diameterModels/IATE/IATEsources/wakeEntrainmentCoalescence/wakeEntrainmentCoalescence.cu
-diameterModels/IATE/IATEsources/turbulentBreakUp/turbulentBreakUp.cu
-diameterModels/IATE/IATEsources/randomCoalescence/randomCoalescence.cu
+diameterModels/IATE/IATE.C
+diameterModels/IATE/IATEsources/IATEsource/IATEsource.C
+diameterModels/IATE/IATEsources/wakeEntrainmentCoalescence/wakeEntrainmentCoalescence.C
+diameterModels/IATE/IATEsources/turbulentBreakUp/turbulentBreakUp.C
+diameterModels/IATE/IATEsources/randomCoalescence/randomCoalescence.C
 
-BlendedInterfacialModel/blendingMethods/blendingMethod/blendingMethod.cu
-BlendedInterfacialModel/blendingMethods/blendingMethod/newBlendingMethod.cu
-BlendedInterfacialModel/blendingMethods/noBlending/noBlending.cu
-BlendedInterfacialModel/blendingMethods/linear/linear.cu
-BlendedInterfacialModel/blendingMethods/hyperbolic/hyperbolic.cu
+BlendedInterfacialModel/blendingMethods/blendingMethod/blendingMethod.C
+BlendedInterfacialModel/blendingMethods/blendingMethod/newBlendingMethod.C
+BlendedInterfacialModel/blendingMethods/noBlending/noBlending.C
+BlendedInterfacialModel/blendingMethods/linear/linear.C
+BlendedInterfacialModel/blendingMethods/hyperbolic/hyperbolic.C
 
-phasePair/phasePairKey/phasePairKey.cu
-phasePair/phasePair/phasePair.cu
-phasePair/orderedPhasePair/orderedPhasePair.cu
+phasePair/phasePairKey/phasePairKey.C
+phasePair/phasePair/phasePair.C
+phasePair/orderedPhasePair/orderedPhasePair.C
 
-twoPhaseSystem.cu
+twoPhaseSystem.C
 
 LIB = $(FOAM_LIBBIN)/libcompressibleTwoPhaseSystem

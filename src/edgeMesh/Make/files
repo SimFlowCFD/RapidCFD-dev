@@ -1,46 +1,46 @@
 em = .
 
-$(em)/edgeMesh.cu
-$(em)/edgeMeshIO.cu
-$(em)/edgeMeshNew.cu
+$(em)/edgeMesh.C
+$(em)/edgeMeshIO.C
+$(em)/edgeMeshNew.C
 
 
 edgeMeshFormats = $(em)/edgeMeshFormats
-$(edgeMeshFormats)/edgeMeshFormatsCore.cu
+$(edgeMeshFormats)/edgeMeshFormatsCore.C
 
-$(edgeMeshFormats)/edgeMesh/edgeMeshFormat.cu
-$(edgeMeshFormats)/edgeMesh/edgeMeshFormatRunTime.cu
+$(edgeMeshFormats)/edgeMesh/edgeMeshFormat.C
+$(edgeMeshFormats)/edgeMesh/edgeMeshFormatRunTime.C
 
-$(edgeMeshFormats)/extendedFeatureEdgeMesh/extendedFeatureEdgeMeshFormat.cu
-$(edgeMeshFormats)/extendedFeatureEdgeMesh/extendedFeatureEdgeMeshFormatRunTime.cu
-
-
-$(edgeMeshFormats)/nas/NASedgeFormat.cu
-$(edgeMeshFormats)/nas/NASedgeFormatRunTime.cu
-
-$(edgeMeshFormats)/obj/OBJedgeFormat.cu
-$(edgeMeshFormats)/obj/OBJedgeFormatRunTime.cu
-
-$(edgeMeshFormats)/starcd/STARCDedgeFormat.cu
-$(edgeMeshFormats)/starcd/STARCDedgeFormatRunTime.cu
-
-$(edgeMeshFormats)/vtk/VTKedgeFormat.cu
-$(edgeMeshFormats)/vtk/VTKedgeFormatRunTime.cu
+$(edgeMeshFormats)/extendedFeatureEdgeMesh/extendedFeatureEdgeMeshFormat.C
+$(edgeMeshFormats)/extendedFeatureEdgeMesh/extendedFeatureEdgeMeshFormatRunTime.C
 
 
-$(em)/featureEdgeMesh/featureEdgeMesh.cu
+$(edgeMeshFormats)/nas/NASedgeFormat.C
+$(edgeMeshFormats)/nas/NASedgeFormatRunTime.C
+
+$(edgeMeshFormats)/obj/OBJedgeFormat.C
+$(edgeMeshFormats)/obj/OBJedgeFormatRunTime.C
+
+$(edgeMeshFormats)/starcd/STARCDedgeFormat.C
+$(edgeMeshFormats)/starcd/STARCDedgeFormatRunTime.C
+
+$(edgeMeshFormats)/vtk/VTKedgeFormat.C
+$(edgeMeshFormats)/vtk/VTKedgeFormatRunTime.C
+
+
+$(em)/featureEdgeMesh/featureEdgeMesh.C
 
 eem = $(em)/extendedEdgeMesh
 
-$(eem)/extendedEdgeMesh.cu
-$(eem)/extendedEdgeMeshNew.cu
+$(eem)/extendedEdgeMesh.C
+$(eem)/extendedEdgeMeshNew.C
 
-$(eem)/extendedEdgeMeshFormats/extendedEdgeMeshFormat/extendedEdgeMeshFormat.cu
-$(eem)/extendedEdgeMeshFormats/extendedEdgeMeshFormat/extendedEdgeMeshFormatRunTime.cu
+$(eem)/extendedEdgeMeshFormats/extendedEdgeMeshFormat/extendedEdgeMeshFormat.C
+$(eem)/extendedEdgeMeshFormats/extendedEdgeMeshFormat/extendedEdgeMeshFormatRunTime.C
 
 efm = $(eem)/extendedFeatureEdgeMesh
 
-$(efm)/extendedFeatureEdgeMesh.cu
+$(efm)/extendedFeatureEdgeMesh.C
 
 
 

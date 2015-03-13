@@ -1,61 +1,61 @@
-dragModels/dragModel/dragModel.cu
-dragModels/dragModel/newDragModel.cu
-dragModels/segregated/segregated.cu
-dragModels/Ergun/Ergun.cu
-dragModels/Gibilaro/Gibilaro.cu
-dragModels/GidaspowErgunWenYu/GidaspowErgunWenYu.cu
-dragModels/GidaspowSchillerNaumann/GidaspowSchillerNaumann.cu
-dragModels/Lain/Lain.cu
-dragModels/SchillerNaumann/SchillerNaumann.cu
-dragModels/SyamlalOBrien/SyamlalOBrien.cu
-dragModels/TomiyamaCorrelated/TomiyamaCorrelated.cu
-dragModels/TomiyamaAnalytic/TomiyamaAnalytic.cu
-dragModels/WenYu/WenYu.cu
+dragModels/dragModel/dragModel.C
+dragModels/dragModel/newDragModel.C
+dragModels/segregated/segregated.C
+dragModels/Ergun/Ergun.C
+dragModels/Gibilaro/Gibilaro.C
+dragModels/GidaspowErgunWenYu/GidaspowErgunWenYu.C
+dragModels/GidaspowSchillerNaumann/GidaspowSchillerNaumann.C
+dragModels/Lain/Lain.C
+dragModels/SchillerNaumann/SchillerNaumann.C
+dragModels/SyamlalOBrien/SyamlalOBrien.C
+dragModels/TomiyamaCorrelated/TomiyamaCorrelated.C
+dragModels/TomiyamaAnalytic/TomiyamaAnalytic.C
+dragModels/WenYu/WenYu.C
 
-swarmCorrections/swarmCorrection/swarmCorrection.cu
-swarmCorrections/swarmCorrection/newSwarmCorrection.cu
-swarmCorrections/noSwarm/noSwarm.cu
-swarmCorrections/TomiyamaSwarm/TomiyamaSwarm.cu
+swarmCorrections/swarmCorrection/swarmCorrection.C
+swarmCorrections/swarmCorrection/newSwarmCorrection.C
+swarmCorrections/noSwarm/noSwarm.C
+swarmCorrections/TomiyamaSwarm/TomiyamaSwarm.C
 
-liftModels/liftModel/liftModel.cu
-liftModels/liftModel/newLiftModel.cu
-liftModels/noLift/noLift.cu
-liftModels/constantLiftCoefficient/constantLiftCoefficient.cu
-liftModels/Moraga/Moraga.cu
-liftModels/LegendreMagnaudet/LegendreMagnaudet.cu
-liftModels/TomiyamaLift/TomiyamaLift.cu
+liftModels/liftModel/liftModel.C
+liftModels/liftModel/newLiftModel.C
+liftModels/noLift/noLift.C
+liftModels/constantLiftCoefficient/constantLiftCoefficient.C
+liftModels/Moraga/Moraga.C
+liftModels/LegendreMagnaudet/LegendreMagnaudet.C
+liftModels/TomiyamaLift/TomiyamaLift.C
 
-heatTransferModels/heatTransferModel/heatTransferModel.cu
-heatTransferModels/heatTransferModel/newHeatTransferModel.cu
-heatTransferModels/RanzMarshall/RanzMarshall.cu
+heatTransferModels/heatTransferModel/heatTransferModel.C
+heatTransferModels/heatTransferModel/newHeatTransferModel.C
+heatTransferModels/RanzMarshall/RanzMarshall.C
 
-virtualMassModels/virtualMassModel/virtualMassModel.cu
-virtualMassModels/virtualMassModel/newVirtualMassModel.cu
-virtualMassModels/noVirtualMass/noVirtualMass.cu
-virtualMassModels/constantVirtualMassCoefficient/constantVirtualMassCoefficient.cu
-virtualMassModels/Lamb/Lamb.cu
+virtualMassModels/virtualMassModel/virtualMassModel.C
+virtualMassModels/virtualMassModel/newVirtualMassModel.C
+virtualMassModels/noVirtualMass/noVirtualMass.C
+virtualMassModels/constantVirtualMassCoefficient/constantVirtualMassCoefficient.C
+virtualMassModels/Lamb/Lamb.C
 
-wallLubricationModels/wallLubricationModel/wallLubricationModel.cu
-wallLubricationModels/wallLubricationModel/newWallLubricationModel.cu
-wallLubricationModels/noWallLubrication/noWallLubrication.cu
-wallLubricationModels/Antal/Antal.cu
-wallLubricationModels/Frank/Frank.cu
-wallLubricationModels/TomiyamaWallLubrication/TomiyamaWallLubrication.cu
+wallLubricationModels/wallLubricationModel/wallLubricationModel.C
+wallLubricationModels/wallLubricationModel/newWallLubricationModel.C
+wallLubricationModels/noWallLubrication/noWallLubrication.C
+wallLubricationModels/Antal/Antal.C
+wallLubricationModels/Frank/Frank.C
+wallLubricationModels/TomiyamaWallLubrication/TomiyamaWallLubrication.C
 
-turbulentDispersionModels/turbulentDispersionModel/turbulentDispersionModel.cu
-turbulentDispersionModels/turbulentDispersionModel/newTurbulentDispersionModel.cu
-turbulentDispersionModels/noTurbulentDispersion/noTurbulentDispersion.cu
-turbulentDispersionModels/constantTurbulentDispersionCoefficient/constantTurbulentDispersionCoefficient.cu
-turbulentDispersionModels/Burns/Burns.cu
-turbulentDispersionModels/Gosman/Gosman.cu
+turbulentDispersionModels/turbulentDispersionModel/turbulentDispersionModel.C
+turbulentDispersionModels/turbulentDispersionModel/newTurbulentDispersionModel.C
+turbulentDispersionModels/noTurbulentDispersion/noTurbulentDispersion.C
+turbulentDispersionModels/constantTurbulentDispersionCoefficient/constantTurbulentDispersionCoefficient.C
+turbulentDispersionModels/Burns/Burns.C
+turbulentDispersionModels/Gosman/Gosman.C
 
-aspectRatioModels/aspectRatioModel/aspectRatioModel.cu
-aspectRatioModels/aspectRatioModel/newAspectRatioModel.cu
-aspectRatioModels/constantAspectRatio/constantAspectRatio.cu
-aspectRatioModels/TomiyamaAspectRatio/TomiyamaAspectRatio.cu
-aspectRatioModels/VakhrushevEfremov/VakhrushevEfremov.cu
-aspectRatioModels/Wellek/Wellek.cu
+aspectRatioModels/aspectRatioModel/aspectRatioModel.C
+aspectRatioModels/aspectRatioModel/newAspectRatioModel.C
+aspectRatioModels/constantAspectRatio/constantAspectRatio.C
+aspectRatioModels/TomiyamaAspectRatio/TomiyamaAspectRatio.C
+aspectRatioModels/VakhrushevEfremov/VakhrushevEfremov.C
+aspectRatioModels/Wellek/Wellek.C
 
-wallDependentModel/wallDependentModel.cu
+wallDependentModel/wallDependentModel.C
 
 LIB = $(FOAM_LIBBIN)/libcompressibleEulerianInterfacialModels

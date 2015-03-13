@@ -295,9 +295,6 @@ OBJECTS_DIR=$MakeDir/$WM_OPTIONS
 
 touch $OBJECTS_DIR/dontIncludeDeps
 
-#maybe do it in the makefile?
-wmakeCuLink
-
 case "$makeType" in
 lib | libo | libso | dep )
     $make -s -f $WM_DIR/Makefile MAKE_DIR=$MakeDir INCLUDE_DEPS=$OBJECTS_DIR/dontIncludeDeps lnInclude/uptodate

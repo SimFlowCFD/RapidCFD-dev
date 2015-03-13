@@ -1,3 +1,3 @@
-interPhaseChangeDyMFoam.cu
+interPhaseChangeDyMFoam.C
 
 EXE = $(FOAM_APPBIN)/interPhaseChangeDyMFoam

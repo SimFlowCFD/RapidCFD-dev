@@ -1,5 +1,5 @@
-phaseModel/phaseModel.cu
-alphaContactAngle/alphaContactAngleFvPatchScalarField.cu
-multiphaseMixtureThermo.cu
+phaseModel/phaseModel.C
+alphaContactAngle/alphaContactAngleFvPatchScalarField.C
+multiphaseMixtureThermo.C
 
 LIB = $(FOAM_LIBBIN)/libmultiphaseMixtureThermo

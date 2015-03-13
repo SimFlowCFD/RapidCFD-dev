@@ -1,16 +1,16 @@
-calcType/calcType.cu
-calcType/calcTypeNew.cu
+calcType/calcType.C
+calcType/calcTypeNew.C
 
-field/components/components.cu
-field/mag/mag.cu
-field/magSqr/magSqr.cu
-field/magGrad/magGrad.cu
-field/div/div.cu
+field/components/components.C
+field/mag/mag.C
+field/magSqr/magSqr.C
+field/magGrad/magGrad.C
+field/div/div.C
 /*
-field/randomise/randomise.cu
+field/randomise/randomise.C
 */
-field/interpolate/interpolate.cu
+field/interpolate/interpolate.C
 
-basic/addSubtract/addSubtract.cu
+basic/addSubtract/addSubtract.C
 
 LIB = $(FOAM_LIBBIN)/libfoamCalcFunctions

@@ -1,18 +1,18 @@
-vtk/vtkUnstructuredReader.cu
-nas/NASCore.cu
-starcd/STARCDCore.cu
+vtk/vtkUnstructuredReader.C
+nas/NASCore.C
+starcd/STARCDCore.C
 
-coordSet/coordSet.cu
+coordSet/coordSet.C
 
 setWriters = sampledSetWriters
 
-$(setWriters)/writers.cu
-$(setWriters)/ensight/ensightSetWriterRunTime.cu
-$(setWriters)/gnuplot/gnuplotSetWriterRunTime.cu
-$(setWriters)/jplot/jplotSetWriterRunTime.cu
-$(setWriters)/raw/rawSetWriterRunTime.cu
-$(setWriters)/vtk/vtkSetWriterRunTime.cu
-$(setWriters)/xmgrace/xmgraceSetWriterRunTime.cu
-$(setWriters)/csv/csvSetWriterRunTime.cu
+$(setWriters)/writers.C
+$(setWriters)/ensight/ensightSetWriterRunTime.C
+$(setWriters)/gnuplot/gnuplotSetWriterRunTime.C
+$(setWriters)/jplot/jplotSetWriterRunTime.C
+$(setWriters)/raw/rawSetWriterRunTime.C
+$(setWriters)/vtk/vtkSetWriterRunTime.C
+$(setWriters)/xmgrace/xmgraceSetWriterRunTime.C
+$(setWriters)/csv/csvSetWriterRunTime.C
 
 LIB = $(FOAM_LIBBIN)/libfileFormats

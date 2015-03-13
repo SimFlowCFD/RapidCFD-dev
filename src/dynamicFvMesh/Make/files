@@ -1,23 +1,23 @@
-dynamicFvMesh/dynamicFvMesh.cu
-dynamicFvMesh/dynamicFvMeshNew.cu
-staticFvMesh/staticFvMesh.cu
-dynamicMotionSolverFvMesh/dynamicMotionSolverFvMesh.cu
-dynamicInkJetFvMesh/dynamicInkJetFvMesh.cu
-dynamicRefineFvMesh/dynamicRefineFvMesh.cu
+dynamicFvMesh/dynamicFvMesh.C
+dynamicFvMesh/dynamicFvMeshNew.C
+staticFvMesh/staticFvMesh.C
+dynamicMotionSolverFvMesh/dynamicMotionSolverFvMesh.C
+dynamicInkJetFvMesh/dynamicInkJetFvMesh.C
+dynamicRefineFvMesh/dynamicRefineFvMesh.C
 
-solidBodyMotionFvMesh/solidBodyMotionFvMesh.cu
-solidBodyMotionFvMesh/multiSolidBodyMotionFvMesh.cu
+solidBodyMotionFvMesh/solidBodyMotionFvMesh.C
+solidBodyMotionFvMesh/multiSolidBodyMotionFvMesh.C
 solidBodyMotionFunctions = solidBodyMotionFvMesh/solidBodyMotionFunctions
-$(solidBodyMotionFunctions)/solidBodyMotionFunction/solidBodyMotionFunction.cu
-$(solidBodyMotionFunctions)/solidBodyMotionFunction/solidBodyMotionFunctionNew.cu
-$(solidBodyMotionFunctions)/SDA/SDA.cu
-$(solidBodyMotionFunctions)/tabulated6DoFMotion/tabulated6DoFMotion.cu
-$(solidBodyMotionFunctions)/linearMotion/linearMotion.cu
-$(solidBodyMotionFunctions)/rotatingMotion/rotatingMotion.cu
-$(solidBodyMotionFunctions)/axisRotationMotion/axisRotationMotion.cu
-$(solidBodyMotionFunctions)/multiMotion/multiMotion.cu
-$(solidBodyMotionFunctions)/oscillatingLinearMotion/oscillatingLinearMotion.cu
-$(solidBodyMotionFunctions)/oscillatingRotatingMotion/oscillatingRotatingMotion.cu
-solidBodyMotionFvMesh/pointPatchFields/derived/solidBodyMotionDisplacement/solidBodyMotionDisplacementPointPatchVectorField.cu
+$(solidBodyMotionFunctions)/solidBodyMotionFunction/solidBodyMotionFunction.C
+$(solidBodyMotionFunctions)/solidBodyMotionFunction/solidBodyMotionFunctionNew.C
+$(solidBodyMotionFunctions)/SDA/SDA.C
+$(solidBodyMotionFunctions)/tabulated6DoFMotion/tabulated6DoFMotion.C
+$(solidBodyMotionFunctions)/linearMotion/linearMotion.C
+$(solidBodyMotionFunctions)/rotatingMotion/rotatingMotion.C
+$(solidBodyMotionFunctions)/axisRotationMotion/axisRotationMotion.C
+$(solidBodyMotionFunctions)/multiMotion/multiMotion.C
+$(solidBodyMotionFunctions)/oscillatingLinearMotion/oscillatingLinearMotion.C
+$(solidBodyMotionFunctions)/oscillatingRotatingMotion/oscillatingRotatingMotion.C
+solidBodyMotionFvMesh/pointPatchFields/derived/solidBodyMotionDisplacement/solidBodyMotionDisplacementPointPatchVectorField.C
 
 LIB = $(FOAM_LIBBIN)/libdynamicFvMesh

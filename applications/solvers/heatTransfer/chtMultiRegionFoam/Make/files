@@ -1,5 +1,5 @@
-fluid/compressibleCourantNo.cu
-solid/solidRegionDiffNo.cu
-chtMultiRegionFoam.cu
+fluid/compressibleCourantNo.C
+solid/solidRegionDiffNo.C
+chtMultiRegionFoam.C
 
 EXE = $(FOAM_APPBIN)/chtMultiRegionFoam

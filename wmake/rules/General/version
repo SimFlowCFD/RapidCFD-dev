@@ -6,8 +6,8 @@
 Cvertoo = \
     sed -e 's!VERSION_STRING!$(shell wmakePrintBuild -major)!' \
         -e 's!BUILD_STRING!$(shell wmakePrintBuild -update)!' \
-        $$SOURCE > $*.cu; \
-    $(CC) $(c++FLAGS) -c $*.cu -o $@
+        $$SOURCE > $*.C; \
+    $(CC) $(c++FLAGS) -c $*.C -o $@
 
 .Cver.dep:
 	$(MAKE_DEP)

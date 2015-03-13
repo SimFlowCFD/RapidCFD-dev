@@ -1,53 +1,53 @@
 /* RAS turbulence models */
-RASModel/RASModel.cu
-laminar/laminar.cu
-kEpsilon/kEpsilon.cu
-RNGkEpsilon/RNGkEpsilon.cu
-LaunderSharmaKE/LaunderSharmaKE.cu
-realizableKE/realizableKE.cu
-SpalartAllmaras/SpalartAllmaras.cu
-kOmegaSST/kOmegaSST.cu
-v2f/v2f.cu
+RASModel/RASModel.C
+laminar/laminar.C
+kEpsilon/kEpsilon.C
+RNGkEpsilon/RNGkEpsilon.C
+LaunderSharmaKE/LaunderSharmaKE.C
+realizableKE/realizableKE.C
+SpalartAllmaras/SpalartAllmaras.C
+kOmegaSST/kOmegaSST.C
+v2f/v2f.C
 
 /* Wall functions */
 wallFunctions = derivedFvPatchFields/wallFunctions
 alphatWallFunctions = $(wallFunctions)/alphatWallFunctions
-$(alphatWallFunctions)/alphatWallFunction/alphatWallFunctionFvPatchScalarField.cu
-$(alphatWallFunctions)/alphatJayatillekeWallFunction/alphatJayatillekeWallFunctionFvPatchScalarField.cu
+$(alphatWallFunctions)/alphatWallFunction/alphatWallFunctionFvPatchScalarField.C
+$(alphatWallFunctions)/alphatJayatillekeWallFunction/alphatJayatillekeWallFunctionFvPatchScalarField.C
 
 mutWallFunctions = $(wallFunctions)/mutWallFunctions
-$(mutWallFunctions)/mutWallFunction/mutWallFunctionFvPatchScalarField.cu
+$(mutWallFunctions)/mutWallFunction/mutWallFunctionFvPatchScalarField.C
 
-$(mutWallFunctions)/mutkWallFunction/mutkWallFunctionFvPatchScalarField.cu
-$(mutWallFunctions)/mutkRoughWallFunction/mutkRoughWallFunctionFvPatchScalarField.cu
+$(mutWallFunctions)/mutkWallFunction/mutkWallFunctionFvPatchScalarField.C
+$(mutWallFunctions)/mutkRoughWallFunction/mutkRoughWallFunctionFvPatchScalarField.C
 
-$(mutWallFunctions)/mutUWallFunction/mutUWallFunctionFvPatchScalarField.cu
-$(mutWallFunctions)/mutURoughWallFunction/mutURoughWallFunctionFvPatchScalarField.cu
-$(mutWallFunctions)/mutUSpaldingWallFunction/mutUSpaldingWallFunctionFvPatchScalarField.cu
-$(mutWallFunctions)/mutLowReWallFunction/mutLowReWallFunctionFvPatchScalarField.cu
+$(mutWallFunctions)/mutUWallFunction/mutUWallFunctionFvPatchScalarField.C
+$(mutWallFunctions)/mutURoughWallFunction/mutURoughWallFunctionFvPatchScalarField.C
+$(mutWallFunctions)/mutUSpaldingWallFunction/mutUSpaldingWallFunctionFvPatchScalarField.C
+$(mutWallFunctions)/mutLowReWallFunction/mutLowReWallFunctionFvPatchScalarField.C
 
 epsilonWallFunctions = $(wallFunctions)/epsilonWallFunctions
-$(epsilonWallFunctions)/epsilonWallFunction/epsilonWallFunctionFvPatchScalarField.cu
-$(epsilonWallFunctions)/epsilonLowReWallFunction/epsilonLowReWallFunctionFvPatchScalarField.cu
+$(epsilonWallFunctions)/epsilonWallFunction/epsilonWallFunctionFvPatchScalarField.C
+$(epsilonWallFunctions)/epsilonLowReWallFunction/epsilonLowReWallFunctionFvPatchScalarField.C
 
 fWallFunctions = $(wallFunctions)/fWallFunctions
-$(fWallFunctions)/fWallFunction/fWallFunctionFvPatchScalarField.cu
+$(fWallFunctions)/fWallFunction/fWallFunctionFvPatchScalarField.C
 
 omegaWallFunctions = $(wallFunctions)/omegaWallFunctions
-$(omegaWallFunctions)/omegaWallFunction/omegaWallFunctionFvPatchScalarField.cu
+$(omegaWallFunctions)/omegaWallFunction/omegaWallFunctionFvPatchScalarField.C
 
 kqRWallFunctions = $(wallFunctions)/kqRWallFunctions
-$(kqRWallFunctions)/kqRWallFunction/kqRWallFunctionFvPatchFields.cu
-$(kqRWallFunctions)/kLowReWallFunction/kLowReWallFunctionFvPatchScalarField.cu
+$(kqRWallFunctions)/kqRWallFunction/kqRWallFunctionFvPatchFields.C
+$(kqRWallFunctions)/kLowReWallFunction/kLowReWallFunctionFvPatchScalarField.C
 
 v2WallFunctions = $(wallFunctions)/v2WallFunctions
-$(v2WallFunctions)/v2WallFunction/v2WallFunctionFvPatchScalarField.cu
+$(v2WallFunctions)/v2WallFunction/v2WallFunctionFvPatchScalarField.C
 
 /* Patch fields */
 
-derivedFvPatchFields/convectiveHeatTransfer/convectiveHeatTransferFvPatchScalarField.cu
-derivedFvPatchFields/turbulentMixingLengthDissipationRateInlet/turbulentMixingLengthDissipationRateInletFvPatchScalarField.cu
-derivedFvPatchFields/turbulentMixingLengthFrequencyInlet/turbulentMixingLengthFrequencyInletFvPatchScalarField.cu
-backwardsCompatibility/wallFunctions/backwardsCompatibilityWallFunctions.cu
+derivedFvPatchFields/convectiveHeatTransfer/convectiveHeatTransferFvPatchScalarField.C
+derivedFvPatchFields/turbulentMixingLengthDissipationRateInlet/turbulentMixingLengthDissipationRateInletFvPatchScalarField.C
+derivedFvPatchFields/turbulentMixingLengthFrequencyInlet/turbulentMixingLengthFrequencyInletFvPatchScalarField.C
+backwardsCompatibility/wallFunctions/backwardsCompatibilityWallFunctions.C
 
 LIB = $(FOAM_LIBBIN)/libcompressibleRASModels

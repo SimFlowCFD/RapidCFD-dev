@@ -1,4 +1,4 @@
-systemCall.cu
-systemCallFunctionObject.cu
+systemCall.C
+systemCallFunctionObject.C
 
 LIB = $(FOAM_LIBBIN)/libsystemCall

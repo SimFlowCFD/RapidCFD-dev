@@ -1,68 +1,68 @@
 /* Surface film models */
-surfaceFilmModel/surfaceFilmModel.cu
-surfaceFilmModel/surfaceFilmModelNew.cu
-noFilm/noFilm.cu
-kinematicSingleLayer/kinematicSingleLayer.cu
-thermoSingleLayer/thermoSingleLayer.cu
+surfaceFilmModel/surfaceFilmModel.C
+surfaceFilmModel/surfaceFilmModelNew.C
+noFilm/noFilm.C
+kinematicSingleLayer/kinematicSingleLayer.C
+thermoSingleLayer/thermoSingleLayer.C
 
 
 /* Sub-models */
-submodels/filmSubModelBase.cu
+submodels/filmSubModelBase.C
 
 KINEMATICMODELS=submodels/kinematic
-$(KINEMATICMODELS)/force/force/force.cu
-$(KINEMATICMODELS)/force/force/forceNew.cu
-$(KINEMATICMODELS)/force/forceList/forceList.cu
-$(KINEMATICMODELS)/force/contactAngleForce/contactAngleForce.cu
-$(KINEMATICMODELS)/force/thermocapillaryForce/thermocapillaryForce.cu
+$(KINEMATICMODELS)/force/force/force.C
+$(KINEMATICMODELS)/force/force/forceNew.C
+$(KINEMATICMODELS)/force/forceList/forceList.C
+$(KINEMATICMODELS)/force/contactAngleForce/contactAngleForce.C
+$(KINEMATICMODELS)/force/thermocapillaryForce/thermocapillaryForce.C
 
-$(KINEMATICMODELS)/injectionModel/injectionModel/injectionModel.cu
-$(KINEMATICMODELS)/injectionModel/injectionModel/injectionModelNew.cu
-$(KINEMATICMODELS)/injectionModel/injectionModelList/injectionModelList.cu
-$(KINEMATICMODELS)/injectionModel/drippingInjection/drippingInjection.cu
-$(KINEMATICMODELS)/injectionModel/removeInjection/removeInjection.cu
-$(KINEMATICMODELS)/injectionModel/curvatureSeparation/curvatureSeparation.cu
+$(KINEMATICMODELS)/injectionModel/injectionModel/injectionModel.C
+$(KINEMATICMODELS)/injectionModel/injectionModel/injectionModelNew.C
+$(KINEMATICMODELS)/injectionModel/injectionModelList/injectionModelList.C
+$(KINEMATICMODELS)/injectionModel/drippingInjection/drippingInjection.C
+$(KINEMATICMODELS)/injectionModel/removeInjection/removeInjection.C
+$(KINEMATICMODELS)/injectionModel/curvatureSeparation/curvatureSeparation.C
 
-$(KINEMATICMODELS)/filmThermoModel/filmThermoModel/filmThermoModel.cu
-$(KINEMATICMODELS)/filmThermoModel/filmThermoModel/filmThermoModelNew.cu
-$(KINEMATICMODELS)/filmThermoModel/constantFilmThermo/constantFilmThermo.cu
-$(KINEMATICMODELS)/filmThermoModel/liquidFilmThermo/liquidFilmThermo.cu
+$(KINEMATICMODELS)/filmThermoModel/filmThermoModel/filmThermoModel.C
+$(KINEMATICMODELS)/filmThermoModel/filmThermoModel/filmThermoModelNew.C
+$(KINEMATICMODELS)/filmThermoModel/constantFilmThermo/constantFilmThermo.C
+$(KINEMATICMODELS)/filmThermoModel/liquidFilmThermo/liquidFilmThermo.C
 
-$(KINEMATICMODELS)/filmTurbulenceModel/filmTurbulenceModel/filmTurbulenceModel.cu
-$(KINEMATICMODELS)/filmTurbulenceModel/filmTurbulenceModel/filmTurbulenceModelNew.cu
-$(KINEMATICMODELS)/filmTurbulenceModel/laminar/laminar.cu
+$(KINEMATICMODELS)/filmTurbulenceModel/filmTurbulenceModel/filmTurbulenceModel.C
+$(KINEMATICMODELS)/filmTurbulenceModel/filmTurbulenceModel/filmTurbulenceModelNew.C
+$(KINEMATICMODELS)/filmTurbulenceModel/laminar/laminar.C
 
 THERMOMODELS=submodels/thermo
-$(THERMOMODELS)/phaseChangeModel/phaseChangeModel/phaseChangeModel.cu
-$(THERMOMODELS)/phaseChangeModel/phaseChangeModel/phaseChangeModelNew.cu
-$(THERMOMODELS)/phaseChangeModel/noPhaseChange/noPhaseChange.cu
-$(THERMOMODELS)/phaseChangeModel/standardPhaseChange/standardPhaseChange.cu
-$(THERMOMODELS)/phaseChangeModel/solidification/solidification.cu
+$(THERMOMODELS)/phaseChangeModel/phaseChangeModel/phaseChangeModel.C
+$(THERMOMODELS)/phaseChangeModel/phaseChangeModel/phaseChangeModelNew.C
+$(THERMOMODELS)/phaseChangeModel/noPhaseChange/noPhaseChange.C
+$(THERMOMODELS)/phaseChangeModel/standardPhaseChange/standardPhaseChange.C
+$(THERMOMODELS)/phaseChangeModel/solidification/solidification.C
 
-$(THERMOMODELS)/heatTransferModel/heatTransferModel/heatTransferModel.cu
-$(THERMOMODELS)/heatTransferModel/heatTransferModel/heatTransferModelNew.cu
-$(THERMOMODELS)/heatTransferModel/constantHeatTransfer/constantHeatTransfer.cu
-$(THERMOMODELS)/heatTransferModel/mappedConvectiveHeatTransfer/mappedConvectiveHeatTransfer.cu
+$(THERMOMODELS)/heatTransferModel/heatTransferModel/heatTransferModel.C
+$(THERMOMODELS)/heatTransferModel/heatTransferModel/heatTransferModelNew.C
+$(THERMOMODELS)/heatTransferModel/constantHeatTransfer/constantHeatTransfer.C
+$(THERMOMODELS)/heatTransferModel/mappedConvectiveHeatTransfer/mappedConvectiveHeatTransfer.C
 
-$(THERMOMODELS)/filmRadiationModel/filmRadiationModel/filmRadiationModel.cu
-$(THERMOMODELS)/filmRadiationModel/filmRadiationModel/filmRadiationModelNew.cu
-$(THERMOMODELS)/filmRadiationModel/noRadiation/noRadiation.cu
-$(THERMOMODELS)/filmRadiationModel/constantRadiation/constantRadiation.cu
-$(THERMOMODELS)/filmRadiationModel/primaryRadiation/primaryRadiation.cu
-$(THERMOMODELS)/filmRadiationModel/standardRadiation/standardRadiation.cu
+$(THERMOMODELS)/filmRadiationModel/filmRadiationModel/filmRadiationModel.C
+$(THERMOMODELS)/filmRadiationModel/filmRadiationModel/filmRadiationModelNew.C
+$(THERMOMODELS)/filmRadiationModel/noRadiation/noRadiation.C
+$(THERMOMODELS)/filmRadiationModel/constantRadiation/constantRadiation.C
+$(THERMOMODELS)/filmRadiationModel/primaryRadiation/primaryRadiation.C
+$(THERMOMODELS)/filmRadiationModel/standardRadiation/standardRadiation.C
 
-$(THERMOMODELS)/filmViscosityModel/filmViscosityModel/filmViscosityModel.cu
-$(THERMOMODELS)/filmViscosityModel/filmViscosityModel/filmViscosityModelNew.cu
-$(THERMOMODELS)/filmViscosityModel/constantViscosity/constantViscosity.cu
-$(THERMOMODELS)/filmViscosityModel/liquidViscosity/liquidViscosity.cu
-$(THERMOMODELS)/filmViscosityModel/thixotropicViscosity/thixotropicViscosity.cu
+$(THERMOMODELS)/filmViscosityModel/filmViscosityModel/filmViscosityModel.C
+$(THERMOMODELS)/filmViscosityModel/filmViscosityModel/filmViscosityModelNew.C
+$(THERMOMODELS)/filmViscosityModel/constantViscosity/constantViscosity.C
+$(THERMOMODELS)/filmViscosityModel/liquidViscosity/liquidViscosity.C
+$(THERMOMODELS)/filmViscosityModel/thixotropicViscosity/thixotropicViscosity.C
 
 
 /* Boundary conditions */
 PATCHFIELDS=derivedFvPatchFields
-$(PATCHFIELDS)/filmHeightInletVelocity/filmHeightInletVelocityFvPatchVectorField.cu
-$(PATCHFIELDS)/inclinedFilmNusseltHeight/inclinedFilmNusseltHeightFvPatchScalarField.cu
-$(PATCHFIELDS)/inclinedFilmNusseltInletVelocity/inclinedFilmNusseltInletVelocityFvPatchVectorField.cu
+$(PATCHFIELDS)/filmHeightInletVelocity/filmHeightInletVelocityFvPatchVectorField.C
+$(PATCHFIELDS)/inclinedFilmNusseltHeight/inclinedFilmNusseltHeightFvPatchScalarField.C
+$(PATCHFIELDS)/inclinedFilmNusseltInletVelocity/inclinedFilmNusseltInletVelocityFvPatchVectorField.C
 
 
 LIB = $(FOAM_LIBBIN)/libsurfaceFilmModels

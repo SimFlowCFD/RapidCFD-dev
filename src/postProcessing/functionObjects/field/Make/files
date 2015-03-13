@@ -1,49 +1,49 @@
-fieldAverage/fieldAverage/fieldAverage.cu
-fieldAverage/fieldAverageItem/fieldAverageItem.cu
-fieldAverage/fieldAverageItem/fieldAverageItemIO.cu
-fieldAverage/fieldAverageFunctionObject/fieldAverageFunctionObject.cu
+fieldAverage/fieldAverage/fieldAverage.C
+fieldAverage/fieldAverageItem/fieldAverageItem.C
+fieldAverage/fieldAverageItem/fieldAverageItemIO.C
+fieldAverage/fieldAverageFunctionObject/fieldAverageFunctionObject.C
 
-fieldCoordinateSystemTransform/fieldCoordinateSystemTransform.cu
-fieldCoordinateSystemTransform/fieldCoordinateSystemTransformFunctionObject.cu
+fieldCoordinateSystemTransform/fieldCoordinateSystemTransform.C
+fieldCoordinateSystemTransform/fieldCoordinateSystemTransformFunctionObject.C
 
-fieldMinMax/fieldMinMax.cu
-fieldMinMax/fieldMinMaxFunctionObject.cu
+fieldMinMax/fieldMinMax.C
+fieldMinMax/fieldMinMaxFunctionObject.C
 
-fieldValues/fieldValue/fieldValue.cu
-fieldValues/fieldValue/fieldValueNew.cu
-fieldValues/fieldValueDelta/fieldValueDelta.cu
-fieldValues/fieldValueDelta/fieldValueDeltaFunctionObject.cu
-fieldValues/faceSource/faceSource.cu
-fieldValues/faceSource/faceSourceFunctionObject.cu
-fieldValues/cellSource/cellSource.cu
-fieldValues/cellSource/cellSourceFunctionObject.cu
+fieldValues/fieldValue/fieldValue.C
+fieldValues/fieldValue/fieldValueNew.C
+fieldValues/fieldValueDelta/fieldValueDelta.C
+fieldValues/fieldValueDelta/fieldValueDeltaFunctionObject.C
+fieldValues/faceSource/faceSource.C
+fieldValues/faceSource/faceSourceFunctionObject.C
+fieldValues/cellSource/cellSource.C
+fieldValues/cellSource/cellSourceFunctionObject.C
 
-nearWallFields/nearWallFields.cu
-nearWallFields/nearWallFieldsFunctionObject.cu
-nearWallFields/findCellParticle.cu
-nearWallFields/findCellParticleCloud.cu
+nearWallFields/nearWallFields.C
+nearWallFields/nearWallFieldsFunctionObject.C
+nearWallFields/findCellParticle.C
+nearWallFields/findCellParticleCloud.C
 
-processorField/processorField.cu
-processorField/processorFieldFunctionObject.cu
+processorField/processorField.C
+processorField/processorFieldFunctionObject.C
 
-readFields/readFields.cu
-readFields/readFieldsFunctionObject.cu
+readFields/readFields.C
+readFields/readFieldsFunctionObject.C
 
-streamLine/streamLine.cu
-streamLine/streamLineParticle.cu
-streamLine/streamLineParticleCloud.cu
-streamLine/streamLineFunctionObject.cu
+streamLine/streamLine.C
+streamLine/streamLineParticle.C
+streamLine/streamLineParticleCloud.C
+streamLine/streamLineFunctionObject.C
 
-wallBoundedStreamLine/wallBoundedStreamLine.cu
-wallBoundedStreamLine/wallBoundedStreamLineFunctionObject.cu
-wallBoundedStreamLine/wallBoundedStreamLineParticle.cu
-wallBoundedStreamLine/wallBoundedStreamLineParticleCloud.cu
-wallBoundedStreamLine/wallBoundedParticle.cu
+wallBoundedStreamLine/wallBoundedStreamLine.C
+wallBoundedStreamLine/wallBoundedStreamLineFunctionObject.C
+wallBoundedStreamLine/wallBoundedStreamLineParticle.C
+wallBoundedStreamLine/wallBoundedStreamLineParticleCloud.C
+wallBoundedStreamLine/wallBoundedParticle.C
 
-surfaceInterpolateFields/surfaceInterpolateFields.cu
-surfaceInterpolateFields/surfaceInterpolateFieldsFunctionObject.cu
+surfaceInterpolateFields/surfaceInterpolateFields.C
+surfaceInterpolateFields/surfaceInterpolateFieldsFunctionObject.C
 
-regionSizeDistribution/regionSizeDistribution.cu
-regionSizeDistribution/regionSizeDistributionFunctionObject.cu
+regionSizeDistribution/regionSizeDistribution.C
+regionSizeDistribution/regionSizeDistributionFunctionObject.C
 
 LIB = $(FOAM_LIBBIN)/libfieldFunctionObjects

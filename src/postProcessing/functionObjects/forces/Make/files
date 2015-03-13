@@ -1,7 +1,7 @@
-forces/forces.cu
-forces/forcesFunctionObject.cu
+forces/forces.C
+forces/forcesFunctionObject.C
 
-forceCoeffs/forceCoeffs.cu
-forceCoeffs/forceCoeffsFunctionObject.cu
+forceCoeffs/forceCoeffs.C
+forceCoeffs/forceCoeffsFunctionObject.C
 
 LIB = $(FOAM_LIBBIN)/libforces

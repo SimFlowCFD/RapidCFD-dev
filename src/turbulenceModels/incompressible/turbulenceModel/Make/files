@@ -1,6 +1,6 @@
-turbulenceModel.cu
-laminar/laminar.cu
-derivedFvPatchFields/turbulentHeatFluxTemperature/turbulentHeatFluxTemperatureFvPatchScalarField.cu
-derivedFvPatchFields/atmBoundaryLayerInletVelocity/atmBoundaryLayerInletVelocityFvPatchVectorField.cu
+turbulenceModel.C
+laminar/laminar.C
+derivedFvPatchFields/turbulentHeatFluxTemperature/turbulentHeatFluxTemperatureFvPatchScalarField.C
+derivedFvPatchFields/atmBoundaryLayerInletVelocity/atmBoundaryLayerInletVelocityFvPatchVectorField.C
 
 LIB = $(FOAM_LIBBIN)/libincompressibleTurbulenceModel

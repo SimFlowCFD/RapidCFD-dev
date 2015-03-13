@@ -1,15 +1,15 @@
-LESModel/LESModel.cu
-DESModel/DESModel.cu
-GenEddyVisc/GenEddyVisc.cu
-GenSGSStress/GenSGSStress.cu
+LESModel/LESModel.C
+DESModel/DESModel.C
+GenEddyVisc/GenEddyVisc.C
+GenSGSStress/GenSGSStress.C
 
-Smagorinsky/Smagorinsky.cu
-oneEqEddy/oneEqEddy.cu
-lowReOneEqEddy/lowReOneEqEddy.cu
-homogeneousDynOneEqEddy/homogeneousDynOneEqEddy.cu
-SpalartAllmaras/SpalartAllmaras.cu
+Smagorinsky/Smagorinsky.C
+oneEqEddy/oneEqEddy.C
+lowReOneEqEddy/lowReOneEqEddy.C
+homogeneousDynOneEqEddy/homogeneousDynOneEqEddy.C
+SpalartAllmaras/SpalartAllmaras.C
 
-compressibleLESdelta/compressibleLESdelta.cu
-vanDriestDelta/vanDriestDelta.cu
+compressibleLESdelta/compressibleLESdelta.C
+vanDriestDelta/vanDriestDelta.C
 
 LIB = $(FOAM_LIBBIN)/libcompressibleLESModels

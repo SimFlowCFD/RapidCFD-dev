@@ -1,7 +1,7 @@
-atomicWeights/atomicWeights.cu
-specie/specie.cu
+atomicWeights/atomicWeights.C
+specie/specie.C
 /*
-reaction/reactions/makeReactions.cu
-reaction/reactions/makeLangmuirHinshelwoodReactions.cu
+reaction/reactions/makeReactions.C
+reaction/reactions/makeLangmuirHinshelwoodReactions.C
 */
 LIB = $(FOAM_LIBBIN)/libspecie

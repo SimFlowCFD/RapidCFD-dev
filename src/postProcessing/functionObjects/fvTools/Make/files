@@ -1,10 +1,10 @@
-calcFvcDiv/calcFvcDiv.cu
-calcFvcDiv/calcFvcDivFunctionObject.cu
+calcFvcDiv/calcFvcDiv.C
+calcFvcDiv/calcFvcDivFunctionObject.C
 
-calcFvcGrad/calcFvcGrad.cu
-calcFvcGrad/calcFvcGradFunctionObject.cu
+calcFvcGrad/calcFvcGrad.C
+calcFvcGrad/calcFvcGradFunctionObject.C
 
-calcMag/calcMag.cu
-calcMag/calcMagFunctionObject.cu
+calcMag/calcMag.C
+calcMag/calcMagFunctionObject.C
 
 LIB = $(FOAM_LIBBIN)/libFVFunctionObjects

@@ -1,50 +1,50 @@
-codedFunctionObject/codedFunctionObject.cu
+codedFunctionObject/codedFunctionObject.C
 
-CourantNo/CourantNo.cu
-CourantNo/CourantNoFunctionObject.cu
+CourantNo/CourantNo.C
+CourantNo/CourantNoFunctionObject.C
 /*
-Lambda2/Lambda2.cu
-Lambda2/Lambda2FunctionObject.cu
+Lambda2/Lambda2.C
+Lambda2/Lambda2FunctionObject.C
 
-Peclet/Peclet.cu
-Peclet/PecletFunctionObject.cu
+Peclet/Peclet.C
+Peclet/PecletFunctionObject.C
 
-Q/Q.cu
-Q/QFunctionObject.cu
+Q/Q.C
+Q/QFunctionObject.C
 
-blendingFactor/blendingFactor.cu
-blendingFactor/blendingFactorFunctionObject.cu
+blendingFactor/blendingFactor.C
+blendingFactor/blendingFactorFunctionObject.C
 
-DESModelRegions/DESModelRegions.cu
-DESModelRegions/DESModelRegionsFunctionObject.cu
+DESModelRegions/DESModelRegions.C
+DESModelRegions/DESModelRegionsFunctionObject.C
 
-dsmcFields/dsmcFields.cu
-dsmcFields/dsmcFieldsFunctionObject.cu
+dsmcFields/dsmcFields.C
+dsmcFields/dsmcFieldsFunctionObject.C
 
-pressureTools/pressureTools.cu
-pressureTools/pressureToolsFunctionObject.cu
+pressureTools/pressureTools.C
+pressureTools/pressureToolsFunctionObject.C
 
-scalarTransport/scalarTransport.cu
-scalarTransport/scalarTransportFunctionObject.cu
+scalarTransport/scalarTransport.C
+scalarTransport/scalarTransportFunctionObject.C
 
-timeActivatedFileUpdate/timeActivatedFileUpdate.cu
-timeActivatedFileUpdate/timeActivatedFileUpdateFunctionObject.cu
+timeActivatedFileUpdate/timeActivatedFileUpdate.C
+timeActivatedFileUpdate/timeActivatedFileUpdateFunctionObject.C
 
-turbulenceFields/turbulenceFields.cu
-turbulenceFields/turbulenceFieldsFunctionObject.cu
+turbulenceFields/turbulenceFields.C
+turbulenceFields/turbulenceFieldsFunctionObject.C
 
-vorticity/vorticity.cu
-vorticity/vorticityFunctionObject.cu
+vorticity/vorticity.C
+vorticity/vorticityFunctionObject.C
 
-wallShearStress/wallShearStress.cu
-wallShearStress/wallShearStressFunctionObject.cu
+wallShearStress/wallShearStress.C
+wallShearStress/wallShearStressFunctionObject.C
 
-yPlusLES/yPlusLES.cu
-yPlusLES/yPlusLESFunctionObject.cu
+yPlusLES/yPlusLES.C
+yPlusLES/yPlusLESFunctionObject.C
 
-yPlusRAS/yPlusRAS.cu
-yPlusRAS/yPlusRASFunctionObject.cu
+yPlusRAS/yPlusRAS.C
+yPlusRAS/yPlusRASFunctionObject.C
 
-setTimeStep/setTimeStepFunctionObject.cu
+setTimeStep/setTimeStepFunctionObject.C
 */
 LIB = $(FOAM_LIBBIN)/libutilityFunctionObjects

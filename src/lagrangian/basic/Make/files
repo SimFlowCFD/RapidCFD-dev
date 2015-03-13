@@ -1,8 +1,8 @@
-particle/particle.cu
-particle/particleIO.cu
-passiveParticle/passiveParticleCloud.cu
-indexedParticle/indexedParticleCloud.cu
+particle/particle.C
+particle/particleIO.C
+passiveParticle/passiveParticleCloud.C
+indexedParticle/indexedParticleCloud.C
 
-InteractionLists/referredWallFace/referredWallFace.cu
+InteractionLists/referredWallFace/referredWallFace.C
 
 LIB = $(FOAM_LIBBIN)/liblagrangian

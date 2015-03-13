@@ -1,3 +1,3 @@
-cavitatingFoam.cu
+cavitatingFoam.C
 
 EXE = $(FOAM_APPBIN)/cavitatingFoam

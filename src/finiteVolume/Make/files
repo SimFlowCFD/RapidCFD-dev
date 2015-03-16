@@ -294,7 +294,6 @@ $(limitedSchemes)/limitWith/limitWith.C
 
 multivariateSchemes = $(surfaceInterpolation)/multivariateSchemes
 $(multivariateSchemes)/multivariateSurfaceInterpolationScheme/multivariateSurfaceInterpolationSchemes.C
-/*
 $(multivariateSchemes)/multivariateSelectionScheme/multivariateSelectionSchemes.C
 $(multivariateSchemes)/multivariateIndependentScheme/multivariateIndependentSchemes.C
 $(multivariateSchemes)/upwind/multivariateUpwind.C
@@ -305,7 +304,7 @@ $(multivariateSchemes)/SuperBee/multivariateSuperBee.C
 $(multivariateSchemes)/MUSCL/multivariateMUSCL.C
 $(multivariateSchemes)/limitedLinear/multivariateLimitedLinear.C
 $(multivariateSchemes)/limitedCubic/multivariateLimitedCubic.C
-*/
+
 finiteVolume/fv/fv.C
 finiteVolume/fvSchemes/fvSchemes.C
 

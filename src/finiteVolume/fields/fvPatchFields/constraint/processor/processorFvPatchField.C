@@ -296,6 +296,13 @@ void Foam::processorFvPatchField<Type>::evaluate
             }
             outstandingSendRequest_ = -1;
             outstandingRecvRequest_ = -1;
+
+            thrust::copy
+            (
+                receiveBuf_.begin(),
+                receiveBuf_.end(),
+                this->begin()
+            );
         }
         else
         {

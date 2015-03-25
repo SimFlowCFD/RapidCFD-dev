@@ -41,7 +41,7 @@ void Foam::fvMatrix<Foam::scalar>::setComponentReference
     {
         if (Pstream::master())
         {
-			scalar delta = diag().get(psi_.mesh().boundary()[patchi].faceCells().get(facei));
+            scalar delta = diag().get(psi_.mesh().boundary()[patchi].faceCells().get(facei));
 			
             internalCoeffs_[patchi].set(facei, internalCoeffs_[patchi].get(facei)+delta);
 

@@ -168,26 +168,14 @@ void surfaceIntegrate
         )
     );
 
-/*    forAll(owner, facei)
-    {
-        ivf[owner[facei]] += issf[facei];
-        ivf[neighbour[facei]] -= issf[facei];
-    }*/
-
     forAll(mesh.boundary(), patchi)
     {
         const fvsPatchField<Type>& pssf = ssf.boundaryField()[patchi];
 
         const labelgpuList& pcells = mesh.lduAddr().patchSortCells(patchi);
+        const labelgpuList& plosort = mesh.lduAddr().patchSortAddr(patchi);
+        const labelgpuList& plosortStart = mesh.lduAddr().patchSortStartAddr(patchi);
 
-        const labelgpuList& losort = mesh.lduAddr().patchSortAddr(patchi);
-        const labelgpuList& losortStart = mesh.lduAddr().patchSortStartAddr(patchi);
-/*
-        forAll(mesh.boundary()[patchi], facei)
-        {
-            ivf[pFaceCells[facei]] += pssf[facei];
-        }
-*/
         thrust::transform
         (
             thrust::make_counting_iterator(0),
@@ -205,8 +193,8 @@ void surfaceIntegrate
             surfaceIntegratePatchFunctor<Type>
             (
                 pssf.data(),
-                losortStart.data(),
-                losort.data()
+                plosortStart.data(),
+                plosort.data()
             )
         );
     }

@@ -32,12 +32,23 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-struct processorFvPatchScalarFunctor{
+struct processorFvPatchScalarFunctor
+{
     const scalar* coeffs;
     const scalar* val;
-    processorFvPatchScalarFunctor(const scalar* _coeffs, const scalar* _val):coeffs(_coeffs),val(_val){}
+
+    processorFvPatchScalarFunctor
+    (
+        const scalar* _coeffs, 
+        const scalar* _val
+    ):
+        coeffs(_coeffs),
+        val(_val)
+    {}
+
     __HOST____DEVICE__
-    scalar operator()(const label& id){
+    scalar operator()(const label& id)
+    {
         return -coeffs[id]*val[id];
     }
 };
@@ -134,17 +145,18 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         outstandingRecvRequest_ = -1;
 
         scalargpuReceiveBuf_ = scalarReceiveBuf_;
-        // Consume straight from scalarReceiveBuf_
-/*
-        forAll(faceCells, elemI)
-        {
-            result[faceCells[elemI]] -= coeffs[elemI]*scalarReceiveBuf_[elemI];
-        }
-*/
-        matrixPatchOperation(this->patch().index(),
-                             result,
-                             this->patch().boundaryMesh().mesh().lduAddr(),
-                             processorFvPatchScalarFunctor(coeffs.data(),scalargpuReceiveBuf_.data()));
+
+        matrixPatchOperation
+        (
+            this->patch().index(),
+            result,
+            this->patch().boundaryMesh().mesh().lduAddr(),
+            processorFvPatchScalarFunctor
+            (
+                coeffs.data(),
+                scalargpuReceiveBuf_.data()
+            )
+       );
     }
     else
     {
@@ -152,16 +164,18 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         (
             procPatch_.compressedReceive<scalar>(commsType, this->size())()
         );
-/*
-        forAll(faceCells, elemI)
-        {
-            result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-        }
-*/
-        matrixPatchOperation(this->patch().index(),
-                             result,
-                             this->patch().boundaryMesh().mesh().lduAddr(),
-                             processorFvPatchScalarFunctor(coeffs.data(),pnf.data()));
+
+        matrixPatchOperation
+        (
+            this->patch().index(),
+            result,
+            this->patch().boundaryMesh().mesh().lduAddr(),
+            processorFvPatchScalarFunctor
+            (
+                coeffs.data(),
+                pnf.data()
+            )
+        );
     }
 
     const_cast<processorFvPatchField<scalar>&>(*this).updatedMatrix() = true;

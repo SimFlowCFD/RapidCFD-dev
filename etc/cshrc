@@ -78,10 +78,9 @@ setenv WM_PRECISION_OPTION DP
 #    WM_COMPILE_OPTION = Opt | Debug | Prof
 setenv WM_COMPILE_OPTION Opt
 
-#- MPI implementation:
-#    WM_MPLIB = SYSTEMOPENMPI | OPENMPI | MPICH | MPICH-GM | HPMPI
-#               | GAMMA | MPI | QSMPI | SGIMPI
-setenv WM_MPLIB SYSTEMOPENMPI
+#- CUDA aware MPI implementation:
+#    WM_MPLIB = OPENMPI
+setenv WM_MPLIB OPENMPI
 
 #- GPU API
 #    WM_GPU = CUDA | ???

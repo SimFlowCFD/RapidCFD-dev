@@ -78,9 +78,8 @@ export WM_PRECISION_OPTION=DP
 #    WM_COMPILE_OPTION = Opt | Debug | Prof
 export WM_COMPILE_OPTION=Opt
 
-#- MPI implementation:
-#    WM_MPLIB = SYSTEMOPENMPI | OPENMPI | MPICH | MPICH-GM | HPMPI
-#               | GAMMA | MPI | QSMPI | SGIMPI
+#- CUDA aware MPI implementation:
+#    WM_MPLIB = OPENMPI 
 export WM_MPLIB=OPENMPI
 
 #- GPU API

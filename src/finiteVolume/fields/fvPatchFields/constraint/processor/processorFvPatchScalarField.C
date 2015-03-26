@@ -65,9 +65,6 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
 {
     this->patch().patchInternalField(psiInternal, scalargpuSendBuf_);
 
-    scalarSendBuf_.setSize(scalargpuSendBuf_.size());
-    thrust::copy(scalargpuSendBuf_.begin(),scalargpuSendBuf_.end(),scalarSendBuf_.begin());
-
     if (commsType == Pstream::nonBlocking && !Pstream::floatTransfer)
     {
         // Fast path.
@@ -82,14 +79,14 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
         }
 
 
-        scalarReceiveBuf_.setSize(scalarSendBuf_.size());
+        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
         outstandingRecvRequest_ = UPstream::nRequests();
         UIPstream::read
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<char*>(scalarReceiveBuf_.begin()),
-            scalarReceiveBuf_.byteSize(),
+            reinterpret_cast<char*>(scalargpuReceiveBuf_.data()),
+            scalargpuReceiveBuf_.byteSize(),
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -99,15 +96,15 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<const char*>(scalarSendBuf_.begin()),
-            scalarSendBuf_.byteSize(),
+            reinterpret_cast<const char*>(scalargpuSendBuf_.data()),
+            scalargpuSendBuf_.byteSize(),
             procPatch_.tag(),
             procPatch_.comm()
         );
     }
     else
     {
-        procPatch_.compressedSend(commsType, scalarSendBuf_);
+        procPatch_.compressedSend(commsType, scalargpuSendBuf_);
     }
 
     const_cast<processorFvPatchField<scalar>&>(*this).updatedMatrix() = false;
@@ -144,8 +141,8 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         outstandingSendRequest_ = -1;
         outstandingRecvRequest_ = -1;
 
-        scalargpuReceiveBuf_ = scalarReceiveBuf_;
 
+        // Consume straight from scalarReceiveBuf_
         matrixPatchOperation
         (
             this->patch().index(),

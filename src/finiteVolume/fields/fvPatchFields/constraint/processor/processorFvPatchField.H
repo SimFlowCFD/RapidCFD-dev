@@ -75,11 +75,9 @@ class processorFvPatchField
         // Sending and receiving
 
             //- Send buffer.
-            mutable Field<Type> sendBuf_;
             mutable gpuField<Type> gpuSendBuf_;
 
             //- Receive buffer.
-            mutable Field<Type> receiveBuf_;
             mutable gpuField<Type> gpuReceiveBuf_;
 
             //- Outstanding request
@@ -89,11 +87,9 @@ class processorFvPatchField
             mutable label outstandingRecvRequest_;
 
             //- Scalar send buffer
-            mutable Field<scalar> scalarSendBuf_;
             mutable gpuField<scalar> scalargpuSendBuf_;
 
             //- Scalar receive buffer
-            mutable Field<scalar> scalarReceiveBuf_;
             mutable gpuField<scalar> scalargpuReceiveBuf_;
 
 public:

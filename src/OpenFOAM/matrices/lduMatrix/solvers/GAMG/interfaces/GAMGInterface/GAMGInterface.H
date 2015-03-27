@@ -70,7 +70,12 @@ protected:
 
         //- Face restrict addressing
         labelgpuList faceRestrictAddressing_;
+        labelgpuList faceRestrictSortAddressing_;
+        labelgpuList faceRestrictTargetAddressing_;
+        labelgpuList faceRestrictTargetStartAddressing_;
         labelList faceRestrictAddressingHost_;
+
+        void updateAddressing();
 
 
 private:
@@ -190,7 +195,9 @@ public:
             faceCells_(faceCellsHost_),
             faceRestrictAddressingHost_(faceRestrictAddressing),
             faceRestrictAddressing_(faceRestrictAddressingHost_)
-        {}
+        {
+            updateAddressing();
+        }
 
 
         //- Construct from Istream
@@ -239,16 +246,25 @@ public:
                 return faceRestrictAddressing_;
             }
 
+            virtual const labelgpuList& faceRestrictSortAddressing() const
+            {
+                return faceRestrictSortAddressing_;
+            }
+
+            virtual const labelgpuList& faceRestrictTargetAddressing() const
+            {
+                return faceRestrictTargetAddressing_;
+            }
+
+            virtual const labelgpuList& faceRestrictTargetStartAddressing() const
+            {
+                return faceRestrictTargetStartAddressing_;
+            }
+
             virtual const labelList& faceRestrictAddressingHost() const
             {
                 return faceRestrictAddressingHost_;
             }
-
-            //- Return non-const access to face restrict addressing
-//            virtual labelList& faceRestrictAddressingHost()
-//           {
-//                return faceRestrictAddressingHost_;
-//            }
 
             //- Return the interface internal field of the given field
             template<class Type>

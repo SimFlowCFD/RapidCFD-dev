@@ -151,33 +151,40 @@ tmp<gpuField<Type> > cyclicFvPatchField<Type>::patchNeighbourField() const
 
     if (doTransform())
     {
-/*
-        forAll(pnf, facei)
-        {
-            pnf[facei] = transform
-            (
-                forwardT()[0], iField[nbrFaceCells[facei]]
-            );
-        }
-*/
         tensor t = forwardT()[0];
         
-        thrust::transform(thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.begin()),
-                          thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.end()),
-                          pnf.begin(),
-                          transformBinaryFunctionSFFunctor<tensor,Type,Type>(t));
+        thrust::transform
+        (
+            thrust::make_permutation_iterator
+            (
+                iField.begin(),
+                nbrFaceCells.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                iField.begin(),
+                nbrFaceCells.end()
+            ),
+            pnf.begin(),
+            transformBinaryFunctionSFFunctor<tensor,Type,Type>(t)
+        );
     }
     else
     {
-        thrust::copy(thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.begin()),
-                     thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.end()),
-                     pnf.begin());
-/*
-        forAll(pnf, facei)
-        {
-            pnf[facei] = iField[nbrFaceCells[facei]];
-        }
-*/
+        thrust::copy
+        (
+            thrust::make_permutation_iterator
+            (
+                iField.begin(),
+                nbrFaceCells.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                iField.begin(),
+                nbrFaceCells.end()
+            ),
+            pnf.begin()
+        );
     }
 
     return tpnf;
@@ -201,10 +208,12 @@ const
 }
 
 template<class Type>
-struct updateCyclicInterfaceMatrixFunctor{
+struct updateCyclicInterfaceMatrixFunctor
+{
    __HOST____DEVICE__
-   Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c){
-        return s - thrust::get<0>(c) * thrust::get<1>(c);
+   Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c)
+   {
+       return s - thrust::get<0>(c) * thrust::get<1>(c);
    }
 };
 
@@ -229,15 +238,30 @@ void cyclicFvPatchField<Type>::updateInterfaceMatrix
     // Multiply the field by coefficients and add into the result
     const labelgpuList& faceCells = cyclicPatch_.faceCells();
 
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      updateCyclicInterfaceMatrixFunctor<scalar>());
-/*    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }*/
+    thrust::transform
+    (
+        thrust::make_permutation_iterator
+        (
+            result.begin(),
+            faceCells.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            result.begin(),
+            faceCells.end()
+        ),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            coeffs.begin(),
+            pnf.begin()
+        )),
+        thrust::make_permutation_iterator
+        (
+            result.begin(),
+            faceCells.begin()
+        ),
+        updateCyclicInterfaceMatrixFunctor<scalar>()
+    );
 }
 
 

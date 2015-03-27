@@ -48,15 +48,20 @@ void Foam::GAMGInterface::interfaceInternalField
 {
     result.setSize(size());
 
-    thrust::copy(thrust::make_permutation_iterator(iF.begin(),faceCells_.begin()),
-                 thrust::make_permutation_iterator(iF.begin(),faceCells_.end()),
-                 result.begin());
-/*
-    forAll(result, elemI)
-    {
-        result[elemI] = iF[faceCells_[elemI]];
-    }
-*/
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
+        (
+            iF.begin(),
+            faceCells_.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            iF.begin(),
+            faceCells_.end()
+        ),
+        result.begin()
+    );
 }
 
 

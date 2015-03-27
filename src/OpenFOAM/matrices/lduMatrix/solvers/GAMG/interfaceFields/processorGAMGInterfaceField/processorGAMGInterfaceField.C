@@ -47,11 +47,11 @@ namespace Foam
 
     struct processorGAMGInterfaceFieldFunctor
     {
-         __HOST____DEVICE__
-         scalar operator()(const scalar& f,const thrust::tuple<scalar,scalar>& t)
-         {
-             return f - thrust::get<0>(t)*thrust::get<1>(t);
-         }
+        __HOST____DEVICE__
+        scalar operator()(const scalar& f,const thrust::tuple<scalar,scalar>& t)
+        {
+            return f - thrust::get<0>(t)*thrust::get<1>(t);
+        }
     };
 }
 
@@ -111,22 +111,19 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
     label oldWarn = UPstream::warnComm;
     UPstream::warnComm = comm();
 
-    scalargpuField tmpf;
-    procInterface_.interfaceInternalField(psiInternal, tmpf);
+    procInterface_.interfaceInternalField(psiInternal, scalargpuSendBuf_);
 
     if (commsType == Pstream::nonBlocking && !Pstream::floatTransfer)
     {
         // Fast path.
-        scalarSendBuf_.setSize(tmpf.size());
-        thrust::copy(tmpf.begin(),tmpf.end(),scalarSendBuf_.begin());
-        scalarReceiveBuf_.setSize(scalarSendBuf_.size());
+        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
         outstandingRecvRequest_ = UPstream::nRequests();
         IPstream::read
         (
             Pstream::nonBlocking,
             procInterface_.neighbProcNo(),
-            reinterpret_cast<char*>(scalarReceiveBuf_.begin()),
-            scalarReceiveBuf_.byteSize(),
+            reinterpret_cast<char*>(scalargpuReceiveBuf_.data()),
+            scalargpuReceiveBuf_.byteSize(),
             procInterface_.tag(),
             comm()
         );
@@ -136,15 +133,15 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
         (
             Pstream::nonBlocking,
             procInterface_.neighbProcNo(),
-            reinterpret_cast<const char*>(scalarSendBuf_.begin()),
-            scalarSendBuf_.byteSize(),
+            reinterpret_cast<const char*>(scalargpuSendBuf_.data()),
+            scalargpuSendBuf_.byteSize(),
             procInterface_.tag(),
             comm()
         );
     }
     else
     {
-        procInterface_.compressedSend(commsType, tmpf);
+        procInterface_.compressedSend(commsType, scalargpuSendBuf_);
     }
 
     const_cast<processorGAMGInterfaceField&>(*this).updatedMatrix() = false;
@@ -190,8 +187,7 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
         // Consume straight from scalarReceiveBuf_
  
         // Transform according to the transformation tensor
-        scalargpuField pnf(scalarReceiveBuf_);
-        transformCoupleField(pnf, cmpt);
+        transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
         // Multiply the field by coefficients and add into the result        
         thrust::transform
@@ -209,7 +205,7 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
             thrust::make_zip_iterator(thrust::make_tuple
             (
                 coeffs.begin(),
-                pnf.begin()
+                scalargpuReceiveBuf_.begin()
             )),
             thrust::make_permutation_iterator
             (
@@ -221,11 +217,10 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
     }
     else
     {
-        scalarField pnfTmp
+        scalargpuField pnf
         (
             procInterface_.compressedReceive<scalar>(commsType, coeffs.size())
         );
-        scalargpuField pnf(pnfTmp);
 
         transformCoupleField(pnf, cmpt);
 

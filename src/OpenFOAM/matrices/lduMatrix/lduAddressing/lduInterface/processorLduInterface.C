@@ -47,13 +47,27 @@ void Foam::processorLduInterface::resizeBuf
     }
 }
 
+void Foam::processorLduInterface::resizeBuf
+(
+    gpuList<char>& buf,
+    const label size
+) const
+{
+    if (buf.size() < size)
+    {
+        buf.setSize(size);
+    }
+}
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::processorLduInterface::processorLduInterface()
 :
     sendBuf_(0),
-    receiveBuf_(0)
+    receiveBuf_(0),
+    gpuSendBuf_(0),
+    gpuReceiveBuf_(0)
 {}
 
 

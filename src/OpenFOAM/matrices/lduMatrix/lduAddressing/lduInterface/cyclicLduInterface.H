@@ -75,9 +75,11 @@ public:
 
             //- Return face transformation tensor
             virtual const tensorField& forwardT() const = 0;
+            virtual const tensorgpuField& getForwardT() const = 0;
 
             //- Return face reverse transformation tensor
             virtual const tensorField& reverseT() const = 0;
+            virtual const tensorgpuField& getReverseT() const = 0;
 };
 
 

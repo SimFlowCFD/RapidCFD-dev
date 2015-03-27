@@ -159,12 +159,6 @@ void Foam::cyclicGAMGInterfaceField::updateInterfaceMatrix
         ),
         cyclicGAMGInterfaceFieldFunctor()
     );
-/*
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-*/
 }
 
 

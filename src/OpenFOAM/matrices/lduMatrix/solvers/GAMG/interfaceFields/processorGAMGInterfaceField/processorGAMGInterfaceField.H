@@ -74,10 +74,10 @@ class processorGAMGInterfaceField
             mutable label outstandingRecvRequest_;
 
             //- Scalar send buffer
-            mutable Field<scalar> scalarSendBuf_;
+            mutable gpuField<scalar> scalargpuSendBuf_;
 
             //- Scalar receive buffer
-            mutable Field<scalar> scalarReceiveBuf_;
+            mutable gpuField<scalar> scalargpuReceiveBuf_;
 
 
 

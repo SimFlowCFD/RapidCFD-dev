@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "GAMGInterface.H"
+#include "GAMGAgglomeration.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -32,6 +33,35 @@ namespace Foam
     defineTypeNameAndDebug(GAMGInterface, 0);
     defineRunTimeSelectionTable(GAMGInterface, lduInterface);
     defineRunTimeSelectionTable(GAMGInterface, Istream);
+
+    struct GAMGInterfaceAgglomerateCoeffs
+    {
+        const scalar* ff;
+        const label* sort;
+
+        GAMGInterfaceAgglomerateCoeffs
+        (
+            const scalar* _ff,
+            const label* _sort
+        ):
+            ff(_ff),
+            sort(_sort)
+        {}
+
+        __HOST____DEVICE__
+        scalar operator()(const label& start, const label& end)
+        {
+            scalar out = 0;
+
+            for(label i = start; i<end; i++)
+            {
+                out += ff[sort[i]];
+            }
+
+            return out;
+        }
+        
+    };
 }
 
 
@@ -48,28 +78,61 @@ Foam::GAMGInterface::GAMGInterface
     coarseInterfaces_(coarseInterfaces),
     faceCellsHost_(is),
     faceCells_(faceCellsHost_),
-    faceRestrictAddressing_(is)
-{}
+    faceRestrictAddressingHost_(is),
+    faceRestrictAddressing_(faceRestrictAddressingHost_)
+{
+    updateAddressing();
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+void Foam::GAMGInterface::updateAddressing()
+{
+    GAMGAgglomeration::createSort
+    (
+        faceRestrictAddressing_,
+        faceRestrictSortAddressing_
+    );
+
+    GAMGAgglomeration::createTarget
+    (
+        faceRestrictAddressing_,
+        faceRestrictSortAddressing_,
+        faceRestrictTargetAddressing_,
+        faceRestrictTargetStartAddressing_
+    );
+}
+
 void Foam::GAMGInterface::combine(const GAMGInterface& coarseGi)
 {
     const labelgpuList& coarseFra = coarseGi.faceRestrictAddressing_;
+    const labelList& coarseFraHost = coarseGi.faceRestrictAddressingHost_;
   
     labelgpuList restTmp(faceRestrictAddressing_);
 
-    thrust::copy(thrust::make_permutation_iterator(coarseFra.begin(),restTmp.begin()),
-                 thrust::make_permutation_iterator(coarseFra.begin(),restTmp.end()),
-                 faceRestrictAddressing_.begin());
-/*
-    forAll(faceRestrictAddressing_, ffi)
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
+        (
+            coarseFra.begin(),
+            restTmp.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            coarseFra.begin(),
+            restTmp.end()
+        ),
+        faceRestrictAddressing_.begin()
+    );
+
+    forAll(faceRestrictAddressingHost_, ffi)
     {
-        faceRestrictAddressing_[ffi] = coarseFra[faceRestrictAddressing_[ffi]];
+        faceRestrictAddressingHost_[ffi] = coarseFraHost[faceRestrictAddressingHost_[ffi]];
     }
-*/
+
     faceCells_ = coarseGi.faceCells_;
+    faceCellsHost_ = coarseGi.faceCellsHost_;
 }
 
 
@@ -112,35 +175,30 @@ Foam::tmp<Foam::scalargpuField> Foam::GAMGInterface::agglomerateCoeffs
     {
         FatalErrorIn
         (
-            "GAMGInterface::agglomerateCoeffs(const scalarField&) const"
+            "GAMGInterface::agglomerateCoeffs(const scalargpuField&) const"
         )   << "Face restrict addressing addresses outside of coarse interface"
             << " size. Max addressing:" << max(faceRestrictAddressing_)
             << " coarse size:" << size()
             << abort(FatalError);
     }
 
-    labelgpuList addrTmp(faceRestrictAddressing_);
-    scalargpuField coeffsTmp(fineCoeffs);
+    thrust::transform
+    (
+        faceRestrictTargetStartAddressing_.begin(),
+        faceRestrictTargetStartAddressing_.end()-1,
+        faceRestrictTargetStartAddressing_.begin()+1,
+        thrust::make_permutation_iterator
+        (
+            coarseCoeffs.begin(),
+            faceRestrictTargetAddressing_.begin()
+        ),
+        GAMGInterfaceAgglomerateCoeffs
+        (
+            fineCoeffs.data(),
+            faceRestrictSortAddressing_.data()
+        )
+    );
 
-    thrust::sort_by_key(addrTmp.begin(),addrTmp.end(),coeffsTmp.begin());
-    
-    labelgpuList redAddr(addrTmp.size());
-    scalargpuField red(coeffsTmp.size());
-
-    typedef typename thrust::pair<labelgpuList::iterator,scalargpuField::iterator> Pair;
-    Pair pair = thrust::reduce_by_key(addrTmp.begin(),addrTmp.end(),
-                                      coeffsTmp.begin(),
-                                      redAddr.begin(),
-                                      red.begin());
-
-    thrust::copy(red.begin(),pair.second,
-                 thrust::make_permutation_iterator(coarseCoeffs.begin(),redAddr.begin()));
-/*
-    forAll(faceRestrictAddressing_, ffi)
-    {
-        coarseCoeffs[faceRestrictAddressing_[ffi]] += fineCoeffs[ffi];
-    }
-*/
     return tcoarseCoeffs;
 }
 

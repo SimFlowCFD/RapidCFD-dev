@@ -124,7 +124,9 @@ Foam::tmp<Foam::labelField> Foam::processorFvPatch::internalFieldTransfer
     const labelUList&
 ) const
 {
-    return tmp<labelField>(receive<label>(commsType, this->size()));
+    tmp<labelField> tmpf(new labelField(this->size()));
+    receive(commsType, tmpf());
+    return tmpf;
 }
 
 

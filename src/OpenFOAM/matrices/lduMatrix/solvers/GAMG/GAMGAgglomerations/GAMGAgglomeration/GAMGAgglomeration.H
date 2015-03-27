@@ -183,22 +183,6 @@ protected:
 
         void clearLevel(const label leveli);
 
- 
-       //GPU addressing helper functions
-       static void createSort
-       (
-           const labelgpuList& list, 
-           labelgpuList& sort
-       );
-
-       static void createTarget
-       (
-           const labelgpuList& list,
-           const labelgpuList& sort,
-           labelgpuList& target,
-           labelgpuList& targetStart
-       );
-
         // Processor agglomeration
 
             //- Collect and combine processor meshes into allMesh.
@@ -246,6 +230,20 @@ public:
     //- Runtime type information
     TypeName("GAMGAgglomeration");
 
+       //GPU addressing helper functions
+       static void createSort
+       (
+           const labelgpuList& list, 
+           labelgpuList& sort
+       );
+
+       static void createTarget
+       (
+           const labelgpuList& list,
+           const labelgpuList& sort,
+           labelgpuList& target,
+           labelgpuList& targetStart
+       );
 
     // Declare run-time constructor selection tables
 

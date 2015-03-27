@@ -421,7 +421,7 @@ inline void Foam::gpuList<T>::setSize(label size)
 {
     if(v_)
     {
-        v_->resize(size,pTraits<T>::zero);
+        v_->resize(size);
     }
     else
     {

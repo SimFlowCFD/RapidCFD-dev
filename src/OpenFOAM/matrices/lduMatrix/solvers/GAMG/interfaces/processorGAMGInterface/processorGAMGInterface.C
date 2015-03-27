@@ -137,6 +137,8 @@ Foam::processorGAMGInterface::processorGAMGInterface
     faceRestrictAddressingHost_.transfer(dynFaceRestrictAddressing);
     faceCells_ = faceCellsHost_;
     faceRestrictAddressing_ = faceRestrictAddressingHost_;
+
+    updateAddressing();
 }
 
 
@@ -218,7 +220,8 @@ Foam::tmp<Foam::labelField> Foam::processorGAMGInterface::internalFieldTransfer
     label oldWarn = UPstream::warnComm;
     UPstream::warnComm = comm();
 
-    tmp<Field<label> > tfld(receive<label>(commsType, this->size()));
+    tmp<Field<label> > tfld(new Field<label>(this->size()));
+    receive<label>(commsType, tfld());
 
     UPstream::warnComm = oldWarn;
 

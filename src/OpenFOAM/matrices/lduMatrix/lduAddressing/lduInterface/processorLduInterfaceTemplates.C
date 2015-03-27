@@ -29,6 +29,42 @@ License
 
 // * * * * * * * * * * * * * * * Member Functions * * *  * * * * * * * * * * //
 
+namespace Foam
+{
+
+template<class To, class From, bool compress>
+struct compressFunctor
+{
+    To* to;
+    const From* from;
+    const scalar* slast;
+    const label nCmpts;
+
+    compressFunctor
+    (
+        To* _to,
+        const From* _from,
+        const scalar* _slast,
+        label _nCmpts
+    ):
+        to(_to),
+        from(_from),
+        slast(_slast),
+        nCmpts(_nCmpts)
+    {}
+
+    __HOST____DEVICE__
+    void operator()(const label& i)
+    {
+        if(compress)
+            to[i] = (To) (from[i] - slast[i%nCmpts]);
+        else
+            to[i] = (To) (from[i] + slast[i%nCmpts]);
+    }
+};
+
+}
+
 template<class Type>
 void Foam::processorLduInterface::send
 (
@@ -92,9 +128,53 @@ void Foam::processorLduInterface::send
     const gpuList<Type>& f
 ) const
 {
-	List<Type> l(f.size());
-	thrust::copy(f.begin(),f.end(),l.begin());
-	send(commsType,l);
+    label nBytes = f.byteSize();
+
+    if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
+    {
+        OPstream::write
+        (
+            commsType,
+            neighbProcNo(),
+            reinterpret_cast<const char*>(f.data()),
+            nBytes,
+            tag(),
+            comm()
+        );
+    }
+    else if (commsType == Pstream::nonBlocking)
+    {
+        resizeBuf(gpuReceiveBuf_, nBytes);
+
+        IPstream::read
+        (
+            commsType,
+            neighbProcNo(),
+            gpuReceiveBuf_.data(),
+            nBytes,
+            tag(),
+            comm()
+        );
+
+        resizeBuf(gpuSendBuf_, nBytes);
+        cudaMemcpy(gpuSendBuf_.data(), f.data(), nBytes,cudaMemcpyDeviceToDevice);
+
+        OPstream::write
+        (
+            commsType,
+            neighbProcNo(),
+            gpuSendBuf_.data(),
+            nBytes,
+            tag(),
+            comm()
+        );
+    }
+    else
+    {
+        FatalErrorIn("processorLduInterface::send")
+            << "Unsupported communications type " << commsType
+            << exit(FatalError);
+    }
 }
 
 
@@ -136,19 +216,38 @@ void Foam::processorLduInterface::receive
     gpuList<Type>& f
 ) const
 {
-	List<Type> l(f.size());
-	receive(commsType,l);
-	f = l;
+    if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
+    {
+        IPstream::read
+        (
+            commsType,
+            neighbProcNo(),
+            reinterpret_cast<char*>(f.data()),
+            f.byteSize(),
+            tag(),
+            comm()
+        );
+    }
+    else if (commsType == Pstream::nonBlocking)
+    {
+        cudaMemcpy(f.data(), gpuReceiveBuf_.data(), f.byteSize(),cudaMemcpyDeviceToDevice);
+    }
+    else
+    {
+        FatalErrorIn("processorLduInterface::receive")
+            << "Unsupported communications type " << commsType
+            << exit(FatalError);
+    }
 }
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> > Foam::processorLduInterface::receive
+Foam::tmp<Foam::gpuField<Type> > Foam::processorLduInterface::receive
 (
     const Pstream::commsTypes commsType,
     const label size
 ) const
 {
-    tmp<Field<Type> > tf(new Field<Type>(size));
+    tmp<gpuField<Type> > tf(new gpuField<Type>(size));
     receive(commsType, tf());
     return tf;
 }
@@ -236,9 +335,81 @@ void Foam::processorLduInterface::compressedSend
     const gpuList<Type>& f
 ) const
 {
-	List<Type> l(f.size());
-	thrust::copy(f.begin(),f.end(),l.begin());
-	compressedSend(commsType,l);
+    if (sizeof(scalar) != sizeof(float) && Pstream::floatTransfer && f.size())
+    {
+        static const label nCmpts = sizeof(Type)/sizeof(scalar);
+        label nm1 = (f.size() - 1)*nCmpts;
+        label nlast = sizeof(Type)/sizeof(float);
+        label nFloats = nm1 + nlast;
+        label nBytes = nFloats*sizeof(float);
+
+        const scalar *sArray = reinterpret_cast<const scalar*>(f.data());
+        const scalar *slast = &sArray[nm1];
+        resizeBuf(gpuSendBuf_, nBytes);
+        float *fArray = reinterpret_cast<float*>(gpuSendBuf_.data());
+
+        thrust::for_each
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(nm1),
+            compressFunctor<float,scalar,true>
+            (
+                fArray,
+                sArray,
+                slast,
+                nCmpts
+             )
+        );
+
+        cudaMemcpy(fArray+nm1, f.data() + (f.size() - 1), sizeof(Type), cudaMemcpyDeviceToDevice);
+
+        if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
+        {
+            OPstream::write
+            (
+                commsType,
+                neighbProcNo(),
+                gpuSendBuf_.data(),
+                nBytes,
+                tag(),
+                comm()
+            );
+        }
+        else if (commsType == Pstream::nonBlocking)
+        {
+            resizeBuf(gpuReceiveBuf_, nBytes);
+
+            IPstream::read
+            (
+                commsType,
+                neighbProcNo(),
+                gpuReceiveBuf_.data(),
+                nBytes,
+                tag(),
+                comm()
+            );
+
+            OPstream::write
+            (
+                commsType,
+                neighbProcNo(),
+                gpuSendBuf_.data(),
+                nBytes,
+                tag(),
+                comm()
+            );
+        }
+        else
+        {
+            FatalErrorIn("processorLduInterface::compressedSend")
+                << "Unsupported communications type " << commsType
+                << exit(FatalError);
+        }
+    }
+    else
+    {
+        this->send(commsType, f);
+    }
 }
 
 template<class Type>
@@ -301,19 +472,70 @@ void Foam::processorLduInterface::compressedReceive
     gpuList<Type>& f
 ) const
 {
-	List<Type> l(f.size());
-	compressedReceive(commsType,l);
-	f = l;
+    if (sizeof(scalar) != sizeof(float) && Pstream::floatTransfer && f.size())
+    {
+        static const label nCmpts = sizeof(Type)/sizeof(scalar);
+        label nm1 = (f.size() - 1)*nCmpts;
+        label nlast = sizeof(Type)/sizeof(float);
+        label nFloats = nm1 + nlast;
+        label nBytes = nFloats*sizeof(float);
+
+        if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
+        {
+            resizeBuf(gpuReceiveBuf_, nBytes);
+
+            IPstream::read
+            (
+                commsType,
+                neighbProcNo(),
+                gpuReceiveBuf_.data(),
+                nBytes,
+                tag(),
+                comm()
+            );
+        }
+        else if (commsType != Pstream::nonBlocking)
+        {
+            FatalErrorIn("processorLduInterface::compressedReceive")
+                << "Unsupported communications type " << commsType
+                << exit(FatalError);
+        }
+
+        const float *fArray =
+            reinterpret_cast<const float*>(gpuReceiveBuf_.data());
+
+        cudaMemcpy(f.data()+(f.size() - 1),fArray+nm1, sizeof(Type), cudaMemcpyDeviceToDevice);
+
+        scalar *sArray = reinterpret_cast<scalar*>(f.data());
+        const scalar *slast = &sArray[nm1];
+
+        thrust::for_each
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(nm1),
+            compressFunctor<scalar,float,false>
+            (
+                sArray,
+                fArray,
+                slast,
+                nCmpts
+             )
+        );
+    }
+    else
+    {
+        this->receive<Type>(commsType, f);
+    }
 }
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> > Foam::processorLduInterface::compressedReceive
+Foam::tmp<Foam::gpuField<Type> > Foam::processorLduInterface::compressedReceive
 (
     const Pstream::commsTypes commsType,
     const label size
 ) const
 {
-    tmp<Field<Type> > tf(new Field<Type>(size));
+    tmp<gpuField<Type> > tf(new gpuField<Type>(size));
     compressedReceive(commsType, tf());
     return tf;
 }

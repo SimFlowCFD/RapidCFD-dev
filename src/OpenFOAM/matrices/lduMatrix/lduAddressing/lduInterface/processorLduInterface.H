@@ -55,13 +55,16 @@ class processorLduInterface
         //- Send buffer.
         //  Only sized and used when compressed or non-blocking comms used.
         mutable List<char> sendBuf_;
+        mutable gpuList<char> gpuSendBuf_;
 
         //- Receive buffer.
         //  Only sized and used when compressed or non-blocking comms used.
         mutable List<char> receiveBuf_;
+        mutable gpuList<char> gpuReceiveBuf_;
 
         //- Resize the buffer if required
         void resizeBuf(List<char>& buf, const label size) const;
+        void resizeBuf(gpuList<char>& buf, const label size) const;
 
 
 public:
@@ -95,6 +98,7 @@ public:
 
             //- Return face transformation tensor
             virtual const tensorField& forwardT() const = 0;
+            virtual const tensorgpuField& getForwardT() const = 0;
 
             //- Return message tag used for sending
             virtual int tag() const = 0;
@@ -133,7 +137,7 @@ public:
 
             //- Raw field receive function returning field
             template<class Type>
-            tmp<Field<Type> > receive
+            tmp<gpuField<Type> > receive
             (
                 const Pstream::commsTypes commsType,
                 const label size
@@ -172,7 +176,7 @@ public:
 
             //- Raw field receive function with data compression returning field
             template<class Type>
-            tmp<Field<Type> > compressedReceive
+            tmp<gpuField<Type> > compressedReceive
             (
                 const Pstream::commsTypes commsType,
                 const label size

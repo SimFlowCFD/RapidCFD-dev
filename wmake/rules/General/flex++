@@ -1,6 +1,6 @@
 .SUFFIXES: .L
 
-Ltoo = flex -+ -o$*.cu -f $$SOURCE ; $(CC) $(c++FLAGS) -c $*.cu -o $@
+Ltoo = flex -+ -o$*.C -f $$SOURCE ; $(CC) $(c++FLAGS) $(cuFLAGS) -c $*.C -o $@
 
 .L.dep:
 	$(MAKE_DEP)

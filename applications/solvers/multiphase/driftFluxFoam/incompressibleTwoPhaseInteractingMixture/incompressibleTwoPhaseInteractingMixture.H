@@ -153,7 +153,7 @@ public:
         }
 
         //- Return the dynamic mixture viscosity for patch
-        virtual tmp<scalarField> mu(const label patchi) const
+        virtual tmp<scalargpuField> mu(const label patchi) const
         {
             return mu_.boundaryField()[patchi];
         }
@@ -165,7 +165,7 @@ public:
         }
 
         //- Return the mixture density for patch
-        virtual tmp<scalarField> rho(const label patchi) const
+        virtual tmp<scalargpuField> rho(const label patchi) const
         {
             return
                 alpha1_.boundaryField()[patchi]*rhod_.value()
@@ -179,7 +179,7 @@ public:
         }
 
         //- Return the mixture viscosity for patch
-        virtual tmp<scalarField> nu(const label patchi) const
+        virtual tmp<scalargpuField> nu(const label patchi) const
         {
             return mu_.boundaryField()[patchi]/rho(patchi);
         }

@@ -116,8 +116,6 @@ Foam::cartesianCS::~cartesianCS()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-
-__HOST____DEVICE__
 Foam::vector Foam::cartesianCS::localToGlobal
 (
     const vector& local,
@@ -137,7 +135,7 @@ Foam::tmp<Foam::vectorField> Foam::cartesianCS::localToGlobal
     return coordinateSystem::localToGlobal(local, translate);
 }
 
-__HOST____DEVICE__
+
 Foam::vector Foam::cartesianCS::globalToLocal
 (
     const vector& global,

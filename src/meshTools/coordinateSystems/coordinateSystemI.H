@@ -25,7 +25,6 @@ License
 
 #include "coordinateSystem.H"
 
-__HOST____DEVICE__
 inline Foam::vector Foam::coordinateSystem::localToGlobal
 (
     const vector& local,
@@ -42,7 +41,6 @@ inline Foam::vector Foam::coordinateSystem::localToGlobal
     }
 }
 
-__HOST____DEVICE__
 inline Foam::vector Foam::coordinateSystem::globalToLocal
 (
     const vector& global,

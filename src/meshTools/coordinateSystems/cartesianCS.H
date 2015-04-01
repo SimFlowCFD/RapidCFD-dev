@@ -58,7 +58,6 @@ protected:
 
         //- Convert from local coordinate system to the global Cartesian system
         //  with optional translation for the origin
-        __HOST____DEVICE__
         virtual vector localToGlobal(const vector&, bool translate) const;
 
         //- Convert from local coordinate system to the global Cartesian system
@@ -71,7 +70,6 @@ protected:
 
         //- Convert from global Cartesian system to the local coordinate system
         //  with optional translation for the origin
-        __HOST____DEVICE__
         virtual vector globalToLocal(const vector&, bool translate) const;
 
         //- Convert from global Cartesian system to the local coordinate system

@@ -130,7 +130,6 @@ bool& Foam::cylindricalCS::inDegrees()
     return inDegrees_;
 }
 
-__HOST____DEVICE__
 Foam::vector Foam::cylindricalCS::localToGlobal
 (
     const vector& local,
@@ -171,7 +170,6 @@ Foam::tmp<Foam::vectorField> Foam::cylindricalCS::localToGlobal
     return coordinateSystem::localToGlobal(lc, translate);
 }
 
-__HOST____DEVICE__
 Foam::vector Foam::cylindricalCS::globalToLocal
 (
     const vector& global,

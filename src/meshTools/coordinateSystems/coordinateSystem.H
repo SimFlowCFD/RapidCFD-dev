@@ -106,7 +106,6 @@ protected:
 
         //- Convert from local coordinate system to the global Cartesian system
         //  with optional translation for the origin
-        __HOST____DEVICE__
         virtual vector localToGlobal(const vector&, bool translate) const;
 
         //- Convert from local coordinate system to the global Cartesian system
@@ -119,7 +118,6 @@ protected:
 
         //- Convert from global Cartesian system to the local coordinate system
         //  with optional translation for the origin
-        __HOST____DEVICE__
         virtual vector globalToLocal(const vector&, bool translate) const;
 
         //- Convert from global Cartesian system to the local coordinate system
@@ -254,22 +252,18 @@ public:
             }
 
             //- Return origin
-            __HOST____DEVICE__
             const point& origin() const
             {
                 return origin_;
             }
 
             //- Return const reference to co-ordinate rotation
-            
-            __HOST____DEVICE__
             const coordinateRotation& R() const
             {
                 return R_();
             }
 
             //- Return non const reference to co-ordinate rotation
-            __HOST____DEVICE__
             coordinateRotation& R()
             {
                 return R_();
@@ -301,7 +295,6 @@ public:
             }
 
             //- Edit access to origin
-            __HOST____DEVICE__
             point& origin()
             {
                 return origin_;
@@ -325,7 +318,6 @@ public:
 
             //- Convert from position in local coordinate system to global
             //  Cartesian position
-            __HOST____DEVICE__
             point globalPosition(const point& local) const
             {
                 return localToGlobal(local, true);
@@ -340,7 +332,6 @@ public:
 
             //- Convert from vector components in local coordinate system to
             //  global Cartesian vector
-            __HOST____DEVICE__
             vector globalVector(const vector& local) const
             {
                 return localToGlobal(local, false);
@@ -355,7 +346,6 @@ public:
 
             //- Convert from global Cartesian position to position in local
             //  coordinate system
-            __HOST____DEVICE__
             point localPosition(const point& global) const
             {
                 return globalToLocal(global, true);
@@ -370,7 +360,6 @@ public:
 
             //- Convert from global Cartesian vector to components in local
             //  coordinate system
-            __HOST____DEVICE__
             vector localVector(const vector& global) const
             {
                 return globalToLocal(global, false);

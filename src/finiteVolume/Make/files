@@ -254,9 +254,7 @@ $(schemes)/weighted/weighted.C
 $(schemes)/cubic/cubic.C
 $(schemes)/skewCorrected/skewCorrectionVectors.C
 $(schemes)/skewCorrected/skewCorrected.C
-/*
 $(schemes)/outletStabilised/outletStabilised.C
-*/
 $(schemes)/reverseLinear/reverseLinear.C
 $(schemes)/clippedLinear/clippedLinear.C
 $(schemes)/harmonic/harmonic.C

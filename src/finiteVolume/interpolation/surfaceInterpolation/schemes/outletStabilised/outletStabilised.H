@@ -52,6 +52,74 @@ SourceFiles
 namespace Foam
 {
 
+struct outletStabilisedWeightsFunctor
+{
+    const label nInternalFaces;
+    const label* faces;
+    const scalar* faceFlux;
+    scalar* w;
+   
+    outletStabilisedWeightsFunctor
+    (
+        const label _nif,
+        const label* _faces,
+        const scalar* _faceFlux,
+        scalar* _w
+    ):
+        nInternalFaces(_nif),
+        faces(_faces),
+        faceFlux(_faceFlux),
+        w(_w)
+    {}
+
+    __HOST____DEVICE__
+    void operator()(const cellData& cd)
+    {
+        for(label i = 0; i < cd.nFaces(); i++)
+        {
+            label facei = faces[i+cd.getStart()];
+            if(facei<nInternalFaces)
+            {
+                w[facei] = pos(faceFlux[facei]);
+            }
+        }
+    }
+};
+
+template<class Type>
+struct outletStabilisedCorrectionFunctor
+{
+    const Type zero;
+    const label nInternalFaces;
+    const label* faces;
+    Type* corr;
+   
+    outletStabilisedCorrectionFunctor
+    (
+        const label _nif,
+        const label* _faces,
+        Type* _corr
+    ):
+        zero(pTraits<Type>::zero),
+        nInternalFaces(_nif),
+        faces(_faces),
+        corr(_corr)
+    {}
+
+    __HOST____DEVICE__
+    void operator()(const cellData& cd)
+    {
+        for(label i = 0; i < cd.nFaces(); i++)
+        {
+            label facei = faces[i+cd.getStart()];
+            if(facei<nInternalFaces)
+            {
+                corr[facei] = zero;
+            }
+        }
+    }
+};
+
 /*---------------------------------------------------------------------------*\
                            Class outletStabilised Declaration
 \*---------------------------------------------------------------------------*/
@@ -135,7 +203,9 @@ public:
             surfaceScalarField& w = tw();
 
             const fvMesh& mesh_ = this->mesh();
-            const cellList& cells = mesh_.cells();
+            const cellDatagpuList& cells = mesh_.getCells();
+            const labelgpuList& faces = mesh_.getCellFaces();
+            const label nInternalFaces = mesh_.nInternalFaces();
 
             forAll(vf.boundaryField(), patchi)
             {
@@ -148,24 +218,29 @@ public:
                     (vf.boundaryField()[patchi])
                 )
                 {
-                    const labelList& pFaceCells =
+                    const labelgpuList& pFaceCells =
                         mesh_.boundary()[patchi].faceCells();
 
-                    forAll(pFaceCells, pFacei)
-                    {
-                        const cell& pFaceCell = cells[pFaceCells[pFacei]];
-
-                        forAll(pFaceCell, fi)
-                        {
-                            label facei = pFaceCell[fi];
-
-                            if (mesh_.isInternalFace(facei))
-                            {
-                                // Apply upwind differencing
-                                w[facei] = pos(faceFlux_[facei]);
-                            }
-                        }
-                    }
+                    thrust::for_each
+                    (
+                        thrust::make_permutation_iterator
+                        (
+                            cells.begin(),
+                            pFaceCells.begin()
+                        ),
+                        thrust::make_permutation_iterator
+                        (
+                            cells.begin(),
+                            pFaceCells.end()
+                        ),
+                        outletStabilisedWeightsFunctor
+                        (
+                            nInternalFaces,
+                            faces.data(),
+                            faceFlux_.getField().data(),
+                            w.getField().data()
+                        )
+                    );
                 }
             }
 
@@ -195,7 +270,9 @@ public:
                     tcorr();
 
                 const fvMesh& mesh_ = this->mesh();
-                const cellList& cells = mesh_.cells();
+                const cellDatagpuList& cells = mesh_.getCells();
+                const labelgpuList& faces = mesh_.getCellFaces();
+                const label nInternalFaces = mesh_.nInternalFaces();
 
                 forAll(vf.boundaryField(), patchi)
                 {
@@ -207,24 +284,28 @@ public:
                             (vf.boundaryField()[patchi])
                     )
                     {
-                        const labelList& pFaceCells =
+                        const labelgpuList& pFaceCells =
                             mesh_.boundary()[patchi].faceCells();
 
-                        forAll(pFaceCells, pFacei)
-                        {
-                            const cell& pFaceCell = cells[pFaceCells[pFacei]];
-
-                            forAll(pFaceCell, fi)
-                            {
-                                label facei = pFaceCell[fi];
-
-                                if (mesh_.isInternalFace(facei))
-                                {
-                                    // Remove correction
-                                    corr[facei] = pTraits<Type>::zero;
-                                }
-                            }
-                        }
+                        thrust::for_each
+                        (
+                            thrust::make_permutation_iterator
+                            (
+                                cells.begin(),
+                                pFaceCells.begin()
+                            ),
+                            thrust::make_permutation_iterator
+                            (
+                                cells.begin(),
+                                pFaceCells.end()
+                            ),
+                            outletStabilisedCorrectionFunctor<Type>
+                            (
+                                nInternalFaces,
+                                faces.data(),
+                                corr.getField().data()
+                            )
+                        );
                     }
                 }
 

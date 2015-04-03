@@ -28,6 +28,7 @@ License
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "zeroGradientFvPatchFields.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -39,14 +40,72 @@ namespace Foam
 namespace fvc
 {
 
+struct reconstructMagFunctor
+{
+    const vector* Sf;
+    const vector* Cf;
+    const vector* C;
+    const scalar* ssf;
+    const scalar* magSf;
+
+    reconstructMagFunctor
+    (
+        const vector* _Sf,
+        const vector* _Cf,
+        const vector* _C,
+        const scalar* _ssf,
+        const scalar* _magSf
+    ):
+        Sf(_Sf),
+        Cf(_Cf),
+        C(_C),
+        ssf(_ssf),
+        magSf(_magSf)
+    {}
+
+    __HOST____DEVICE__
+    scalar operator()(const label& celli, const label& facei)
+    {
+        return (Sf[facei] & (Cf[facei] - C[celli]))*ssf[facei]/magSf[facei];
+    }   
+};
+
+struct reconstructMagPatchFunctor
+{
+    const vector* pSf;
+    const vector* pCf;
+    const vector* C;
+    const scalar* psf;
+    const scalar* pMagSf;
+
+    reconstructMagPatchFunctor
+    (
+        const vector* _pSf,
+        const vector* _pCf,
+        const vector* _C,
+        const scalar* _psf,
+        const scalar* _pMagSf
+    ):
+        pSf(_pSf),
+        pCf(_pCf),
+        C(_C),
+        psf(_psf),
+        pMagSf(_pMagSf)
+    {}
+
+    __HOST____DEVICE__
+    scalar operator()(const label& celli, const label& pFacei)
+    {
+        return (pSf[pFacei] & (pCf[pFacei] - C[celli]))
+               *psf[pFacei]/pMagSf[pFacei];
+    }
+};
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 tmp<volScalarField> reconstructMag(const surfaceScalarField& ssf)
 {
     const fvMesh& mesh = ssf.mesh();
-
-    const labelUList& owner = mesh.owner();
-    const labelUList& neighbour = mesh.neighbour();
 
     const volVectorField& C = mesh.C();
     const surfaceVectorField& Cf = mesh.Cf();
@@ -76,16 +135,27 @@ tmp<volScalarField> reconstructMag(const surfaceScalarField& ssf)
         )
     );
 
-    scalarField& rf = treconField();
+    scalargpuField& rf = treconField();
 
-    forAll(owner, facei)
-    {
-        label own = owner[facei];
-        label nei = neighbour[facei];
+    reconstructMagFunctor fun
+    (
+        Sf.getField().data(),
+        Cf.getField().data(),
+        C.getField().data(),
+        ssf.getField().data(),
+        magSf.getField().data()
+    );
 
-        rf[own] += (Sf[facei] & (Cf[facei] - C[own]))*ssf[facei]/magSf[facei];
-        rf[nei] -= (Sf[facei] & (Cf[facei] - C[nei]))*ssf[facei]/magSf[facei];
-    }
+    matrixOperation
+    (
+        thrust::make_constant_iterator(scalar(0)),
+        rf,
+        mesh.lduAddr(),
+        fun,
+        fun,
+        sumOp<scalar>(),
+        minusOp<scalar>()
+    );
 
     const surfaceScalarField::GeometricBoundaryField& bsf = ssf.boundaryField();
 
@@ -93,18 +163,26 @@ tmp<volScalarField> reconstructMag(const surfaceScalarField& ssf)
     {
         const fvsPatchScalarField& psf = bsf[patchi];
 
-        const labelUList& pOwner = mesh.boundary()[patchi].faceCells();
-        const vectorField& pCf = Cf.boundaryField()[patchi];
-        const vectorField& pSf = Sf.boundaryField()[patchi];
-        const scalarField& pMagSf = magSf.boundaryField()[patchi];
+        const vectorgpuField& pCf = Cf.boundaryField()[patchi];
+        const vectorgpuField& pSf = Sf.boundaryField()[patchi];
+        const scalargpuField& pMagSf = magSf.boundaryField()[patchi];
 
-        forAll(pOwner, pFacei)
-        {
-            label own = pOwner[pFacei];
-            rf[own] +=
-                (pSf[pFacei] & (pCf[pFacei] - C[own]))
-               *psf[pFacei]/pMagSf[pFacei];
-        }
+        reconstructMagPatchFunctor pfun
+        (
+            pSf.data(),
+            pCf.data(),
+            C.getField().data(),
+            psf.data(),
+            pMagSf.data()
+        );
+
+        matrixPatchOperation
+        (
+            patchi,
+            rf,
+            mesh.lduAddr(),
+            fun
+        );
     }
 
     rf /= mesh.V();

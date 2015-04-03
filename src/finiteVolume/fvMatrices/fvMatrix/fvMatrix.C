@@ -322,7 +322,7 @@ struct fvMatrixSetValuesSourceFunctor : public std::binary_function<scalar,label
 {
     const bool* ownMask;
     const bool* neiMask;
-    const scalar* value;
+    const Type* value;
     const scalar* upper;
     const scalar* lower;
     const label* ownStart;
@@ -335,7 +335,7 @@ struct fvMatrixSetValuesSourceFunctor : public std::binary_function<scalar,label
     (
         const bool* _ownMask,
         const bool* _neiMask,
-        const scalar* _value,
+        const Type* _value,
         const scalar* _upper,
         const scalar* _lower,
         const label* _ownStart,
@@ -357,9 +357,9 @@ struct fvMatrixSetValuesSourceFunctor : public std::binary_function<scalar,label
     {}
 
     __HOST____DEVICE__
-    scalar operator()(const scalar& source,const thrust::tuple<label,bool>& t)
+    Type operator()(const Type& source,const thrust::tuple<label,bool>& t)
     {
-        scalar out = source;
+        Type out = source;
         label id = thrust::get<0>(t);
         bool cellSet = thrust::get<1>(t);
 		
@@ -517,7 +517,7 @@ void Foam::fvMatrix<Type>::setValuesFromList
             neiMask.begin()
         );
 		             
-        scalargpuList cellValuesTmp(Diag.size(),0.0);
+        gpuList<Type> cellValuesTmp(Diag.size(),pTraits<Type>::zero);
 		
         thrust::copy
         (

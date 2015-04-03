@@ -2,12 +2,13 @@
 #define lduAddressingFunctors_H
 
 #include "lduAddressing.H"
+#include "ops.H"
 
 namespace Foam
 {
 
-template<class Type,class OwnFun,class NeiFun>
-struct lduAddressingFunctor : public std::binary_function<label,Type,Type>
+template<class Type, class OwnFun, class NeiFun, class OwnOp, class NeiOp>
+struct lduAddressingFunctor
 {
     const label* own;
     const label* nei;
@@ -16,6 +17,9 @@ struct lduAddressingFunctor : public std::binary_function<label,Type,Type>
     const label* losort;
     OwnFun oFun;
     NeiFun nFun;
+    OwnOp oOp;
+    NeiOp nOp;
+
     lduAddressingFunctor
     (
         const label* _own,
@@ -24,7 +28,9 @@ struct lduAddressingFunctor : public std::binary_function<label,Type,Type>
         const label* _neiStart,
         const label* _losort,
         const OwnFun _oFun,
-        const NeiFun _nFun
+        const NeiFun _nFun,
+        const OwnOp _oOp,
+        const NeiOp _nOp
     ):
         own(_own),
         nei(_nei),
@@ -32,7 +38,9 @@ struct lduAddressingFunctor : public std::binary_function<label,Type,Type>
         neiStart(_neiStart),
         losort(_losort),
         oFun(_oFun),
-        nFun(_nFun)
+        nFun(_nFun),
+        oOp(_oOp),
+        nOp(_nOp)
     {}
 
     __HOST____DEVICE__
@@ -48,27 +56,43 @@ struct lduAddressingFunctor : public std::binary_function<label,Type,Type>
         for(label i = 0; i<oSize; i++)
         {
             label face = oStart + i;
-            out += oFun(face);
+            out = oOp(out,oFun(id,face));
         }
 
         for(label i = 0; i<nSize; i++)
         {
             label face = losort[nStart + i];
-            out += nFun(face);
+            out = nOp(out,nFun(id,face));
         }
 
         return out;
     }
 };
 
-template<class Type,class Fun>
-struct lduAddressingPatchFunctor : public std::binary_function<label,Type,Type>
+template<class Type,class Fun,class Op>
+struct lduAddressingPatchFunctor
 {
     const label* neiStart;
     const label* losort;
+    const label* pcells;
     Fun fun;
-    lduAddressingPatchFunctor(const label* _neiStart,const label* _losort,const Fun _fun):
-                              neiStart(_neiStart),losort(_losort),fun(_fun){}
+    Op op;
+
+    lduAddressingPatchFunctor
+    (
+        const label* _neiStart,
+        const label* _losort,
+        const label* _pcells,
+        const Fun _fun,
+        const Op _op
+    ):
+        neiStart(_neiStart),
+        losort(_losort),
+        pcells(_pcells),
+        fun(_fun),
+        op(_op)
+    {}
+
     __HOST____DEVICE__
     Type operator()(const label& id,const Type& s)
     {
@@ -76,11 +100,12 @@ struct lduAddressingPatchFunctor : public std::binary_function<label,Type,Type>
 
         label nStart = neiStart[id];
         label nSize = neiStart[id+1] - nStart;
+        label cellI = pcells[id];
 
         for(label i = 0; i<nSize; i++)
         {
             label face = losort[nStart + i];
-            out += fun(face);
+            out = op(out,fun(cellI,face));
         }
 
         return out;
@@ -94,10 +119,22 @@ struct matrixCoeffsMultiplyFunctor
     const LUType* coeffs;
     const label* addr;
     Op op;
-    matrixCoeffsMultiplyFunctor(const Type* _psi,const LUType* _coeffs,const label* _addr,const Op _op):
-	                        psi(_psi),coeffs(_coeffs),addr(_addr),op(_op){}
+
+    matrixCoeffsMultiplyFunctor
+    (
+        const Type* _psi,
+        const LUType* _coeffs,
+        const label* _addr,
+        const Op _op
+    ):
+        psi(_psi),
+        coeffs(_coeffs),
+        addr(_addr),
+        op(_op)
+    {}
+
     __HOST____DEVICE__
-    Type operator()(const label& face) 
+    Type operator()(const label& cell, const label& face) 
     {
         return op(coeffs[face]*psi[addr[face]]);
     }
@@ -108,24 +145,33 @@ struct matrixCoeffsFunctor
 {
     const Type* coeffs;
     Op op;
-    matrixCoeffsFunctor(const Type* _coeffs,const Op _op):
-	                coeffs(_coeffs),op(_op){}
+
+    matrixCoeffsFunctor
+    (
+        const Type* _coeffs,
+        const Op _op
+    ):
+        coeffs(_coeffs),
+        op(_op)
+    {}
+
     __HOST____DEVICE__
-    Type operator()(const label& face)
+    Type operator()(const label& cell, const label& face)
     {
         return op(coeffs[face]);
     }
 };
 
-
-template<class Type,class Input, class OwnFun,class NeiFun>
+template<class Type,class Input, class OwnFun,class NeiFun,class OwnOp,class NeiOp>
 inline void matrixOperation
 (
     Input in, 
     gpuList<Type>& out,
     const lduAddressing& addr,
     OwnFun o, 
-    NeiFun n
+    NeiFun n,
+    OwnOp oo,
+    NeiOp no
 )
 {
     const labelgpuList& l = addr.lowerAddr();
@@ -141,7 +187,7 @@ inline void matrixOperation
         thrust::make_counting_iterator(0)+addr.size(),
         in,
         out.begin(),
-        lduAddressingFunctor<Type,OwnFun,NeiFun>
+        lduAddressingFunctor<Type,OwnFun,NeiFun,OwnOp,NeiOp>
         (
             l.data(),
             u.data(),
@@ -149,18 +195,44 @@ inline void matrixOperation
             losortStart.data(),
             losort.data(),
             o,
-            n
+            n,
+            oo,
+            no
         )
     );
 }
 
-template<class Type, class Fun>
+
+template<class Type,class Input, class OwnFun,class NeiFun>
+inline void matrixOperation
+(
+    Input in, 
+    gpuList<Type>& out,
+    const lduAddressing& addr,
+    OwnFun o, 
+    NeiFun n
+)
+{
+    matrixOperation
+    (
+        in, 
+        out,
+        addr,
+        o, 
+        n,
+        sumOp<Type>(),
+        sumOp<Type>()
+    );
+}
+
+template<class Type, class Fun, class Op>
 inline void matrixPatchOperation
 (
     label patchI, 
     gpuList<Type>& out,
     const lduAddressing& addr,
-    Fun f
+    Fun f,
+    Op o
 )
 {
     const labelgpuList& pcells = addr.patchSortCells(patchI);
@@ -174,12 +246,33 @@ inline void matrixPatchOperation
         thrust::make_counting_iterator(0)+pcells.size(),
         thrust::make_permutation_iterator(out.begin(),pcells.begin()),
         thrust::make_permutation_iterator(out.begin(),pcells.begin()),
-        lduAddressingPatchFunctor<Type,Fun>
+        lduAddressingPatchFunctor<Type,Fun,Op>
         (
             losortStart.data(),
             losort.data(),
-            f
+            pcells.data(),
+            f,
+            o
         )
+    );
+}
+
+template<class Type, class Fun>
+inline void matrixPatchOperation
+(
+    label patchI, 
+    gpuList<Type>& out,
+    const lduAddressing& addr,
+    Fun f
+)
+{
+    matrixPatchOperation
+    (
+        patchI, 
+        out,
+        addr,
+        f,
+        sumOp<Type>()
     );
 }
 

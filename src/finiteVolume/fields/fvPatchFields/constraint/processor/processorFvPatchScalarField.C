@@ -47,7 +47,7 @@ struct processorFvPatchScalarFunctor
     {}
 
     __HOST____DEVICE__
-    scalar operator()(const label& id)
+    scalar operator()(const label&, const label& id)
     {
         return -coeffs[id]*val[id];
     }

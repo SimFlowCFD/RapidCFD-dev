@@ -247,7 +247,6 @@ struct OmegaCalculateOmegaFunctor : public std::unary_function<label,scalar>
     const scalar* y;
     const scalar* k;
     const scalar* nuw;
-    const label* addr;
 
     OmegaCalculateOmegaFunctor
     (
@@ -257,8 +256,7 @@ struct OmegaCalculateOmegaFunctor : public std::unary_function<label,scalar>
         const scalar* cornerWeights_,
         const scalar* y_,
         const scalar* k_,
-        const scalar* nuw_,
-        const label* addr_
+        const scalar* nuw_
     ):
         Cmu25(Cmu25_),
         kappa(kappa_),
@@ -266,15 +264,12 @@ struct OmegaCalculateOmegaFunctor : public std::unary_function<label,scalar>
         cornerWeights(cornerWeights_),
         y(y_),
         k(k_),
-        nuw(nuw_),
-        addr(addr_)
+        nuw(nuw_)
     {}
 
     __HOST____DEVICE__
-    scalar operator()(const label& faceI)
+    scalar operator()(const label& cellI,const label& faceI)
     {
-        label cellI = addr[faceI];
-		
         scalar w = cornerWeights[faceI];
 
         scalar omegaVis = 6.0*nuw[faceI]/(beta1*sqr(y[faceI]));
@@ -295,7 +290,6 @@ struct OmegaCalculateGFunctor : public std::unary_function<label,scalar>
     const scalar* nuw;
     const scalar* nutw;
     const scalar* magGradUw;
-    const label* addr;
 
     OmegaCalculateGFunctor
     (
@@ -306,8 +300,7 @@ struct OmegaCalculateGFunctor : public std::unary_function<label,scalar>
         const scalar* k_,
         const scalar* nuw_,
         const scalar* nutw_,
-        const scalar* magGradUw_,
-        const label* addr_
+        const scalar* magGradUw_
     ):
         Cmu25(Cmu25_),
         kappa(kappa_),
@@ -316,15 +309,12 @@ struct OmegaCalculateGFunctor : public std::unary_function<label,scalar>
         k(k_),
         nuw(nuw_),
         nutw(nutw_),
-        magGradUw(magGradUw_),
-        addr(addr_)
+        magGradUw(magGradUw_)
     {}
 
     __HOST____DEVICE__
-    scalar operator()(const label& faceI)
+    scalar operator()(const label& cellI,const label& faceI)
     {
-        label cellI = addr[faceI];
-
         scalar w = cornerWeights[faceI];
 
         return
@@ -380,8 +370,7 @@ void omegaWallFunctionFvPatchScalarField::calculate
             cornerWeights.data(),
             y.data(),
             k.getField().data(),
-            nuw.data(),
-            patch.faceCells().data()
+            nuw.data()
         )
     );
 		
@@ -399,32 +388,9 @@ void omegaWallFunctionFvPatchScalarField::calculate
             k.getField().data(),
             nuw.data(),
             nutw.data(),
-            magGradUw.data(),
-            patch.faceCells().data()
+            magGradUw.data()
         )
     );
-
-/*
-    forAll(nutw, faceI)
-    {
-        label cellI = patch.faceCells()[faceI];
-
-        scalar w = cornerWeights[faceI];
-
-        scalar omegaVis = 6.0*nuw[faceI]/(beta1_*sqr(y[faceI]));
-
-        scalar omegaLog = sqrt(k[cellI])/(Cmu25*kappa_*y[faceI]);
-
-        omega[cellI] += w*sqrt(sqr(omegaVis) + sqr(omegaLog));
-
-        G[cellI] +=
-            w
-           *(nutw[faceI] + nuw[faceI])
-           *magGradUw[faceI]
-           *Cmu25*sqrt(k[cellI])
-           /(kappa_*y[faceI]);
-    }
-    */
 }
 
 

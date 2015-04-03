@@ -392,7 +392,7 @@ struct processorFvPatchFunctor
     {}
 
     __HOST____DEVICE__
-    Type operator()(const label& id)
+    Type operator()(const label&, const label& id)
     {
         return -coeffs[id]*val[id];
     }

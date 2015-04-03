@@ -66,7 +66,6 @@ struct EpsilonLowReCalculateEpsilonFunctor : public std::unary_function<label,sc
     const scalar* y;
     const scalar* k;
     const scalar* nuw;
-    const label* addr;
 
     EpsilonLowReCalculateEpsilonFunctor
     (
@@ -77,8 +76,7 @@ struct EpsilonLowReCalculateEpsilonFunctor : public std::unary_function<label,sc
         const scalar* cornerWeights_,
         const scalar* y_,
         const scalar* k_,
-        const scalar* nuw_,
-        const label* addr_
+        const scalar* nuw_
     ):
         yPlusLam(yPlusLam_),
         Cmu25(Cmu25_),
@@ -87,15 +85,12 @@ struct EpsilonLowReCalculateEpsilonFunctor : public std::unary_function<label,sc
         cornerWeights(cornerWeights_),
         y(y_),
         k(k_),
-        nuw(nuw_),
-        addr(addr_)
+        nuw(nuw_)
     {}
 
     __HOST____DEVICE__
-    scalar operator()(const label& faceI)
+    scalar operator()(const label& cellI,const label& faceI)
     {
-        label cellI = addr[faceI];
-
         scalar yPlus = Cmu25*sqrt(k[cellI])*y[faceI]/nuw[faceI];
 
         scalar w = cornerWeights[faceI];
@@ -121,7 +116,6 @@ struct EpsilonLowReCalculateGFunctor : public std::unary_function<label,scalar>
 	const scalar* nuw;
 	const scalar* nutw;
 	const scalar* magGradUw;
-	const label* addr;
 
     EpsilonLowReCalculateGFunctor
     (
@@ -132,8 +126,7 @@ struct EpsilonLowReCalculateGFunctor : public std::unary_function<label,scalar>
         const scalar* k_,
         const scalar* nuw_,
         const scalar* nutw_,
-        const scalar* magGradUw_,
-        const label* addr_
+        const scalar* magGradUw_
     ):
         Cmu25(Cmu25_),
         kappa(kappa_),
@@ -142,14 +135,12 @@ struct EpsilonLowReCalculateGFunctor : public std::unary_function<label,scalar>
         k(k_),
         nuw(nuw_),
         nutw(nutw_),
-        magGradUw(magGradUw_),
-        addr(addr_)
+        magGradUw(magGradUw_)
     {}
-    __HOST____DEVICE__
-    scalar operator()(const label& faceI)
-    {
-        label cellI = addr[faceI];
 
+    __HOST____DEVICE__
+    scalar operator()(const label& cellI, const label& faceI)
+    {
         scalar w = cornerWeights[faceI];
 
         return
@@ -207,8 +198,7 @@ void epsilonLowReWallFunctionFvPatchScalarField::calculate
             cornerWeights.data(),
             y.data(),
             k.getField().data(),
-            nuw.data(),
-            patch.faceCells().data()
+            nuw.data()
         )
     );
 	
@@ -226,37 +216,9 @@ void epsilonLowReWallFunctionFvPatchScalarField::calculate
             k.getField().data(),
             nuw.data(),
             nutw.data(),
-            magGradUw.data(),
-            patch.faceCells().data()
+            magGradUw.data()
         )
     );
-
-/*						
-    forAll(nutw, faceI)
-    {
-        label cellI = patch.faceCells()[faceI];
-
-        scalar yPlus = Cmu25*sqrt(k[cellI])*y[faceI]/nuw[faceI];
-
-        scalar w = cornerWeights[faceI];
-
-        if (yPlus > yPlusLam_)
-        {
-            epsilon[cellI] = w*Cmu75*pow(k[cellI], 1.5)/(kappa_*y[faceI]);
-        }
-        else
-        {
-            epsilon[cellI] = w*2.0*k[cellI]*nuw[faceI]/sqr(y[faceI]);
-        }
-
-        G[cellI] =
-            w
-           *(nutw[faceI] + nuw[faceI])
-           *magGradUw[faceI]
-           *Cmu25*sqrt(k[cellI])
-           /(kappa_*y[faceI]);
-    }
-*/
 }
 
 

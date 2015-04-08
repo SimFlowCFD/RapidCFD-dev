@@ -1,1 +1,0 @@
-/home/kamil/OpenFOAM/RapidCFD-dev/src/OpenFOAM/matrices/lduMatrix/preconditioners/DICPreconditioner/DICPreconditioner.H

@@ -38,7 +38,7 @@ SourceFiles
 #define DILUPreconditioner_H
 
 #include "lduMatrix.H"
-#include "diagonalPreconditioner.H"
+#include "AINVPreconditioner.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -51,7 +51,7 @@ namespace Foam
 
 class DILUPreconditioner
 :
-    public diagonalPreconditioner
+    public AINVPreconditioner
 {
 
 public:

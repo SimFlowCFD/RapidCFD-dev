@@ -45,7 +45,7 @@ Foam::DILUPreconditioner::DILUPreconditioner
     const dictionary& dic
 )
 :
-    diagonalPreconditioner
+    AINVPreconditioner
     (
         sol,
         dic
@@ -53,7 +53,7 @@ Foam::DILUPreconditioner::DILUPreconditioner
 {
     if(debug)
     {
-        Info<<"Using diagonal preconditioner instead of DILU."<<endl;
+        Info<<"Using AINV preconditioner instead of DILU."<<endl;
     }
 }
 

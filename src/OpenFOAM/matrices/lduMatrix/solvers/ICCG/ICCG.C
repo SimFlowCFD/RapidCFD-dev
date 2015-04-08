@@ -43,7 +43,7 @@ Foam::dictionary Foam::ICCG::solverDict
     const scalar relTol
 )
 {
-    dictionary dict(IStringStream("solver PCG; preconditioner diagonal;")());
+    dictionary dict(IStringStream("solver PCG; preconditioner AINV;")());
     dict.add("tolerance", tol);
     dict.add("relTol", relTol);
 

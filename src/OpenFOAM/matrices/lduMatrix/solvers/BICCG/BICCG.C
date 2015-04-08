@@ -44,7 +44,7 @@ Foam::dictionary Foam::BICCG::solverDict
     const scalar relTol
 )
 {
-    dictionary dict(IStringStream("solver PBiCG; preconditioner diagonal;")());
+    dictionary dict(IStringStream("solver PBiCG; preconditioner AINV;")());
     dict.add("tolerance", tol);
     dict.add("relTol", relTol);
 

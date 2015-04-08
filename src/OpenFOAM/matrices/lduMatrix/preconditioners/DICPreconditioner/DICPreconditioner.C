@@ -45,7 +45,7 @@ Foam::DICPreconditioner::DICPreconditioner
     const dictionary& dic
 )
 :
-    diagonalPreconditioner
+    AINVPreconditioner
     (
         sol,
         dic
@@ -53,7 +53,7 @@ Foam::DICPreconditioner::DICPreconditioner
 {
     if(debug)
     {
-        Info<<"Using diagonal preconditioner instead of DIC."<<endl;
+        Info<<"Using AINV preconditioner instead of DIC."<<endl;
     }
 }
 

@@ -256,6 +256,7 @@ $(lduMatrix)/smoothers/GaussSeidel/GaussSeidelSmoother.C
 
 $(lduMatrix)/preconditioners/noPreconditioner/noPreconditioner.C
 $(lduMatrix)/preconditioners/diagonalPreconditioner/diagonalPreconditioner.C
+$(lduMatrix)/preconditioners/AINVPreconditioner/AINVPreconditioner.C
 $(lduMatrix)/preconditioners/DICPreconditioner/DICPreconditioner.C
 $(lduMatrix)/preconditioners/DILUPreconditioner/DILUPreconditioner.C
 

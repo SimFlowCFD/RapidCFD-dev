@@ -1,5 +1,5 @@
 #include "JacobiSmoother.H"
-#include "textureConfig.H"
+#include "textures.H"
 
 namespace Foam
 {
@@ -13,10 +13,9 @@ namespace Foam
 
     #define MAX_NEI_SIZE 3
 	
-    template<bool useTexture>
     struct JacobiSmootherFunctor 
     {
-        const scalar* psi;
+        textures<scalar> psi;
         const scalar* diag;
         const scalar* b;
         const scalar* lower;
@@ -31,7 +30,7 @@ namespace Foam
         JacobiSmootherFunctor
         (
             scalar _omega,
-            const scalar* _psi, 
+            textures<scalar> _psi, 
             const scalar* _diag, 
             const scalar* _b, 
             const scalar* _lower,
@@ -55,7 +54,7 @@ namespace Foam
              omega(_omega)
         {}
 
-        __HOST____DEVICE__
+        __device__
         scalar operator()(const label& id)
         {
             scalar out = 0;
@@ -75,7 +74,7 @@ namespace Foam
                 if(i<oSize)
                 {
                     label face = oStart + i;
-                    tmpSum[i] = upper[face]*fetch<useTexture>(nei[face],psi);
+                    tmpSum[i] = upper[face]*psi[nei[face]];
                 }
             }
 
@@ -84,7 +83,7 @@ namespace Foam
                 if(i<nSize)
                 {
                      label face = losort[nStart + i];
-                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*fetch<useTexture>(own[face],psi); 
+                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]]; 
                 }
             }
 
@@ -96,7 +95,7 @@ namespace Foam
             for(label i = MAX_NEI_SIZE; i<oSize; i++)
             {
                 label face = oStart + i;
-                out += upper[face]*fetch<useTexture>(nei[face],psi);
+                out += upper[face]*psi[nei[face]];
             }
             
             
@@ -104,7 +103,7 @@ namespace Foam
             {
                  label face = losort[nStart + i];
 
-                 out += lower[face]*fetch<useTexture>(own[face],psi);
+                 out += lower[face]*psi[own[face]];
             }
 
             
@@ -163,8 +162,7 @@ void Foam::JacobiSmoother::smooth
     const scalargpuField& Upper = matrix_.upper();
     const scalargpuField& Diag = matrix_.diag();
 
-    const bool textureCanBeUsed = psi.size() > TEXTURE_MINIMUM_SIZE;
-
+    textures<scalar> psiTex(psi);
 
     FieldField<gpuField, scalar>& mBouCoeffs =
         const_cast<FieldField<gpuField, scalar>&>
@@ -202,20 +200,16 @@ void Foam::JacobiSmoother::smooth
             cmpt
         );
 
-        if(textureCanBeUsed)
-        {
-
-        bind(psi.data());
 
         thrust::transform
         (
             thrust::make_counting_iterator(0),
             thrust::make_counting_iterator(0)+psi.size(),
             Apsi.begin(),
-            JacobiSmootherFunctor<true>
+            JacobiSmootherFunctor
             (
                 omega_,
-                psi.data(),
+                psiTex,
                 Diag.data(),
                 sourceTmp.data(),
                 Lower.data(),
@@ -227,35 +221,6 @@ void Foam::JacobiSmoother::smooth
                 losortStart.data()
             )
         );
-
-        unbind(psi.data());
-
-        }
-        else
-        {
-
-        thrust::transform
-        (
-            thrust::make_counting_iterator(0),
-            thrust::make_counting_iterator(0)+psi.size(),
-            Apsi.begin(),
-            JacobiSmootherFunctor<false>
-            (
-                omega_,
-                psi.data(),
-                Diag.data(),
-                sourceTmp.data(),
-                Lower.data(),
-                Upper.data(),
-                l.data(),
-                u.data(),
-                losort.data(),
-                ownStart.data(),
-                losortStart.data()
-            )
-        );
-
-        }
 
         psi = Apsi;
     }
@@ -267,5 +232,7 @@ void Foam::JacobiSmoother::smooth
             mBouCoeffs[patchi].negate();
         }
     }
+
+    psiTex.destroy();
 }
 

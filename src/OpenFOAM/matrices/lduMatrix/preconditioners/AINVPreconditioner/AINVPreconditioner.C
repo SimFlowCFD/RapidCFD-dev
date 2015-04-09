@@ -1,5 +1,4 @@
 #include "AINVPreconditioner.H"
-#include "textureConfig.H"
 
 namespace Foam
 {
@@ -16,11 +15,11 @@ namespace Foam
 
     #define MAX_NEI_SIZE 3
 	
-    template<bool normalMult, bool useTexture>
+    template<bool normalMult>
     struct AINVPreconditionerFunctor 
     {
-        const scalar* psi;
-        const scalar* rD;
+        textures<scalar> psi;
+        textures<scalar> rD;
         const scalar* lower;
         const scalar* upper;
         const label* own;
@@ -31,8 +30,8 @@ namespace Foam
 
         AINVPreconditionerFunctor
         (
-            const scalar* _psi, 
-            const scalar* _rD, 
+            textures<scalar> _psi, 
+            textures<scalar> _rD, 
             const scalar* _lower,
             const scalar* _upper,
             const label* _own,
@@ -70,9 +69,9 @@ namespace Foam
                 {
                     label face = oStart + i;
                     if(normalMult)
-                        tmpSum[i] = upper[face]*rD[nei[face]]*fetch<useTexture>(nei[face],psi);
+                        tmpSum[i] = upper[face]*rD[nei[face]]*psi[nei[face]];
                     else
-                        tmpSum[i] = upper[face]*rD[nei[face]]*fetch<useTexture>(nei[face],psi);
+                        tmpSum[i] = upper[face]*rD[nei[face]]*psi[nei[face]];
                 }
             }
 
@@ -82,9 +81,9 @@ namespace Foam
                 {
                     label face = losort[nStart + i];
                     if(normalMult)
-                        tmpSum[i+MAX_NEI_SIZE] = lower[face]*rD[own[face]]*fetch<useTexture>(own[face],psi); 
+                        tmpSum[i+MAX_NEI_SIZE] = lower[face]*rD[own[face]]*psi[own[face]]; 
                     else
-                        tmpSum[i+MAX_NEI_SIZE] = upper[face]*rD[own[face]]*fetch<useTexture>(own[face],psi); 
+                        tmpSum[i+MAX_NEI_SIZE] = upper[face]*rD[own[face]]*psi[own[face]]; 
                 }
             }
 
@@ -97,9 +96,9 @@ namespace Foam
             {
                 label face = oStart + i;
                 if(normalMult)
-                    out += upper[face]*rD[nei[face]]*fetch<useTexture>(nei[face],psi);
+                    out += upper[face]*rD[nei[face]]*psi[nei[face]];
                 else
-                    out += lower[face]*rD[nei[face]]*fetch<useTexture>(nei[face],psi);
+                    out += lower[face]*rD[nei[face]]*psi[nei[face]];
             }
             
             
@@ -107,9 +106,9 @@ namespace Foam
             {
                  label face = losort[nStart + i];
                  if(normalMult)
-                     out += lower[face]*rD[own[face]]*fetch<useTexture>(own[face],psi);
+                     out += lower[face]*rD[own[face]]*psi[own[face]];
                  else
-                     out += upper[face]*rD[own[face]]*fetch<useTexture>(own[face],psi);
+                     out += upper[face]*rD[own[face]]*psi[own[face]];
             }
 
             
@@ -127,7 +126,8 @@ Foam::AINVPreconditioner::AINVPreconditioner
 )
 :
     lduMatrix::preconditioner(sol),
-    rD(sol.matrix().diag().size())
+    rD(sol.matrix().diag().size()),
+    rDTex(rD.size(),rD.data())
 { 
     const scalargpuField& Diag = solver_.matrix().diag();
 
@@ -140,34 +140,17 @@ Foam::AINVPreconditioner::AINVPreconditioner
     );
 }
 
+Foam::AINVPreconditioner::~AINVPreconditioner()
+{
+   rDTex.destroy();
+}
+
 template<bool normalMult>
 void Foam::AINVPreconditioner::preconditionImpl
 (
     scalargpuField& w,
     const scalargpuField& r,
     const direction d
-) const
-{
-    const bool textureCanBeUsed = r.size() > TEXTURE_MINIMUM_SIZE;
- 
-    if(textureCanBeUsed)
-    {
-        bind(r.data());
-        preconditionImpl<normalMult,true>(w,r,d);
-        unbind(r.data());
-    }
-    else
-    {
-        preconditionImpl<normalMult,false>(w,r,d);
-    }
-}
-
-template<bool normalMult,bool useTexture>
-void Foam::AINVPreconditioner::preconditionImpl
-(
-    scalargpuField& w,
-    const scalargpuField& r,
-    const direction
 ) const
 {
     const labelgpuList& l = solver_.matrix().lduAddr().lowerAddr();
@@ -180,15 +163,17 @@ void Foam::AINVPreconditioner::preconditionImpl
     const scalargpuField& Lower = solver_.matrix().lower();
     const scalargpuField& Upper = solver_.matrix().upper();
 
+    textures<scalar> rTex(r);
+
     thrust::transform
     (
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(0)+r.size(),
         w.begin(),
-        AINVPreconditionerFunctor<normalMult,useTexture>
+        AINVPreconditionerFunctor<normalMult>
         (
-            r.data(),
-            rD.data(),
+            rTex,
+            rDTex,
             Lower.data(),
             Upper.data(),
             l.data(),
@@ -198,6 +183,7 @@ void Foam::AINVPreconditioner::preconditionImpl
             losortStart.data()
         )
     );
-}
 
+    rTex.destroy();
+}
 

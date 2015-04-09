@@ -13,6 +13,7 @@
 #define AINVPreconditioner_H
 
 #include "lduMatrix.H"
+#include "textures.H"
 
 namespace Foam
 {
@@ -22,20 +23,13 @@ class AINVPreconditioner
     public lduMatrix::preconditioner
 {
         scalargpuField rD;
+        textures<scalar> rDTex;
 
         AINVPreconditioner(const AINVPreconditioner&);
 
         void operator=(const AINVPreconditioner&);
 
         template<bool normalMult>
-        void preconditionImpl
-        (
-            scalargpuField& w,
-            const scalargpuField& r,
-            const direction cmpt
-        ) const;
-
-        template<bool normalMult, bool useTexture>
         void preconditionImpl
         (
             scalargpuField& w,
@@ -53,8 +47,7 @@ public:
         const dictionary& solverControlsUnused
     );
 
-    virtual ~AINVPreconditioner()
-    {}
+    virtual ~AINVPreconditioner();
 
         virtual void precondition
         (

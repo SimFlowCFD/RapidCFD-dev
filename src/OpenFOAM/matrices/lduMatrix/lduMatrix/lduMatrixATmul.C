@@ -28,7 +28,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "lduMatrix.H"
-#include "textureConfig.H"
+#include "textures.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -37,10 +37,10 @@ namespace Foam
         
 #define MAX_NEI_SIZE 3
 	
-template<bool normalMult,bool useTexture>
-struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<label,label,label,label>,scalar>
+template<bool normalMult>
+struct matrixMultiplyFunctor
 {
-    const scalar* psi;
+    textures<scalar> psi;
     const scalar* lower;
     const scalar* upper;
     const label* own;
@@ -49,7 +49,7 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
 
     matrixMultiplyFunctor
     (
-        const scalar* _psi, 
+        textures<scalar> _psi, 
         const scalar* _lower,
         const scalar* _upper,
         const label* _own,
@@ -84,9 +84,9 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
                 label face = oStart + i;
 
                 if(normalMult)
-                    tmpSum[i] = upper[face]*fetch<useTexture>(nei[face], psi); 
+                    tmpSum[i] = upper[face]*psi[nei[face]]; 
                 else
-                    tmpSum[i] = lower[face]*fetch<useTexture>(nei[face], psi); 
+                    tmpSum[i] = lower[face]*psi[nei[face]]; 
             }
         }
 
@@ -97,9 +97,9 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
                  label face = losort[nStart + i];
                    
                  if(normalMult)
-                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*fetch<useTexture>(own[face], psi); 
+                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]]; 
                  else
-                     tmpSum[i+MAX_NEI_SIZE] = upper[face]*fetch<useTexture>(own[face], psi);
+                     tmpSum[i+MAX_NEI_SIZE] = upper[face]*psi[own[face]];
             }
         }
 
@@ -113,9 +113,9 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
             label face = oStart + i;
                 
             if(normalMult)
-                out += upper[face]*fetch<useTexture>(nei[face], psi); 
+                out += upper[face]*psi[nei[face]]; 
             else
-                out += lower[face]*fetch<useTexture>(nei[face], psi); 
+                out += lower[face]*psi[nei[face]]; 
         }
             
             
@@ -124,9 +124,9 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
             label face = losort[nStart + i];
 
             if(normalMult)
-                nExtra += lower[face]*fetch<useTexture>(own[face], psi); 
+                nExtra += lower[face]*psi[own[face]]; 
             else
-                nExtra += upper[face]*fetch<useTexture>(own[face], psi);
+                nExtra += upper[face]*psi[own[face]];
         }  
             
         return out + nExtra;
@@ -135,7 +135,7 @@ struct matrixMultiplyFunctor : public std::binary_function<scalar,thrust::tuple<
     
 #undef MAX_NEI_SIZE
 
-template<bool normalMult,bool useTexture>
+template<bool normalMult>
 inline void callMultiply
 (
     scalargpuField& Apsi,
@@ -153,6 +153,7 @@ inline void callMultiply
     const scalargpuField& Diag
 )
 {
+    textures<scalar> psiTex(psi);
 
     thrust::transform
     (
@@ -182,9 +183,9 @@ inline void callMultiply
             losortStart.begin()+1
         )),
         Apsi.begin(),
-        matrixMultiplyFunctor<normalMult,useTexture>
+        matrixMultiplyFunctor<normalMult>
         (
-            psi.data(),
+            psiTex,
             Lower.data(),
             Upper.data(),
             l.data(),
@@ -193,6 +194,7 @@ inline void callMultiply
         )
     );
 
+    psiTex.destroy();
 }
 
 
@@ -220,8 +222,6 @@ void Foam::lduMatrix::Amul
 
     const scalargpuField& psi = tpsi();
 
-    const bool textureCanBeUsed = psi.size() > TEXTURE_MINIMUM_SIZE;
-
     // Initialise the update of interfaced interfaces
     initMatrixInterfaces
     (
@@ -232,42 +232,19 @@ void Foam::lduMatrix::Amul
         cmpt
     );
 
-    if(textureCanBeUsed)
-    {
-        bind(psi.data());
-
-        callMultiply<true,true>
-        (
-            Apsi,
-            psi,
-            l,
-            u,
-            losort,
-            ownStart,
-            losortStart,
-            Lower,
-            Upper,
-            Diag
-        );
-
-        unbind(psi.data());
-    }
-    else
-    {
-        callMultiply<true,false>
-        (
-            Apsi,
-            psi,
-            l,
-            u,
-            losort,
-            ownStart,
-            losortStart,
-            Lower,
-            Upper,
-            Diag
-        );
-    }
+    callMultiply<true>
+    (
+        Apsi,
+        psi,
+        l,
+        u,
+        losort,
+        ownStart,
+        losortStart,
+        Lower,
+        Upper,
+        Diag
+    );
 
     updateMatrixInterfaces
     (
@@ -304,8 +281,6 @@ void Foam::lduMatrix::Tmul
 
     const scalargpuField& psi = tpsi();
 
-    const bool textureCanBeUsed = psi.size() > TEXTURE_MINIMUM_SIZE;
-
     // Initialise the update of interfaced interfaces
     initMatrixInterfaces
     (
@@ -316,42 +291,20 @@ void Foam::lduMatrix::Tmul
         cmpt
     );
       
-    if(textureCanBeUsed)
-    {
-        bind(psi.data());
 
-        callMultiply<false,true>
-        (
-            Tpsi,
-            psi,
-            l,
-            u,
-            losort,
-            ownStart,
-            losortStart,
-            Lower,
-            Upper,
-            Diag
-        );
-
-        unbind(psi.data());
-    }
-    else
-    {
-        callMultiply<false,false>
-        (
-            Tpsi,
-            psi,
-            l,
-            u,
-            losort,
-            ownStart,
-            losortStart,
-            Lower,
-            Upper,
-            Diag
-        );
-    }
+    callMultiply<false>
+    (
+        Tpsi,
+        psi,
+        l,
+        u,
+        losort,
+        ownStart,
+        losortStart,
+        Lower,
+        Upper,
+        Diag
+    );
 
     // Update interface interfaces
     updateMatrixInterfaces

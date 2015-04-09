@@ -11,7 +11,7 @@ CC          = nvcc -m64 -arch=sm_30
 include $(RULES)/c++$(WM_COMPILE_OPTION)
 
 
-cuFLAGS     = -x cu -D__HOST____DEVICE__='__host__ __device__' -DCUSP_USE_TEXTURE_MEMORY 
+cuFLAGS     = -x cu -D__HOST____DEVICE__='__host__ __device__'
 ptFLAGS     = -DNoRepository -D__RESTRICT__='__restrict__' 
 
 c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++OPT) $(c++DBUG) $(ptFLAGS) $(LIB_HEADER_DIRS) -Xcompiler -fPIC

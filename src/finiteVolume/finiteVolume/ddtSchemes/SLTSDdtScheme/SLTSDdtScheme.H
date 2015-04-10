@@ -86,7 +86,7 @@ class SLTSDdtScheme
         void operator=(const SLTSDdtScheme&);
 
         //- Calculate a relaxed diagonal from the given flux field
-        void relaxedDiag(scalarField& rD, const surfaceScalarField& phi) const;
+        void relaxedDiag(scalargpuField& rD, const surfaceScalarField& phi) const;
 
         //- Return the reciprocal of the stabilised local time-step
         tmp<volScalarField> SLrDeltaT() const;

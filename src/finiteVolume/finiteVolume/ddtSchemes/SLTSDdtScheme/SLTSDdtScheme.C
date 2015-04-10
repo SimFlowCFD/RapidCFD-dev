@@ -38,48 +38,78 @@ namespace fv
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+template<bool add>
+struct SLTSDdtSchemeRelaxedDiag
+{
+    const scalar* phi;
+   
+    SLTSDdtSchemeRelaxedDiag
+    (
+        const scalar* _phi
+    ):
+        phi(_phi)
+    {}
+
+    __HOST____DEVICE__
+    scalar operator()(const label& cell, const label& face)
+    {
+        if(phi[face])
+        {
+            return add?phi[face]:0;
+        }
+        else
+        {
+            return (!add)?-phi[face]:0;
+        }
+    }
+};
 
 template<class Type>
 void SLTSDdtScheme<Type>::relaxedDiag
 (
-    scalarField& rD,
+    scalargpuField& rD,
     const surfaceScalarField& phi
 ) const
 {
-    const labelUList& owner = mesh().owner();
-    const labelUList& neighbour = mesh().neighbour();
-    scalarField diag(rD.size(), 0.0);
+    scalargpuField diag(rD.size(), 0.0);
 
-    forAll(owner, faceI)
-    {
-        if (phi[faceI] > 0.0)
-        {
-            diag[owner[faceI]] += phi[faceI];
-            rD[neighbour[faceI]] += phi[faceI];
-        }
-        else
-        {
-            diag[neighbour[faceI]] -= phi[faceI];
-            rD[owner[faceI]] -= phi[faceI];
-        }
-    }
+    matrixOperation
+    (
+        thrust::make_constant_iterator(0),
+        diag,
+        mesh().lduAddr(),
+        SLTSDdtSchemeRelaxedDiag<true>(phi.getField().data()),
+        SLTSDdtSchemeRelaxedDiag<false>(phi.getField().data())
+    );
+
+    matrixOperation
+    (
+        thrust::make_constant_iterator(scalar(0)),
+        rD,
+        mesh().lduAddr(),
+        SLTSDdtSchemeRelaxedDiag<false>(phi.getField().data()),
+        SLTSDdtSchemeRelaxedDiag<true>(phi.getField().data())
+    );
 
     forAll(phi.boundaryField(), patchi)
     {
         const fvsPatchScalarField& pphi = phi.boundaryField()[patchi];
-        const labelUList& faceCells = pphi.patch().patch().faceCells();
 
-        forAll(pphi, patchFacei)
-        {
-            if (pphi[patchFacei] > 0.0)
-            {
-                diag[faceCells[patchFacei]] += pphi[patchFacei];
-            }
-            else
-            {
-                rD[faceCells[patchFacei]] -= pphi[patchFacei];
-            }
-        }
+        matrixPatchOperation
+        (
+            patchi, 
+            diag,
+            mesh().lduAddr(),
+            SLTSDdtSchemeRelaxedDiag<true>(pphi.data())
+        );
+
+        matrixPatchOperation
+        (
+            patchi, 
+            rD,
+            mesh().lduAddr(),
+            SLTSDdtSchemeRelaxedDiag<false>(pphi.data())
+        );
     }
 
     rD += (1.0/alpha_ - 2.0)*diag;
@@ -184,7 +214,7 @@ SLTSDdtScheme<Type>::fvcDdt
         );
 
         tdtdt().internalField() =
-            rDeltaT.internalField()*dt.value()*(1.0 - mesh().V0()/mesh().V());
+            rDeltaT.internalField()*dt.value()*(1.0 - mesh().V0()/mesh().V().getField());
 
         return tdtdt;
     }
@@ -403,7 +433,7 @@ SLTSDdtScheme<Type>::fvcDdt
 
                   - alpha.oldTime().internalField()
                    *rho.oldTime().internalField()
-                   *vf.oldTime().internalField()*mesh().Vsc0()/mesh().Vsc()
+                   *vf.oldTime().internalField()*mesh().Vsc0()().getField()/mesh().Vsc()().getField()
                 ),
                 rDeltaT.boundaryField()*
                 (
@@ -454,7 +484,7 @@ SLTSDdtScheme<Type>::fvmDdt
 
     fvMatrix<Type>& fvm = tfvm();
 
-    scalarField rDeltaT(SLrDeltaT()().internalField());
+    scalargpuField rDeltaT(SLrDeltaT()().internalField());
 
     Info<< "SLTSDdtScheme<Type>::fvmDdt: max/min rDeltaT "
         << gMax(rDeltaT) << " " << gMin(rDeltaT) << endl;
@@ -463,11 +493,11 @@ SLTSDdtScheme<Type>::fvmDdt
 
     if (mesh().moving())
     {
-        fvm.source() = rDeltaT*vf.oldTime().internalField()*mesh().V0();
+        fvm.source() = rDeltaT*vf.oldTime().internalField()*mesh().V0().getField();
     }
     else
     {
-        fvm.source() = rDeltaT*vf.oldTime().internalField()*mesh().V();
+        fvm.source() = rDeltaT*vf.oldTime().internalField()*mesh().V().getField();
     }
 
     return tfvm;
@@ -492,14 +522,14 @@ SLTSDdtScheme<Type>::fvmDdt
     );
     fvMatrix<Type>& fvm = tfvm();
 
-    scalarField rDeltaT(SLrDeltaT()().internalField());
+    scalargpuField rDeltaT(SLrDeltaT()().internalField());
 
     fvm.diag() = rDeltaT*rho.value()*mesh().V();
 
     if (mesh().moving())
     {
         fvm.source() = rDeltaT
-            *rho.value()*vf.oldTime().internalField()*mesh().V0();
+            *rho.value()*vf.oldTime().internalField()*mesh().V0().getField();
     }
     else
     {
@@ -529,7 +559,7 @@ SLTSDdtScheme<Type>::fvmDdt
     );
     fvMatrix<Type>& fvm = tfvm();
 
-    scalarField rDeltaT(SLrDeltaT()().internalField());
+    scalargpuField rDeltaT(SLrDeltaT()().internalField());
 
     fvm.diag() = rDeltaT*rho.internalField()*mesh().V();
 
@@ -537,7 +567,7 @@ SLTSDdtScheme<Type>::fvmDdt
     {
         fvm.source() = rDeltaT
             *rho.oldTime().internalField()
-            *vf.oldTime().internalField()*mesh().V0();
+            *vf.oldTime().internalField()*mesh().V0().getField();
     }
     else
     {
@@ -569,23 +599,23 @@ SLTSDdtScheme<Type>::fvmDdt
     );
     fvMatrix<Type>& fvm = tfvm();
 
-    scalarField rDeltaT(SLrDeltaT()().internalField());
+    scalargpuField rDeltaT(SLrDeltaT()().internalField());
 
-    fvm.diag() = rDeltaT*alpha.internalField()*rho.internalField()*mesh().Vsc();
+    fvm.diag() = rDeltaT*alpha.internalField()*rho.internalField()*mesh().Vsc()().getField();
 
     if (mesh().moving())
     {
         fvm.source() = rDeltaT
             *alpha.oldTime().internalField()
             *rho.oldTime().internalField()
-            *vf.oldTime().internalField()*mesh().Vsc0();
+            *vf.oldTime().internalField()*mesh().Vsc0()().getField();
     }
     else
     {
         fvm.source() = rDeltaT
             *alpha.oldTime().internalField()
             *rho.oldTime().internalField()
-            *vf.oldTime().internalField()*mesh().Vsc();
+            *vf.oldTime().internalField()*mesh().Vsc()().getField();
     }
 
     return tfvm;

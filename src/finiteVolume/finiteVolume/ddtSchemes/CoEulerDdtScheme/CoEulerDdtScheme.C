@@ -40,6 +40,23 @@ namespace fv
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+struct CoEulerDdtSchemeCorDeltaTFunctor
+{
+    const scalar * cofrDeltaT;
+
+    CoEulerDdtSchemeCorDeltaTFunctor
+    (
+        const scalar * _cofrDeltaT
+    ):
+        cofrDeltaT(_cofrDeltaT)
+    {}
+    __HOST____DEVICE__
+    scalar operator()(const label& cell, const label& face)
+    {
+        return cofrDeltaT[face];
+    }
+};
+
 template<class Type>
 tmp<volScalarField> CoEulerDdtScheme<Type>::CorDeltaT() const
 {
@@ -63,17 +80,18 @@ tmp<volScalarField> CoEulerDdtScheme<Type>::CorDeltaT() const
 
     volScalarField& corDeltaT = tcorDeltaT();
 
-    const labelgpuList& owner = mesh().owner();
-    const labelgpuList& neighbour = mesh().neighbour();
+    CoEulerDdtSchemeCorDeltaTFunctor fun(cofrDeltaT.getField().data());
 
-    forAll(owner, faceI)
-    {
-        corDeltaT[owner[faceI]] =
-            max(corDeltaT[owner[faceI]], cofrDeltaT[faceI]);
-
-        corDeltaT[neighbour[faceI]] =
-            max(corDeltaT[neighbour[faceI]], cofrDeltaT[faceI]);
-    }
+    matrixOperation
+    (
+        thrust::make_constant_iterator(scalar(0)),
+        corDeltaT.getField(),
+        mesh().lduAddr(),
+        fun,
+        fun,
+        maxOp<scalar>(),
+        maxOp<scalar>()
+    );
 
     volScalarField::GeometricBoundaryField& bcorDeltaT =
         corDeltaT.boundaryField();
@@ -83,19 +101,16 @@ tmp<volScalarField> CoEulerDdtScheme<Type>::CorDeltaT() const
         const fvsPatchScalarField& pcofrDeltaT =
             cofrDeltaT.boundaryField()[patchi];
 
-        const fvPatch& p = pcofrDeltaT.patch();
-        const labelgpuList& faceCells = p.patch().getFaceCells();
-
-        forAll(pcofrDeltaT, patchFacei)
-        {
-            corDeltaT[faceCells[patchFacei]] = max
-            (
-                corDeltaT[faceCells[patchFacei]],
-                pcofrDeltaT[patchFacei]
-            );
-        }
+        CoEulerDdtSchemeCorDeltaTFunctor pfun(pcofrDeltaT.data());
+        matrixPatchOperation
+        (
+            patchi, 
+            corDeltaT.getField(),
+            mesh().lduAddr(),
+            pfun,
+            maxOp<scalar>()
+        );
         
-        thrust::transform();
     }
 
     corDeltaT.correctBoundaryConditions();

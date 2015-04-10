@@ -36,8 +36,7 @@ namespace Foam
 {                
         
 #define MAX_NEI_SIZE 3
-	
-template<bool normalMult>
+
 struct matrixMultiplyFunctor
 {
     textures<scalar> psi;
@@ -64,7 +63,7 @@ struct matrixMultiplyFunctor
         losort(_losort)
     {}
 
-    __HOST____DEVICE__
+    __device__
     scalar operator()(const scalar& d,const thrust::tuple<label,label,label,label>& t)
     {
         scalar out = d;
@@ -83,10 +82,7 @@ struct matrixMultiplyFunctor
             {
                 label face = oStart + i;
 
-                if(normalMult)
-                    tmpSum[i] = upper[face]*psi[nei[face]]; 
-                else
-                    tmpSum[i] = lower[face]*psi[nei[face]]; 
+                tmpSum[i] = upper[face]*psi[nei[face]]; 
             }
         }
 
@@ -96,10 +92,7 @@ struct matrixMultiplyFunctor
             {
                  label face = losort[nStart + i];
                    
-                 if(normalMult)
-                     tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]]; 
-                 else
-                     tmpSum[i+MAX_NEI_SIZE] = upper[face]*psi[own[face]];
+                 tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]];
             }
         }
 
@@ -112,10 +105,7 @@ struct matrixMultiplyFunctor
         {
             label face = oStart + i;
                 
-            if(normalMult)
-                out += upper[face]*psi[nei[face]]; 
-            else
-                out += lower[face]*psi[nei[face]]; 
+            out += upper[face]*psi[nei[face]];
         }
             
             
@@ -123,10 +113,7 @@ struct matrixMultiplyFunctor
         {
             label face = losort[nStart + i];
 
-            if(normalMult)
-                nExtra += lower[face]*psi[own[face]]; 
-            else
-                nExtra += upper[face]*psi[own[face]];
+            nExtra += lower[face]*psi[own[face]]; 
         }  
             
         return out + nExtra;
@@ -135,7 +122,6 @@ struct matrixMultiplyFunctor
     
 #undef MAX_NEI_SIZE
 
-template<bool normalMult>
 inline void callMultiply
 (
     scalargpuField& Apsi,
@@ -183,7 +169,7 @@ inline void callMultiply
             losortStart.begin()+1
         )),
         Apsi.begin(),
-        matrixMultiplyFunctor<normalMult>
+        matrixMultiplyFunctor
         (
             psiTex,
             Lower.data(),
@@ -232,7 +218,7 @@ void Foam::lduMatrix::Amul
         cmpt
     );
 
-    callMultiply<true>
+    callMultiply
     (
         Apsi,
         psi,
@@ -290,9 +276,8 @@ void Foam::lduMatrix::Tmul
         Tpsi,
         cmpt
     );
-      
 
-    callMultiply<false>
+    callMultiply
     (
         Tpsi,
         psi,
@@ -301,8 +286,8 @@ void Foam::lduMatrix::Tmul
         losort,
         ownStart,
         losortStart,
-        Lower,
         Upper,
+        Lower,
         Diag
     );
 

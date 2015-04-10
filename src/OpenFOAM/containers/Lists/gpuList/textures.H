@@ -10,25 +10,19 @@ struct textures
 {
 private:
     cudaTextureObject_t tex;
-    cudaResourceDesc* resDescPtr;
-    cudaTextureDesc* texDescPtr;
 
     inline void initResourceDesc(cudaResourceDesc& resDesc);
     void init(int n, T* data);
 
 public:
     textures(int n, T* data):
-        tex(0),
-        resDescPtr(0),
-        texDescPtr(0)
+        tex(0)
     {
         init(n,data);
     }
 
     textures(const gpuList<T>& list):
-        tex(0),
-        resDescPtr(0),
-        texDescPtr(0)
+        tex(0)
     {
         init(list.size(),const_cast<T*>(list.data()));
     }
@@ -38,8 +32,6 @@ public:
     void destroy()
     {
         cudaDestroyTextureObject(tex);
-        delete resDescPtr;
-        delete texDescPtr;
     }
 };
 
@@ -51,9 +43,8 @@ inline void textures<T>::initResourceDesc(cudaResourceDesc& resDesc)
 template<class T>
 inline void textures<T>::init(int n, T* data)
 {
-    resDescPtr = new cudaResourceDesc();
-    cudaResourceDesc& resDesc = *resDescPtr;
-    memset(resDescPtr, 0, sizeof(cudaResourceDesc));
+    cudaResourceDesc resDesc;
+    memset(&resDesc, 0, sizeof(cudaResourceDesc));
    
     resDesc.resType = cudaResourceTypeLinear;
     resDesc.res.linear.devPtr = data;
@@ -61,12 +52,11 @@ inline void textures<T>::init(int n, T* data)
 
     initResourceDesc(resDesc); 
 
-    texDescPtr = new cudaTextureDesc();
-    cudaTextureDesc& texDesc = *texDescPtr;
-    memset(texDescPtr, 0, sizeof(cudaTextureDesc));
+    cudaTextureDesc texDesc;
+    memset(&texDesc, 0, sizeof(cudaTextureDesc));
     texDesc.readMode = cudaReadModeElementType;
 
-    cudaCreateTextureObject(&tex, resDescPtr, texDescPtr, NULL);
+    cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
 }
 
 template<>

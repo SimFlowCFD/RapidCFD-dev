@@ -15,7 +15,6 @@ namespace Foam
 
     #define MAX_NEI_SIZE 3
 	
-    template<bool normalMult>
     struct AINVPreconditionerFunctor 
     {
         textures<scalar> psi;
@@ -51,7 +50,7 @@ namespace Foam
              losortStart(_losortStart)
         {}
 
-        __HOST____DEVICE__
+        __device__
         scalar operator()(const label& id)
         {
             scalar out = 0;
@@ -68,10 +67,8 @@ namespace Foam
                 if(i<oSize)
                 {
                     label face = oStart + i;
-                    if(normalMult)
-                        tmpSum[i] = upper[face]*rD[nei[face]]*psi[nei[face]];
-                    else
-                        tmpSum[i] = upper[face]*rD[nei[face]]*psi[nei[face]];
+
+                    tmpSum[i] = upper[face]*rD[nei[face]]*psi[nei[face]];
                 }
             }
 
@@ -80,10 +77,8 @@ namespace Foam
                 if(i<nSize)
                 {
                     label face = losort[nStart + i];
-                    if(normalMult)
-                        tmpSum[i+MAX_NEI_SIZE] = lower[face]*rD[own[face]]*psi[own[face]]; 
-                    else
-                        tmpSum[i+MAX_NEI_SIZE] = upper[face]*rD[own[face]]*psi[own[face]]; 
+
+                    tmpSum[i+MAX_NEI_SIZE] = lower[face]*rD[own[face]]*psi[own[face]];
                 }
             }
 
@@ -95,20 +90,16 @@ namespace Foam
             for(label i = MAX_NEI_SIZE; i<oSize; i++)
             {
                 label face = oStart + i;
-                if(normalMult)
-                    out += upper[face]*rD[nei[face]]*psi[nei[face]];
-                else
-                    out += lower[face]*rD[nei[face]]*psi[nei[face]];
+
+                out += upper[face]*rD[nei[face]]*psi[nei[face]];
             }
             
             
             for(label i = MAX_NEI_SIZE; i<nSize; i++)
             {
                  label face = losort[nStart + i];
-                 if(normalMult)
-                     out += lower[face]*rD[own[face]]*psi[own[face]];
-                 else
-                     out += upper[face]*rD[own[face]]*psi[own[face]];
+
+                 out += lower[face]*rD[own[face]]*psi[own[face]];
             }
 
             
@@ -170,14 +161,14 @@ void Foam::AINVPreconditioner::preconditionImpl
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(0)+r.size(),
         w.begin(),
-        AINVPreconditionerFunctor<normalMult>
+        AINVPreconditionerFunctor
         (
             rTex,
             rDTex,
             Lower.data(),
             Upper.data(),
-            l.data(),
-            u.data(),
+            normalMult?l.data():u.data(),
+            normalMult?u.data():l.data(),
             losort.data(),
             ownStart.data(),
             losortStart.data()

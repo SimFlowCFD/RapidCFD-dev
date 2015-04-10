@@ -165,10 +165,10 @@ void Foam::AINVPreconditioner::preconditionImpl
         (
             rTex,
             rDTex,
-            Lower.data(),
-            Upper.data(),
-            normalMult?l.data():u.data(),
-            normalMult?u.data():l.data(),
+            normalMult?Lower.data():Upper.data(),
+            normalMult?Upper.data():Lower.data(),
+            l.data(),
+            u.data(),
             losort.data(),
             ownStart.data(),
             losortStart.data()

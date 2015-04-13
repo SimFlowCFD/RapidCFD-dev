@@ -10,11 +10,8 @@ namespace Foam
 template<class Type, class OwnFun, class NeiFun, class OwnOp, class NeiOp>
 struct lduAddressingFunctor
 {
-    const label* own;
-    const label* nei;
     const label* ownStart;
     const label* neiStart;
-    const label* losort;
     OwnFun oFun;
     NeiFun nFun;
     OwnOp oOp;
@@ -22,21 +19,15 @@ struct lduAddressingFunctor
 
     lduAddressingFunctor
     (
-        const label* _own,
-        const label* _nei,
         const label* _ownStart,
         const label* _neiStart,
-        const label* _losort,
         const OwnFun _oFun,
         const NeiFun _nFun,
         const OwnOp _oOp,
         const NeiOp _nOp
     ):
-        own(_own),
-        nei(_nei),
         ownStart(_ownStart),
         neiStart(_neiStart),
-        losort(_losort),
         oFun(_oFun),
         nFun(_nFun),
         oOp(_oOp),
@@ -61,13 +52,91 @@ struct lduAddressingFunctor
 
         for(label i = 0; i<nSize; i++)
         {
-            label face = losort[nStart + i];
+            label face = nStart + i;
             out = nOp(out,nFun(id,face));
         }
 
         return out;
     }
 };
+
+#define MAX_NEI_SIZE 3
+template<class OwnFun, class NeiFun>
+struct lduAddressingFastFunctor
+{
+    const label* ownStart;
+    const label* neiStart;
+    OwnFun oFun;
+    NeiFun nFun;
+
+    lduAddressingFastFunctor
+    (
+        const label* _ownStart,
+        const label* _neiStart,
+        const OwnFun _oFun,
+        const NeiFun _nFun
+    ):
+        ownStart(_ownStart),
+        neiStart(_neiStart),
+        oFun(_oFun),
+        nFun(_nFun)
+    {}
+
+    __HOST____DEVICE__
+    scalar operator()(const label& id,const scalar& d)
+    {
+        scalar out = d;
+        scalar tmpSum[2*MAX_NEI_SIZE] = {};
+        scalar nExtra = 0;
+
+        label oStart = ownStart[id];
+        label oSize = ownStart[id+1] - oStart;
+		
+        label nStart = neiStart[id];
+        label nSize = neiStart[id+1] - nStart;
+
+        for(label i = 0; i<MAX_NEI_SIZE; i++)
+        {
+            if(i<oSize)
+            {
+                label face = oStart + i;
+                tmpSum[i] = oFun(id,face);
+            }
+        }
+
+        for(label i = 0; i<MAX_NEI_SIZE; i++)
+        {
+            if(i<nSize)
+            {
+                 label face = nStart + i;
+                   
+                 tmpSum[i+MAX_NEI_SIZE] = nFun(id,face);
+            }
+        }
+
+        for(label i = 0; i<2*MAX_NEI_SIZE; i++)
+        {
+            out+= tmpSum[i]; 
+        }
+           
+        for(label i = MAX_NEI_SIZE; i<oSize; i++)
+        {
+            label face = oStart + i;
+                
+            out += oFun(id,face);
+        }
+            
+        for(label i = MAX_NEI_SIZE; i<nSize; i++)
+        {
+            label face = nStart + i;
+
+            nExtra += nFun(id,face); 
+        }  
+
+        return out;
+    }
+};
+#undef MAX_NEI_SIZE
 
 template<class Type,class Fun,class Op>
 struct lduAddressingPatchFunctor
@@ -162,6 +231,28 @@ struct matrixCoeffsFunctor
     }
 };
 
+template<class Type>
+struct matrixInterfaceFunctor
+{
+    const scalar* coeffs;
+    const Type* val;
+
+    matrixInterfaceFunctor
+    (
+        const scalar* _coeffs, 
+        const Type* _val
+    ):
+        coeffs(_coeffs),
+        val(_val)
+    {}
+
+    __HOST____DEVICE__
+    Type operator()(const label&, const label& id)
+    {
+        return -coeffs[id]*val[id];
+    }
+};
+
 template<class Type,class Input, class OwnFun,class NeiFun,class OwnOp,class NeiOp>
 inline void matrixOperation
 (
@@ -174,10 +265,6 @@ inline void matrixOperation
     NeiOp no
 )
 {
-    const labelgpuList& l = addr.lowerAddr();
-    const labelgpuList& u = addr.upperAddr();
-    const labelgpuList& losort = addr.losortAddr();
-
     const labelgpuList& ownStart = addr.ownerStartAddr();
     const labelgpuList& losortStart = addr.losortStartAddr();
     
@@ -189,11 +276,8 @@ inline void matrixOperation
         out.begin(),
         lduAddressingFunctor<Type,OwnFun,NeiFun,OwnOp,NeiOp>
         (
-            l.data(),
-            u.data(),
             ownStart.data(),
             losortStart.data(),
-            losort.data(),
             o,
             n,
             oo,
@@ -222,6 +306,35 @@ inline void matrixOperation
         n,
         sumOp<Type>(),
         sumOp<Type>()
+    );
+}
+
+template<class Input, class OwnFun,class NeiFun>
+inline void matrixOperation
+(
+    Input in, 
+    gpuList<scalar>& out,
+    const lduAddressing& addr,
+    OwnFun o, 
+    NeiFun n
+)
+{
+    const labelgpuList& ownStart = addr.ownerStartAddr();
+    const labelgpuList& losortStart = addr.losortStartAddr();
+    
+    thrust::transform
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+addr.size(),
+        in,
+        out.begin(),
+        lduAddressingFastFunctor<OwnFun,NeiFun>
+        (
+            ownStart.data(),
+            losortStart.data(),
+            o,
+            n
+        )
     );
 }
 

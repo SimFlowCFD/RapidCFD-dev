@@ -52,10 +52,10 @@ void Foam::GAMGSolver::interpolate
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = m.lduAddr().lowerAddr();
+    const labelgpuList& l = m.lduAddr().ownerSortAddr();
     const labelgpuList& u = m.lduAddr().upperAddr();
 
-    const scalargpuField& Lower = m.lower();
+    const scalargpuField& Lower = m.lowerSort();
     const scalargpuField& Upper = m.upper();
     const scalargpuField& Diag = m.diag();
 

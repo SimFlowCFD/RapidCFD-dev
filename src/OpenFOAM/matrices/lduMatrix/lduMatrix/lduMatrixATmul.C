@@ -44,7 +44,6 @@ struct matrixMultiplyFunctor
     const scalar* upper;
     const label* own;
     const label* nei;
-    const label* losort;
 
     matrixMultiplyFunctor
     (
@@ -52,15 +51,13 @@ struct matrixMultiplyFunctor
         const scalar* _lower,
         const scalar* _upper,
         const label* _own,
-        const label* _nei,
-        const label* _losort
+        const label* _nei
     ):
         psi(_psi),
         lower(_lower),
         upper(_upper),
         own(_own),
-        nei(_nei),
-        losort(_losort)
+        nei(_nei)
     {}
 
     __device__
@@ -90,7 +87,7 @@ struct matrixMultiplyFunctor
         {
             if(i<nSize)
             {
-                 label face = losort[nStart + i];
+                 label face = nStart + i;
                    
                  tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]];
             }
@@ -111,7 +108,7 @@ struct matrixMultiplyFunctor
             
         for(label i = MAX_NEI_SIZE; i<nSize; i++)
         {
-            label face = losort[nStart + i];
+            label face = nStart + i;
 
             nExtra += lower[face]*psi[own[face]]; 
         }  
@@ -129,7 +126,6 @@ inline void callMultiply
 
     const labelgpuList& l,
     const labelgpuList& u,
-    const labelgpuList& losort,
 
     const labelgpuList& ownStart,
     const labelgpuList& losortStart,
@@ -175,8 +171,7 @@ inline void callMultiply
             Lower.data(),
             Upper.data(),
             l.data(),
-            u.data(),
-            losort.data()
+            u.data()
         )
     );
 
@@ -195,14 +190,13 @@ void Foam::lduMatrix::Amul
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = lduAddr().lowerAddr();
+    const labelgpuList& l = lduAddr().ownerSortAddr();
     const labelgpuList& u = lduAddr().upperAddr();
-    const labelgpuList& losort = lduAddr().losortAddr();
 
     const labelgpuList& ownStart = lduAddr().ownerStartAddr();
     const labelgpuList& losortStart = lduAddr().losortStartAddr();
 
-    const scalargpuField& Lower = lower();
+    const scalargpuField& Lower = lowerSort();
     const scalargpuField& Upper = upper();
     const scalargpuField& Diag = diag();
 
@@ -224,7 +218,6 @@ void Foam::lduMatrix::Amul
         psi,
         l,
         u,
-        losort,
         ownStart,
         losortStart,
         Lower,
@@ -254,15 +247,14 @@ void Foam::lduMatrix::Tmul
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = lduAddr().lowerAddr();
+    const labelgpuList& l = lduAddr().ownerSortAddr();
     const labelgpuList& u = lduAddr().upperAddr();
-    const labelgpuList& losort = lduAddr().losortAddr();
 
     const labelgpuList& ownStart = lduAddr().ownerStartAddr();
     const labelgpuList& losortStart = lduAddr().losortStartAddr();
 
     const scalargpuField& Lower = lower();
-    const scalargpuField& Upper = upper();
+    const scalargpuField& Upper = upperSort();
     const scalargpuField& Diag = diag();
 
     const scalargpuField& psi = tpsi();
@@ -283,7 +275,6 @@ void Foam::lduMatrix::Tmul
         psi,
         l,
         u,
-        losort,
         ownStart,
         losortStart,
         Upper,
@@ -324,7 +315,7 @@ void Foam::lduMatrix::sumA
         ),
         matrixCoeffsFunctor<scalar,unityOp<scalar> >
         (
-            lower().data(),
+            lowerSort().data(),
             unityOp<scalar>()
         )
     );
@@ -364,10 +355,10 @@ void Foam::lduMatrix::residual
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = lduAddr().lowerAddr();
+    const labelgpuList& l = lduAddr().ownerSortAddr();
     const labelgpuList& u = lduAddr().upperAddr();
 
-    const scalargpuField& Lower = lower();
+    const scalargpuField& Lower = lowerSort();
     const scalargpuField& Upper = upper();
     const scalargpuField& Diag = diag();
 
@@ -470,7 +461,7 @@ Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
     {
         scalargpuField& H_ = tH1();
 
-        const scalargpuField& Lower = lower();
+        const scalargpuField& Lower = lowerSort();
         const scalargpuField& Upper = upper();
         
         matrixOperation

@@ -25,6 +25,7 @@ License
 
 #include "cyclicFvPatchField.H"
 #include "transformField.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -283,18 +284,17 @@ void cyclicFvPatchField<Type>::updateInterfaceMatrix
     transformCoupleField(pnf);
 
     // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = cyclicPatch_.faceCells();
-/*
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-*/
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      updateCyclicInterfaceMatrixFunctor<Type>());
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<Type>
+        (
+                coeffs.data(),
+                pnf.data()
+        )
+    );
 }
 
 

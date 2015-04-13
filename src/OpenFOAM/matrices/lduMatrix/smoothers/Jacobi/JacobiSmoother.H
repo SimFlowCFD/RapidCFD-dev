@@ -26,7 +26,6 @@ public:
         const dictionary& solverControls
     );
 
-
     virtual void smooth
     (
         scalargpuField& psi,

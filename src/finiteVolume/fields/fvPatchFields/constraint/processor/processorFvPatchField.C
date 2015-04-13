@@ -27,7 +27,6 @@ License
 #include "processorFvPatch.H"
 #include "demandDrivenData.H"
 #include "transformField.H"
-
 #include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
@@ -375,29 +374,6 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
     const_cast<processorFvPatchField<Type>&>(*this).updatedMatrix() = false;
 }
 
-namespace Foam
-{
-template<class Type>
-struct processorFvPatchFunctor
-{
-    const scalar* coeffs;
-    const Type* val;
-    processorFvPatchFunctor
-    (
-        const scalar* _coeffs, 
-        const Type* _val
-    ):
-        coeffs(_coeffs),
-        val(_val)
-    {}
-
-    __HOST____DEVICE__
-    Type operator()(const label&, const label& id)
-    {
-        return -coeffs[id]*val[id];
-    }
-};
-}
 
 template<class Type>
 void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
@@ -440,7 +416,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
             this->patch().index(),
             result,
             this->patch().boundaryMesh().mesh().lduAddr(),
-            processorFvPatchFunctor<scalar>
+            matrixInterfaceFunctor<scalar>
             (
                 coeffs.data(),
                 scalargpuReceiveBuf_.data()
@@ -463,7 +439,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
             this->patch().index(),
             result,
             this->patch().boundaryMesh().mesh().lduAddr(),
-            processorFvPatchFunctor<scalar>
+            matrixInterfaceFunctor<scalar>
             (
                 coeffs.data(),
                 pnf.data()
@@ -572,7 +548,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
             this->patch().index(),
             result,
             this->patch().boundaryMesh().mesh().lduAddr(),
-            processorFvPatchFunctor<Type>
+            matrixInterfaceFunctor<Type>
             (
                 coeffs.data(),
                 gpuReceiveBuf_.data()
@@ -595,7 +571,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
             this->patch().index(),
             result,
             this->patch().boundaryMesh().mesh().lduAddr(),
-            processorFvPatchFunctor<Type>
+            matrixInterfaceFunctor<Type>
             (
                 coeffs.data(),
                 pnf.data()

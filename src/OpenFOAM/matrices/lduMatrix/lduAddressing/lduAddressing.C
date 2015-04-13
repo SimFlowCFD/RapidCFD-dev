@@ -163,7 +163,6 @@ void Foam::lduAddressing::calcPatchSortStart() const
     }
 }
 
-
 void Foam::lduAddressing::calcLosort() const
 {
     if (losortPtr_)
@@ -172,7 +171,6 @@ void Foam::lduAddressing::calcLosort() const
             << "losort already calculated"
             << abort(FatalError);
     }
-
 
     const labelgpuList& nbr = upperAddr();
     losortPtr_ = new labelgpuList(nbr.size());
@@ -194,7 +192,7 @@ void Foam::lduAddressing::calcLosort() const
         nbrTmp.begin(),
         nbrTmp.end(),
         lst.begin()
-    );                  
+    );                
 }
 
 
@@ -351,6 +349,7 @@ Foam::lduAddressing::~lduAddressing()
     deleteDemandDrivenData(losortPtr_);
     deleteDemandDrivenData(ownerStartPtr_);
     deleteDemandDrivenData(losortStartPtr_);
+    deleteDemandDrivenData(ownerSortAddrPtr_);
     
     patchSortCells_.clear();
     patchSortAddr_.clear();
@@ -370,6 +369,34 @@ const Foam::labelgpuList& Foam::lduAddressing::losortAddr() const
     return *losortPtr_;
 }
 
+const Foam::labelgpuList& Foam::lduAddressing::ownerSortAddr() const
+{
+    if ( ! ownerSortAddrPtr_)
+    { 
+        const labelgpuList& own = lowerAddr();
+        const labelgpuList& lsrt = losortAddr();
+
+        ownerSortAddrPtr_ = new labelgpuList(own.size());
+        labelgpuList& ownSort = *ownerSortAddrPtr_;
+        
+        thrust::copy
+        (
+            thrust::make_permutation_iterator
+            (
+                own.begin(),
+                lsrt.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                own.begin(),
+                lsrt.end()
+            ),
+            ownSort.begin()
+        );
+    }
+
+    return *ownerSortAddrPtr_;
+}
 
 const Foam::labelgpuList& Foam::lduAddressing::ownerStartAddr() const
 {

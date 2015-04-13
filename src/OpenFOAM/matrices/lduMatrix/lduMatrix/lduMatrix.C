@@ -42,7 +42,9 @@ Foam::lduMatrix::lduMatrix(const lduMesh& mesh)
     lduMesh_(mesh),
     lowerPtr_(NULL),
     diagPtr_(NULL),
-    upperPtr_(NULL)
+    upperPtr_(NULL),
+    lowerSortPtr_(NULL),
+    upperSortPtr_(NULL)
 {}
 
 
@@ -51,7 +53,9 @@ Foam::lduMatrix::lduMatrix(const lduMatrix& A)
     lduMesh_(A.lduMesh_),
     lowerPtr_(NULL),
     diagPtr_(NULL),
-    upperPtr_(NULL)
+    upperPtr_(NULL),
+    lowerSortPtr_(NULL),
+    upperSortPtr_(NULL)
 {
     if (A.lowerPtr_)
     {
@@ -75,7 +79,9 @@ Foam::lduMatrix::lduMatrix(lduMatrix& A, bool reUse)
     lduMesh_(A.lduMesh_),
     lowerPtr_(NULL),
     diagPtr_(NULL),
-    upperPtr_(NULL)
+    upperPtr_(NULL),
+    lowerSortPtr_(NULL),
+    upperSortPtr_(NULL)
 {
     if (reUse)
     {
@@ -122,7 +128,9 @@ Foam::lduMatrix::lduMatrix(const lduMesh& mesh, Istream& is)
     lduMesh_(mesh),
     lowerPtr_(NULL),
     diagPtr_(NULL),
-    upperPtr_(NULL)
+    upperPtr_(NULL),
+    lowerSortPtr_(NULL),
+    upperSortPtr_(NULL)
 {
     Switch hasLow(is);
     Switch hasDiag(is);
@@ -159,6 +167,17 @@ Foam::lduMatrix::~lduMatrix()
     {
         delete upperPtr_;
     }
+
+
+    if (lowerSortPtr_)
+    {
+        delete lowerSortPtr_;
+    }
+
+    if (upperSortPtr_)
+    {
+        delete upperSortPtr_;
+    }
 }
 
 
@@ -174,6 +193,11 @@ Foam::scalargpuField& Foam::lduMatrix::lower()
         {
             lowerPtr_ = new scalargpuField(lduAddr().lowerAddr().size(), 0.0);
         }
+    }
+
+    if (lowerSortPtr_)
+    {
+        delete lowerSortPtr_;
     }
 
     return *lowerPtr_;
@@ -205,6 +229,12 @@ Foam::scalargpuField& Foam::lduMatrix::upper()
         }
     }
 
+    if (upperSortPtr_)
+    {
+        delete upperSortPtr_;
+        upperSortPtr_ = NULL;
+    }
+
     return *upperPtr_;
 }
 
@@ -221,6 +251,12 @@ Foam::scalargpuField& Foam::lduMatrix::lower(const label nCoeffs)
         {
             lowerPtr_ = new scalargpuField(nCoeffs, 0.0);
         }
+    }
+
+    if (lowerSortPtr_)
+    {
+        delete lowerSortPtr_;
+        lowerSortPtr_ = NULL;
     }
 
     return *lowerPtr_;
@@ -250,6 +286,12 @@ Foam::scalargpuField& Foam::lduMatrix::upper(const label nCoeffs)
         {
             upperPtr_ = new scalargpuField(nCoeffs, 0.0);
         }
+    }
+
+    if (upperSortPtr_)
+    {
+        delete upperSortPtr_;
+        upperSortPtr_ = NULL;
     }
 
     return *upperPtr_;
@@ -305,6 +347,100 @@ const Foam::scalargpuField& Foam::lduMatrix::upper() const
     else
     {
         return *lowerPtr_;
+    }
+}
+
+void Foam::lduMatrix::calcSortCoeffs
+(
+    scalargpuField& out, 
+    const scalargpuField& in
+) const
+{
+    const labelgpuList& sort = lduAddr().losortAddr();
+
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
+        (
+            in.begin(),
+            sort.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            in.begin(),
+            sort.end()
+        ),
+        out.begin()
+    );
+}
+
+const Foam::scalargpuField& Foam::lduMatrix::lowerSort() const
+{
+    if (!lowerPtr_ && !upperPtr_)
+    {
+        FatalErrorIn("lduMatrix::lowerSort() const")
+            << "lowerPtr_ or upperPtr_ unallocated"
+            << abort(FatalError);
+    }
+
+    if(lowerSortPtr_)
+    {
+        return *lowerSortPtr_;
+    }
+
+    if (lowerPtr_)
+    {   
+        lowerSortPtr_ = new scalargpuField(lowerPtr_->size());
+
+        calcSortCoeffs(*lowerSortPtr_,*lowerPtr_);
+      
+        return *lowerSortPtr_;
+    }
+    else
+    {
+        if( ! upperSortPtr_)
+        {
+            upperSortPtr_ = new scalargpuField(upperPtr_->size());
+
+            calcSortCoeffs(*upperSortPtr_,*upperPtr_);
+        }
+      
+        return *upperSortPtr_;
+    }
+}
+
+const Foam::scalargpuField& Foam::lduMatrix::upperSort() const
+{
+    if (!lowerPtr_ && !upperPtr_)
+    {
+        FatalErrorIn("lduMatrix::upperSort() const")
+            << "lowerPtr_ or upperPtr_ unallocated"
+            << abort(FatalError);
+    }
+
+    if(upperSortPtr_)
+    {
+        return *upperSortPtr_;
+    }
+
+    if (upperPtr_)
+    {
+        upperSortPtr_ = new scalargpuField(upperPtr_->size());
+
+        calcSortCoeffs(*upperSortPtr_,*upperPtr_);
+      
+        return *upperSortPtr_;
+    }
+    else
+    {
+        if( ! lowerSortPtr_)
+        {
+            lowerSortPtr_ = new scalargpuField(lowerPtr_->size());
+
+            calcSortCoeffs(*lowerSortPtr_,*lowerPtr_);
+        }
+      
+        return *lowerSortPtr_;
     }
 }
 

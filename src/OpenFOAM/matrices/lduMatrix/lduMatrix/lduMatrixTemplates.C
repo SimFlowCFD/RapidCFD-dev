@@ -61,10 +61,10 @@ Foam::tmp<Foam::gpuField<Type> > Foam::lduMatrix::H(const gpuField<Type>& psi) c
     {
         gpuField<Type> & Hpsi = tHpsi();
 
-        const scalargpuField& Lower = this->lower();
+        const scalargpuField& Lower = this->lowerSort();
         const scalargpuField& Upper = this->upper();
 
-        const labelgpuList& l = lduAddr().lowerAddr();
+        const labelgpuList& l = lduAddr().ownerSortAddr();
         const labelgpuList& u = lduAddr().upperAddr();
         
         matrixOperation

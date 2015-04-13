@@ -121,9 +121,12 @@ class lduAddressing
 
         //- Losort addressing
         mutable labelgpuList* losortPtr_;
-        
+
         //- Owner start addressing
         mutable labelgpuList* ownerStartPtr_;
+
+        //- Owner sort addressing
+        mutable labelgpuList* ownerSortAddrPtr_;
 
         //- Losort start addressing
         mutable labelgpuList* losortStartPtr_;
@@ -166,6 +169,7 @@ public:
     :
         size_(nEqns),
         losortPtr_(NULL),
+        ownerSortAddrPtr_(NULL),
         ownerStartPtr_(NULL),
         losortStartPtr_(NULL)
     {}
@@ -230,6 +234,9 @@ public:
 
         //- Return losort addressing
         const labelgpuList& losortAddr() const;
+
+        //- Return owner sort addressing
+        const labelgpuList& ownerSortAddr() const;
 
         //- Return owner start addressing
         const labelgpuList& ownerStartAddr() const;

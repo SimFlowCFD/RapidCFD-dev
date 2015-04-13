@@ -85,6 +85,11 @@ class lduMatrix
         //- Coefficients (not including interfaces)
         scalargpuField *lowerPtr_, *diagPtr_, *upperPtr_;
 
+        //- Coefficients for better memory access
+        mutable scalargpuField *lowerSortPtr_;
+        mutable scalargpuField *upperSortPtr_;
+
+        void calcSortCoeffs(scalargpuField& out, const scalargpuField& in) const;
 
 public:
 
@@ -581,6 +586,9 @@ public:
             const scalargpuField& lower() const;
             const scalargpuField& diag() const;
             const scalargpuField& upper() const;
+
+            const scalargpuField& lowerSort() const;
+            const scalargpuField& upperSort() const;
 
             bool hasDiag() const
             {

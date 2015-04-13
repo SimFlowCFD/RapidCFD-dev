@@ -35,7 +35,7 @@ Description
 void Foam::lduMatrix::sumDiag()
 {
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
-    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
+    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upperSort();
 
     matrixOperation
     (
@@ -58,7 +58,7 @@ void Foam::lduMatrix::sumDiag()
 void Foam::lduMatrix::negSumDiag()
 {
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
-    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
+    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upperSort();
 
     matrixOperation
     (
@@ -84,7 +84,7 @@ void Foam::lduMatrix::sumMagOffDiag
     scalargpuField& sumOff
 ) const
 {
-    const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
+    const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lowerSort();
     const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
 
     matrixOperation
@@ -160,6 +160,16 @@ void Foam::lduMatrix::negate()
     if (diagPtr_)
     {
         diagPtr_->negate();
+    }
+
+    if (upperSortPtr_)
+    {
+        upperSortPtr_->negate();
+    }
+
+    if (lowerSortPtr_)
+    {
+        lowerSortPtr_->negate();
     }
 }
 
@@ -240,6 +250,18 @@ void Foam::lduMatrix::operator+=(const lduMatrix& A)
                 << endl;
         }
     }
+
+    if (upperSortPtr_)
+    {
+        delete upperSortPtr_;
+        upperSortPtr_=NULL;
+    }
+
+    if (lowerSortPtr_)
+    {
+        delete lowerSortPtr_;
+        lowerSortPtr_=NULL;
+    }
 }
 
 
@@ -319,6 +341,18 @@ void Foam::lduMatrix::operator-=(const lduMatrix& A)
                 << endl;
         }
     }
+
+    if (upperSortPtr_)
+    {
+        delete upperSortPtr_;
+        upperSortPtr_=NULL;
+    }
+
+    if (lowerSortPtr_)
+    {
+        delete lowerSortPtr_;
+        lowerSortPtr_=NULL;
+    }
 }
 
 
@@ -360,6 +394,18 @@ void Foam::lduMatrix::operator*=(const scalargpuField& sf)
             multiplyOperatorFunctor<scalar,scalar,scalar>()
         );
     }
+
+    if (upperSortPtr_)
+    {
+        delete upperSortPtr_;
+        upperSortPtr_=NULL;
+    }
+
+    if (lowerSortPtr_)
+    {
+        delete lowerSortPtr_;
+        lowerSortPtr_=NULL;
+    }
 }
 
 
@@ -375,9 +421,19 @@ void Foam::lduMatrix::operator*=(scalar s)
         *upperPtr_ *= s;
     }
 
+    if(upperSortPtr_)
+    {
+        *upperSortPtr_ *= s;
+    }
+
     if (lowerPtr_)
     {
         *lowerPtr_ *= s;
+    }
+
+    if(lowerSortPtr_)
+    {
+        *lowerSortPtr_ *= s;
     }
 }
 

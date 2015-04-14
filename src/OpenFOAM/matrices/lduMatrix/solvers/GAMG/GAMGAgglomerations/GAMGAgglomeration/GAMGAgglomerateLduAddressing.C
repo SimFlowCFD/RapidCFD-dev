@@ -382,6 +382,7 @@ void Foam::GAMGAgglomeration::agglomerateLduAddressing
         fineLevelIndex,
         new lduPrimitiveMesh
         (
+            fineLevelIndex+1,
             nCoarseCells,
             coarseOwner,
             coarseNeighbour,
@@ -560,6 +561,7 @@ void Foam::GAMGAgglomeration::procAgglomerateLduAddressing
             levelIndex-1,
             new lduPrimitiveMesh
             (
+                levelIndex,
                 allMeshComm,
                 procAgglomMap,
 

@@ -53,6 +53,7 @@ class lduPrimitiveMesh
     public lduAddressing
 {
     // Private data
+        label level_;
 
         //- Lower addressing
         labelgpuList lowerAddr_;
@@ -115,6 +116,7 @@ public:
         //  separately using addInterfaces
         lduPrimitiveMesh
         (
+            const label level,
             const label nCells,
             labelgpuList& l,
             labelgpuList& u,
@@ -124,6 +126,7 @@ public:
 
         lduPrimitiveMesh
         (
+            const label level,
             const label nCells,
             labelList& l,
             labelList& u,
@@ -141,6 +144,7 @@ public:
         //- Construct from components and re-use storage.
         lduPrimitiveMesh
         (
+            const label level,
             const label nCells,
             labelList& l,
             labelList& u,
@@ -152,6 +156,7 @@ public:
         //- Construct from components and re-use storage.
         lduPrimitiveMesh
         (
+            const label level,
             const label nCells,
             labelgpuList& l,
             labelgpuList& u,
@@ -183,6 +188,7 @@ public:
         //                   faces.
         lduPrimitiveMesh
         (
+            const label level,
             const label comm,
             const labelList& procAgglomMap,
 
@@ -215,6 +221,11 @@ public:
             virtual label nPatches() const
             {
                 return interfaces_.size();
+            }
+
+            virtual label level() const
+            {
+                return level_;
             }
 
             //- Return a list of pointers for each patch

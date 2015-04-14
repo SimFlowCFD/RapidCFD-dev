@@ -568,6 +568,12 @@ public:
                 return lduAddr().patchSchedule();
             }
 
+            //- Return matrix level in multigrid hierarchy
+            label level() const
+            {
+                return lduAddr().level();
+            }
+
 
         // Access to coefficients
 

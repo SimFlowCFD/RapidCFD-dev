@@ -150,10 +150,15 @@ public:
             return upperAddr_;
         }
 
-        //- Return patch addressing
+        //- Return wheather patch addressing is available
         bool patchAvailable(const label i) const
         {
             return true;
+        }
+
+        label level() const
+        {
+            return 0;
         }
 
         const labelgpuList& patchAddr(const label i) const

@@ -142,6 +142,9 @@ void Foam::lduMatrix::operator=(const lduMatrix& A)
     {
         diag() = A.diag();
     }
+
+    upperSortPtr_ = NULL;
+    lowerSortPtr_ = NULL;
 }
 
 
@@ -162,15 +165,8 @@ void Foam::lduMatrix::negate()
         diagPtr_->negate();
     }
 
-    if (upperSortPtr_)
-    {
-        upperSortPtr_->negate();
-    }
-
-    if (lowerSortPtr_)
-    {
-        lowerSortPtr_->negate();
-    }
+    upperSortPtr_ = NULL;
+    lowerSortPtr_ = NULL;
 }
 
 
@@ -251,17 +247,8 @@ void Foam::lduMatrix::operator+=(const lduMatrix& A)
         }
     }
 
-    if (upperSortPtr_)
-    {
-        delete upperSortPtr_;
-        upperSortPtr_=NULL;
-    }
-
-    if (lowerSortPtr_)
-    {
-        delete lowerSortPtr_;
-        lowerSortPtr_=NULL;
-    }
+    upperSortPtr_ = NULL;
+    lowerSortPtr_ = NULL;
 }
 
 
@@ -342,17 +329,8 @@ void Foam::lduMatrix::operator-=(const lduMatrix& A)
         }
     }
 
-    if (upperSortPtr_)
-    {
-        delete upperSortPtr_;
-        upperSortPtr_=NULL;
-    }
-
-    if (lowerSortPtr_)
-    {
-        delete lowerSortPtr_;
-        lowerSortPtr_=NULL;
-    }
+    upperSortPtr_ = NULL;
+    lowerSortPtr_ = NULL;
 }
 
 
@@ -395,17 +373,8 @@ void Foam::lduMatrix::operator*=(const scalargpuField& sf)
         );
     }
 
-    if (upperSortPtr_)
-    {
-        delete upperSortPtr_;
-        upperSortPtr_=NULL;
-    }
-
-    if (lowerSortPtr_)
-    {
-        delete lowerSortPtr_;
-        lowerSortPtr_=NULL;
-    }
+    upperSortPtr_ = NULL;
+    lowerSortPtr_ = NULL;
 }
 
 
@@ -421,20 +390,13 @@ void Foam::lduMatrix::operator*=(scalar s)
         *upperPtr_ *= s;
     }
 
-    if(upperSortPtr_)
-    {
-        *upperSortPtr_ *= s;
-    }
-
     if (lowerPtr_)
     {
         *lowerPtr_ *= s;
     }
 
-    if(lowerSortPtr_)
-    {
-        *lowerSortPtr_ *= s;
-    }
+    upperSortPtr_ = NULL;
+    lowerSortPtr_ = NULL;
 }
 
 

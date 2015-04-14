@@ -32,6 +32,51 @@ License
 namespace Foam
 {
     defineTypeNameAndDebug(lduMatrix, 1);
+
+    class lduMatrixCache
+    {
+        static PtrList<scalargpuField> lowerSortCache;
+        static PtrList<scalargpuField> upperSortCache;
+
+        static scalargpuField* retrieve
+        (
+            PtrList<scalargpuField>& list, 
+            label level,
+            label size
+        )
+        {
+            if(level >= list.size())
+                list.setSize(level+1);
+
+            if(list.set(level))
+            {
+                scalargpuField& out = list[level];
+                if(out.size() < size)
+                    out.setSize(size);
+                return &out; 
+            }
+            else
+            {
+                list.set(level,new scalargpuField(size));
+                return &list[level];
+            }
+        }
+
+        public:
+
+        static scalargpuField* lowerSort(label level, label size)
+        {
+            return retrieve(lowerSortCache,level,size);
+        }
+
+        static scalargpuField* upperSort(label level, label size)
+        {
+            return retrieve(upperSortCache,level,size);
+        }
+    };
+
+    PtrList<scalargpuField> lduMatrixCache::lowerSortCache(1);
+    PtrList<scalargpuField> lduMatrixCache::upperSortCache(1);
 }
 
 
@@ -167,17 +212,6 @@ Foam::lduMatrix::~lduMatrix()
     {
         delete upperPtr_;
     }
-
-
-    if (lowerSortPtr_)
-    {
-        delete lowerSortPtr_;
-    }
-
-    if (upperSortPtr_)
-    {
-        delete upperSortPtr_;
-    }
 }
 
 
@@ -195,10 +229,7 @@ Foam::scalargpuField& Foam::lduMatrix::lower()
         }
     }
 
-    if (lowerSortPtr_)
-    {
-        delete lowerSortPtr_;
-    }
+    lowerSortPtr_ = NULL;
 
     return *lowerPtr_;
 }
@@ -229,11 +260,7 @@ Foam::scalargpuField& Foam::lduMatrix::upper()
         }
     }
 
-    if (upperSortPtr_)
-    {
-        delete upperSortPtr_;
-        upperSortPtr_ = NULL;
-    }
+    upperSortPtr_ = NULL;
 
     return *upperPtr_;
 }
@@ -253,11 +280,7 @@ Foam::scalargpuField& Foam::lduMatrix::lower(const label nCoeffs)
         }
     }
 
-    if (lowerSortPtr_)
-    {
-        delete lowerSortPtr_;
-        lowerSortPtr_ = NULL;
-    }
+    lowerSortPtr_ = NULL;
 
     return *lowerPtr_;
 }
@@ -288,11 +311,7 @@ Foam::scalargpuField& Foam::lduMatrix::upper(const label nCoeffs)
         }
     }
 
-    if (upperSortPtr_)
-    {
-        delete upperSortPtr_;
-        upperSortPtr_ = NULL;
-    }
+    upperSortPtr_ = NULL;
 
     return *upperPtr_;
 }
@@ -390,7 +409,7 @@ const Foam::scalargpuField& Foam::lduMatrix::lowerSort() const
 
     if (lowerPtr_)
     {   
-        lowerSortPtr_ = new scalargpuField(lowerPtr_->size());
+        lowerSortPtr_ = lduMatrixCache::lowerSort(level(),lowerPtr_->size());
 
         calcSortCoeffs(*lowerSortPtr_,*lowerPtr_);
       
@@ -400,7 +419,7 @@ const Foam::scalargpuField& Foam::lduMatrix::lowerSort() const
     {
         if( ! upperSortPtr_)
         {
-            upperSortPtr_ = new scalargpuField(upperPtr_->size());
+            upperSortPtr_ = lduMatrixCache::upperSort(level(),upperPtr_->size());
 
             calcSortCoeffs(*upperSortPtr_,*upperPtr_);
         }
@@ -425,7 +444,7 @@ const Foam::scalargpuField& Foam::lduMatrix::upperSort() const
 
     if (upperPtr_)
     {
-        upperSortPtr_ = new scalargpuField(upperPtr_->size());
+        upperSortPtr_ = lduMatrixCache::upperSort(level(),upperPtr_->size());
 
         calcSortCoeffs(*upperSortPtr_,*upperPtr_);
       
@@ -435,7 +454,7 @@ const Foam::scalargpuField& Foam::lduMatrix::upperSort() const
     {
         if( ! lowerSortPtr_)
         {
-            lowerSortPtr_ = new scalargpuField(lowerPtr_->size());
+            lowerSortPtr_ = lduMatrixCache::lowerSort(level(),lowerPtr_->size());
 
             calcSortCoeffs(*lowerSortPtr_,*lowerPtr_);
         }

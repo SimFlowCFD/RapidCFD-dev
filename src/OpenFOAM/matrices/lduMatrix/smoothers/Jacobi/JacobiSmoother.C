@@ -10,6 +10,51 @@ namespace Foam
 
     lduMatrix::smoother::addasymMatrixConstructorToTable<JacobiSmoother>
         addJacobiSmootherAsymMatrixConstructorToTable_;   
+
+    class JacobiCache
+    {
+        static PtrList<scalargpuField> psiCache;
+        static PtrList<scalargpuField> sourceCache;
+
+        static scalargpuField& retrieve
+        (
+            PtrList<scalargpuField>& list, 
+            label level,
+            label size
+        )
+        {
+            if(level >= list.size())
+                list.setSize(level+1);
+
+            if(list.set(level))
+            {
+                scalargpuField& out = list[level];
+                if(out.size() < size)
+                    out.setSize(size);
+                return out; 
+            }
+            else
+            {
+                list.set(level,new scalargpuField(size));
+                return list[level];
+            }
+        }
+
+        public:
+
+        static scalargpuField& psi(label level, label size)
+        {
+            return retrieve(psiCache,level,size);
+        }
+
+        static scalargpuField& source(label level, label size)
+        {
+            return retrieve(sourceCache,level,size);
+        }
+    };
+
+    PtrList<scalargpuField> JacobiCache::psiCache(1);
+    PtrList<scalargpuField> JacobiCache::sourceCache(1);
 }
 
 Foam::JacobiSmoother::JacobiSmoother
@@ -43,8 +88,8 @@ void Foam::JacobiSmoother::smooth
     const label nSweeps
 ) const
 {
-    scalargpuField Apsi(psi.size());
-    scalargpuField sourceTmp(source.size());
+    scalargpuField& Apsi = JacobiCache::psi(matrix_.level(),psi.size());
+    scalargpuField& sourceTmp = JacobiCache::source(matrix_.level(),source.size());
 
     const labelgpuList& l = matrix_.lduAddr().ownerSortAddr();
     const labelgpuList& u = matrix_.lduAddr().upperAddr();
@@ -74,7 +119,12 @@ void Foam::JacobiSmoother::smooth
 
     for (label sweep=0; sweep<nSweeps; sweep++)
     {
-        sourceTmp = source;
+        thrust::copy
+        (
+            source.begin(),
+            source.end(),
+            sourceTmp.begin()
+        );
 
         matrix_.initMatrixInterfaces
         (
@@ -114,7 +164,12 @@ void Foam::JacobiSmoother::smooth
             )
         );
 
-        psi = Apsi;
+        thrust::copy
+        (
+            Apsi.begin(),
+            Apsi.begin()+psi.size(),
+            psi.begin()
+        );
     }
 
     forAll(mBouCoeffs, patchi)

@@ -211,6 +211,7 @@ Foam::labelList Foam::lduPrimitiveMesh::upperTriOrder
 
 Foam::lduPrimitiveMesh::lduPrimitiveMesh
 (
+    const label level,
     const label nCells,
     labelgpuList& l,
     labelgpuList& u,
@@ -219,6 +220,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
 )
 :
     lduAddressing(nCells),
+    level_(level),
     lowerAddrHost_(l.size()),
     upperAddrHost_(u.size()),
     lowerAddr_(l, reUse),
@@ -231,6 +233,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
 
 Foam::lduPrimitiveMesh::lduPrimitiveMesh
 (
+    const label level,
     const label nCells,
     labelList& l,
     labelList& u,
@@ -239,6 +242,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
 )
 :
     lduAddressing(nCells),
+    level_(level),
     lowerAddrHost_(l, reUse),
     upperAddrHost_(u, reUse),
     comm_(comm)
@@ -270,6 +274,7 @@ void Foam::lduPrimitiveMesh::addInterfaces
 
 Foam::lduPrimitiveMesh::lduPrimitiveMesh
 (
+    const label level,
     const label nCells,
     labelgpuList& l,
     labelgpuList& u,
@@ -278,7 +283,8 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     const label comm
 )
 :
-    lduAddressing(nCells),    
+    lduAddressing(nCells), 
+    level_(level),   
     lowerAddrHost_(l.size()),
     upperAddrHost_(u.size()),
     lowerAddr_(l, true),
@@ -305,6 +311,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
 
 Foam::lduPrimitiveMesh::lduPrimitiveMesh
 (
+    const label level,
     const label nCells,
     labelList& l,
     labelList& u,
@@ -313,7 +320,8 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     const label comm
 )
 :
-    lduAddressing(nCells),    
+    lduAddressing(nCells),  
+    level_(level),  
     lowerAddrHost_(l, true),
     upperAddrHost_(u, true),
     lowerAddr_(lowerAddrHost_),
@@ -337,6 +345,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
 
 Foam::lduPrimitiveMesh::lduPrimitiveMesh
 (
+    const label level,
     const label comm,
     const labelList& procAgglomMap,
 
@@ -352,6 +361,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
 )
 :
     lduAddressing(myMesh.lduAddr().size() + totalSize(otherMeshes)),
+    level_(level),
     lowerAddr_(0),
     upperAddr_(0),
     lowerAddrHost_(0),
@@ -1092,6 +1102,7 @@ void Foam::lduPrimitiveMesh::gather
                 i-1,
                 new lduPrimitiveMesh
                 (
+                    mesh.lduAddr().level(),
                     nCells,
                     lowerAddr,
                     upperAddr,

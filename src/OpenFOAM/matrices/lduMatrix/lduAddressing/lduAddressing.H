@@ -189,6 +189,7 @@ public:
 
         //- Return number of patches
         virtual label nPatches() const = 0;
+        virtual label level() const = 0;
 
         //- Return lower addressing
         virtual const labelgpuList& lowerAddr() const = 0;

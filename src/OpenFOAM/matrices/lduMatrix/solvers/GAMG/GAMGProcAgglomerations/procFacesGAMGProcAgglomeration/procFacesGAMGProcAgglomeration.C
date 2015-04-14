@@ -129,6 +129,7 @@ Foam::procFacesGAMGProcAgglomeration::singleCellMesh
         (
             new lduPrimitiveMesh
             (
+                mesh.lduAddr().level(),
                 nCells,
                 l,
                 u,

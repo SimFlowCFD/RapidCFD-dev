@@ -53,7 +53,6 @@ namespace Foam
 class lduMesh;
 class lduMatrix;
 class mapDistribute;
-class GAMGProcAgglomeration;
 
 /*---------------------------------------------------------------------------*\
                     Class GAMGAgglomeration Declaration
@@ -75,8 +74,6 @@ protected:
 
         //- Cached mesh interfaces
         const lduInterfacePtrsList meshInterfaces_;
-
-        autoPtr<GAMGProcAgglomeration> procAgglomeratorPtr_;
 
         //- The number of cells in each level
         labelList nCells_;
@@ -127,34 +124,6 @@ protected:
         //- Hierarchy of mesh addressing
         PtrList<lduPrimitiveMesh> meshLevels_;
 
-
-        // Processor agglomeration
-
-            //- Per level, per processor the processor it agglomerates into
-            mutable PtrList<labelList> procAgglomMap_;
-
-            //- Per level the set of processors to agglomerate. Element 0 is
-            //  the 'master' of the cluster.
-            mutable PtrList<labelList> agglomProcIDs_;
-
-            //- Communicator for given level
-            mutable labelList procCommunicator_;
-
-            //- Mapping from processor to procMeshLevel cells
-            mutable PtrList<labelList> procCellOffsets_;
-
-            //- Mapping from processor to procMeshLevel face
-            mutable PtrList<labelgpuListList> procFaceMap_;
-            mutable PtrList<labelListList> procFaceMapHost_;
-
-            //- Mapping from processor to procMeshLevel boundary
-            mutable PtrList<labelListList> procBoundaryMap_;
-
-            //- Mapping from processor to procMeshLevel boundary face
-            mutable PtrList<labelgpuListListList> procBoundaryFaceMap_;
-            mutable PtrList<labelListListList> procBoundaryFaceMapHost_;
-
-
     // Protected Member Functions
 
         //- Assemble coarse mesh addressing
@@ -169,46 +138,7 @@ protected:
         //- Check the need for further agglomeration
         bool continueAgglomerating(const label nCoarseCells) const;
 
-        //- Gather value from all procIDs onto procIDs[0]
-        template<class Type>
-        static void gatherList
-        (
-            const label comm,
-            const labelList& procIDs,
-
-            const Type& myVal,
-            List<Type>& allVals,
-            const int tag = Pstream::msgType()
-        );
-
         void clearLevel(const label leveli);
-
-        // Processor agglomeration
-
-            //- Collect and combine processor meshes into allMesh.
-            //  - allMeshComm   : communicator for combined mesh.
-            //  - procAgglomMap : per processor the new agglomerated processor
-            //                    (rank in allMeshComm!). Global information.
-            //  - procIDs       : local information: same for all in
-            //                    agglomerated processor.
-            void procAgglomerateLduAddressing
-            (
-                const label comm,
-                const labelList& procAgglomMap,
-                const labelList& procIDs,
-                const label allMeshComm,
-                const label levelIndex
-            );
-
-            //- Collect and combine basic restriction addressing:
-            //      nCells_
-            //      restrictAddressing_
-            void procAgglomerateRestrictAddressing
-            (
-                const label comm,
-                const labelList& procIDs,
-                const label levelIndex
-            );
 
 
 private:
@@ -223,9 +153,6 @@ private:
 
 
 public:
-
-    //- Declare friendship with GAMGProcAgglomeration
-    friend class GAMGProcAgglomeration;
 
     //- Runtime type information
     TypeName("GAMGAgglomeration");
@@ -455,20 +382,19 @@ public:
                 return faceFlipMapHost_[leveli];
             }
 
-            //- Return number of coarse cells (before processor agglomeration)
+            //- Return number of coarse cells
             label nCells(const label leveli) const
             {
                 return nCells_[leveli];
             }
 
-            //- Return number of coarse faces (before processor agglomeration)
+            //- Return number of coarse faces
             label nFaces(const label leveli) const
             {
                 return nFaces_[leveli];
             }
 
-            //- Return number of coarse patch faces (before processor
-            //  agglomeration)
+            //- Return number of coarse patch faces
             const labelList& nPatchFaces(const label leveli) const
             {
                 return nPatchFaces_[leveli];
@@ -483,8 +409,7 @@ public:
             (
                 gpuField<Type>& cf,
                 const gpuField<Type>& ff,
-                const label fineLevelIndex,
-                const bool procAgglom
+                const label fineLevelIndex
             ) const;
 
             //- Restrict (integrate by summation) face field
@@ -522,65 +447,8 @@ public:
             (
                 gpuField<Type>& ff,
                 const gpuField<Type>& cf,
-                const label coarseLevelIndex,
-                const bool procAgglom
+                const label coarseLevelIndex
             ) const;
-
-
-        // Procesor agglomeration. Note that the mesh and agglomeration is
-        // stored per fineLevel (even though it is the coarse level mesh that
-        // has been agglomerated). This is just for convenience and consistency
-        // with GAMGSolver notation.
-
-            //- Given fine to coarse processor map determine:
-            //  - for each coarse processor a master (minimum of the fine
-            //    processors)
-            //  - for each coarse processor the set of fine processors
-            //    (element 0 is the master processor)
-            static void calculateRegionMaster
-            (
-                const label comm,
-                const labelList& procAgglomMap,
-                labelList& masterProcs,
-                List<int>& agglomProcIDs
-            );
-
-            //- Whether to agglomerate across processors
-            bool processorAgglomerate() const
-            {
-                return procAgglomeratorPtr_.valid();
-            }
-
-            //- Mapping from processor to agglomerated processor (global, all
-            //  processors have the same information). Note that level is
-            //  the fine, not the coarse, level index. This is to be
-            //  consistent with the way the restriction is stored
-            const labelList& procAgglomMap(const label fineLeveli) const;
-
-            //- Set of processors to agglomerate. Element 0 is the
-            //  master processor. (local, same only on those processors that
-            //  agglomerate)
-            const labelList& agglomProcIDs(const label fineLeveli) const;
-
-            //- Check that level has combined mesh
-            bool hasProcMesh(const label fineLeveli) const;
-
-            //- Communicator for current level or -1
-            label procCommunicator(const label fineLeveli) const;
-
-            //- Mapping from processor to procMesh cells
-            const labelList& cellOffsets(const label fineLeveli) const;
-
-            //- Mapping from processor to procMesh face
-            const labelgpuListList& faceMap(const label fineLeveli) const;
-            const labelListList& faceMapHost(const label fineLeveli) const;
-
-            //- Mapping from processor to procMesh boundary
-            const labelListList& boundaryMap(const label fineLeveli) const;
-
-            //- Mapping from processor to procMesh boundary face
-            const labelgpuListListList& boundaryFaceMap(const label fineLeveli) const;
-            const labelListListList& boundaryFaceMapHost(const label fineLeveli) const;
 
         //- Given restriction determines if coarse cells are connected.
         //  Return ok is so, otherwise creates new restriction that is

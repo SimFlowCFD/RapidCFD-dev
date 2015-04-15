@@ -165,44 +165,6 @@ public:
             const label comm
         );
 
-        //- Construct by combining multiple meshes. The meshes come from
-        //  processors procIDs:
-        //  procIDs[0] : local processor (myMesh)
-        //  procIDs[i] : processor where otherMeshes[i-1] comes from
-        //  procAgglomMap : for every processor which processor it agglomerates
-        //                  onto. The new processor numbers are in compact
-        //                  numbering (so ranks in communicator comm), i.e.
-        //                  similar to cell-restrict-addressing.
-        //                  We need this information to be able to map
-        //                  inter-processor interfaces
-        // cellOffsets : for every processor the offset it gets in the mesh
-        // faceMap     : for every processor, for every face, the destination
-        //               face. Negative for flipped faces.
-        // boundaryMap : for every processor, for every patch, -1 or the new
-        //               patch index in the mesh.
-        // boundaryFaceMap : for every processor, for every patch, for every
-        //                   patch face:
-        //                   - the new internal face (if boundaryMap=-1)
-        //                   - the new patch face (if boundaryMap>=0)
-        //                   Faces becoming internal are negative for flipped
-        //                   faces.
-        lduPrimitiveMesh
-        (
-            const label level,
-            const label comm,
-            const labelList& procAgglomMap,
-
-            const labelList& procIDs,
-            const lduMesh& myMesh,
-            const PtrList<lduPrimitiveMesh>& otherMeshes,
-
-            labelList& cellOffsets,
-            labelList& faceOffsets,
-            labelListList& faceMap,
-            labelListList& boundaryMap,
-            labelListListList& boundaryFaceMap
-        );
-
     //- Destructor
     virtual ~lduPrimitiveMesh()
     {}
@@ -296,24 +258,6 @@ public:
 
 
         // Helper
-
-            //- Select either mesh0 (meshI is 0) or otherMeshes[meshI-1]
-            static const lduMesh& mesh
-            (
-                const lduMesh& mesh0,
-                const PtrList<lduPrimitiveMesh>& otherMeshes,
-                const label meshI
-            );
-
-            //- Gather meshes from other processors onto procIDs[0].
-            //  Received meshes get GAMGInterface and communicator comm
-            static void gather
-            (
-                const label comm,
-                const lduMesh& mesh,
-                const labelList& procIDs,
-                PtrList<lduPrimitiveMesh>& otherMeshes
-            );
 
             //- Get non-scheduled send/receive schedule
             template<class ProcPatch>

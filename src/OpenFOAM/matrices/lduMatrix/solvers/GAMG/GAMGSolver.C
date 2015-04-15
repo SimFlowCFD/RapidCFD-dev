@@ -83,125 +83,16 @@ Foam::GAMGSolver::GAMGSolver
 {
     readControls();
 
-    if (agglomeration_.processorAgglomerate())
+    forAll(agglomeration_, fineLevelIndex)
     {
-        forAll(agglomeration_, fineLevelIndex)
-        {
-            if (agglomeration_.hasMeshLevel(fineLevelIndex))
-            {
-                if
-                (
-                    (fineLevelIndex+1) < agglomeration_.size()
-                 && agglomeration_.hasProcMesh(fineLevelIndex+1)
-                )
-                {
-                    // Construct matrix without referencing the coarse mesh so
-                    // construct a dummy mesh instead. This will get overwritten
-                    // by the call to procAgglomerateMatrix so is only to get
-                    // it through agglomerateMatrix
-
-
-                    const lduInterfacePtrsList& fineMeshInterfaces =
-                        agglomeration_.interfaceLevel(fineLevelIndex);
-
-                    PtrList<GAMGInterface> dummyPrimMeshInterfaces
-                    (
-                        fineMeshInterfaces.size()
-                    );
-                    lduInterfacePtrsList dummyMeshInterfaces
-                    (
-                        dummyPrimMeshInterfaces.size()
-                    );
-                    forAll(fineMeshInterfaces, intI)
-                    {
-                        if (fineMeshInterfaces.set(intI))
-                        {
-                            OStringStream os;
-                            refCast<const GAMGInterface>
-                            (
-                                fineMeshInterfaces[intI]
-                            ).write(os);
-                            IStringStream is(os.str());
-
-                            dummyPrimMeshInterfaces.set
-                            (
-                                intI,
-                                GAMGInterface::New
-                                (
-                                    fineMeshInterfaces[intI].type(),
-                                    intI,
-                                    dummyMeshInterfaces,
-                                    is
-                                )
-                            );
-                        }
-                    }
-
-                    forAll(dummyPrimMeshInterfaces, intI)
-                    {
-                        if (dummyPrimMeshInterfaces.set(intI))
-                        {
-                            dummyMeshInterfaces.set
-                            (
-                                intI,
-                                &dummyPrimMeshInterfaces[intI]
-                            );
-                        }
-                    }
-
-                    // So:
-                    // - pass in incorrect mesh (= fine mesh instead of coarse)
-                    // - pass in dummy interfaces
-                    agglomerateMatrix
-                    (
-                        fineLevelIndex,
-                        agglomeration_.meshLevel(fineLevelIndex),
-                        dummyMeshInterfaces
-                    );
-
-
-                    const labelList& procAgglomMap =
-                        agglomeration_.procAgglomMap(fineLevelIndex+1);
-                    const List<int>& procIDs =
-                        agglomeration_.agglomProcIDs(fineLevelIndex+1);
-
-                    procAgglomerateMatrix
-                    (
-                        procAgglomMap,
-                        procIDs,
-                        fineLevelIndex
-                    );
-                }
-                else
-                {
-                    agglomerateMatrix
-                    (
-                        fineLevelIndex,
-                        agglomeration_.meshLevel(fineLevelIndex + 1),
-                        agglomeration_.interfaceLevel(fineLevelIndex + 1)
-                    );
-                }
-            }
-            else
-            {
-                // No mesh. Not involved in calculation anymore
-            }
-        }
+        // Agglomerate on to coarse level mesh
+        agglomerateMatrix
+        (
+            fineLevelIndex,
+            agglomeration_.meshLevel(fineLevelIndex + 1),
+            agglomeration_.interfaceLevel(fineLevelIndex + 1)
+        );
     }
-    else
-    {
-        forAll(agglomeration_, fineLevelIndex)
-        {
-            // Agglomerate on to coarse level mesh
-            agglomerateMatrix
-            (
-                fineLevelIndex,
-                agglomeration_.meshLevel(fineLevelIndex + 1),
-                agglomeration_.interfaceLevel(fineLevelIndex + 1)
-            );
-        }
-    }
-
 
     if (debug)
     {

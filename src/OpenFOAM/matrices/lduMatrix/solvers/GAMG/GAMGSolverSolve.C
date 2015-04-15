@@ -169,7 +169,7 @@ void Foam::GAMGSolver::Vcycle
     const label coarsestLevel = matrixLevels_.size() - 1;
 
     // Restrict finest grid residual for the next level up.
-    agglomeration_.restrictField(coarseSources[0], finestResidual, 0, true);
+    agglomeration_.restrictField(coarseSources[0], finestResidual, 0);
 
     if (debug >= 2 && nPreSweeps_)
     {
@@ -240,8 +240,7 @@ void Foam::GAMGSolver::Vcycle
             (
                 coarseSources[leveli + 1],
                 coarseSources[leveli],
-                leveli + 1,
-                true
+                leveli + 1
             );
         }
     }
@@ -300,8 +299,7 @@ void Foam::GAMGSolver::Vcycle
                   ? coarseCorrFields[leveli + 1]
                   : dummyField              // dummy value
                 ),
-                leveli + 1,
-                true
+                leveli + 1
             );
 
 
@@ -392,8 +390,7 @@ void Foam::GAMGSolver::Vcycle
     (
         finestCorrection,
         coarseCorrFields[0],
-        0,
-        true
+        0
     );
 
     if (interpolateCorrection_)

@@ -29,50 +29,6 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-template<class Type>
-void Foam::GAMGAgglomeration::gatherList
-(
-    const label comm,
-    const labelList& procIDs,
-
-    const Type& myVal,
-    List<Type>& allVals,
-    const int tag
-)
-{
-    if (Pstream::myProcNo(comm) == procIDs[0])
-    {
-        allVals.setSize(procIDs.size());
-
-        allVals[0] = myVal;
-        for (label i = 1; i < procIDs.size(); i++)
-        {
-            IPstream fromSlave
-            (
-                Pstream::scheduled,
-                procIDs[i],
-                0,
-                tag,
-                comm
-            );
-
-            fromSlave >> allVals[i];
-        }
-    }
-    else
-    {
-        OPstream toMaster
-        (
-            Pstream::scheduled,
-            procIDs[0],
-            0,
-            tag,
-            comm
-        );
-        toMaster << myVal;
-    }
-}
-
 namespace Foam
 {
 
@@ -146,15 +102,14 @@ void Foam::GAMGAgglomeration::restrictField
 (
     gpuField<Type>& cf,
     const gpuField<Type>& ff,
-    const label fineLevelIndex,
-    const bool procAgglom
+    const label fineLevelIndex
 ) const
 {
     const labelgpuList& sort = restrictSortAddressing_[fineLevelIndex];
     const labelgpuList& target = restrictTargetAddressing_[fineLevelIndex];
     const labelgpuList& targetStart = restrictTargetStartAddressing_[fineLevelIndex];
 
-    if (!procAgglom && ff.size() != sort.size())
+    if (ff.size() != sort.size())
     {
         FatalErrorIn
         (
@@ -175,35 +130,6 @@ void Foam::GAMGAgglomeration::restrictField
         target,
         targetStart
     );
-
-    label coarseLevelIndex = fineLevelIndex+1;
-
-    if (procAgglom && hasProcMesh(coarseLevelIndex))
-    {
-        label fineComm = UPstream::parent(procCommunicator_[coarseLevelIndex]);
-
-        const List<int>& procIDs = agglomProcIDs(coarseLevelIndex);
-        const labelList& offsets = cellOffsets(coarseLevelIndex);
-
-        Field<Type> cfh(cf.size());
-
-        globalIndex::gather
-        (
-            offsets,
-            fineComm,
-            procIDs,
-            cfh,
-            UPstream::msgType(),
-            Pstream::nonBlocking    //Pstream::scheduled
-        );
-
-        thrust::copy
-        (
-            cfh.begin(),
-            cfh.end(),
-            cf.begin()
-        );
-    }
 }
 
 namespace Foam
@@ -312,76 +238,25 @@ void Foam::GAMGAgglomeration::prolongField
 (
     gpuField<Type>& ff,
     const gpuField<Type>& cf,
-    const label levelIndex,
-    const bool procAgglom
+    const label levelIndex
 ) const
 {
     const labelgpuList& fineToCoarse = restrictAddressing_[levelIndex];
 
-    label coarseLevelIndex = levelIndex+1;
-
-    if (procAgglom && hasProcMesh(coarseLevelIndex))
-    {
-        label coarseComm = UPstream::parent
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
         (
-            procCommunicator_[coarseLevelIndex]
-        );
-
-        const List<int>& procIDs = agglomProcIDs(coarseLevelIndex);
-        const labelList& offsets = cellOffsets(coarseLevelIndex);
-
-        label localSize = nCells_[levelIndex];
-
-        Field<Type> allCf(localSize);
-        Field<Type> cfh(cf.size());
-        
-        thrust::copy(cf.begin(),cf.end(),cfh.begin());
-
-        globalIndex::scatter
+            cf.begin(),
+            fineToCoarse.begin()
+        ),
+        thrust::make_permutation_iterator
         (
-            offsets,
-            coarseComm,
-            procIDs,
-            cfh,
-            allCf,
-            UPstream::msgType(),
-            Pstream::nonBlocking    //Pstream::scheduled
-        );
-
-        gpuField<Type> allCfGpu(allCf);
-
-        thrust::copy
-        (
-            thrust::make_permutation_iterator
-            (
-                allCfGpu.begin(),
-                fineToCoarse.begin()
-            ),
-            thrust::make_permutation_iterator
-            (
-                allCfGpu.begin(),
-                fineToCoarse.end()
-            ),
-            ff.begin()
-        );
-    }
-    else
-    {
-        thrust::copy
-        (
-            thrust::make_permutation_iterator
-            (
-                cf.begin(),
-                fineToCoarse.begin()
-            ),
-            thrust::make_permutation_iterator
-            (
-                cf.begin(),
-                fineToCoarse.end()
-            ),
-            ff.begin()
-        );
-    }
+            cf.begin(),
+            fineToCoarse.end()
+        ),
+        ff.begin()
+    );
 }
 
 

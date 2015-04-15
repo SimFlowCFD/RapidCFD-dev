@@ -171,50 +171,6 @@ class GAMGSolver
             FieldField<gpuField, scalar>& coarseInterfaceIntCoeffs
         ) const;
 
-        //- Collect matrices from other processors
-        void gatherMatrices
-        (
-            const labelList& procIDs,
-            const lduMesh& dummyMesh,
-            const label meshComm,
-
-            const lduMatrix& mat,
-            const FieldField<gpuField, scalar>& interfaceBouCoeffs,
-            const FieldField<gpuField, scalar>& interfaceIntCoeffs,
-            const lduInterfaceFieldPtrsList& interfaces,
-
-            PtrList<lduMatrix>& otherMats,
-            PtrList<FieldField<gpuField, scalar> >& otherBouCoeffs,
-            PtrList<FieldField<gpuField, scalar> >& otherIntCoeffs,
-            List<boolList>& otherTransforms,
-            List<List<int> >& otherRanks
-        ) const;
-
-        //- Agglomerate processor matrices
-        void procAgglomerateMatrix
-        (
-            // Agglomeration information
-            const labelList& procAgglomMap,
-            const List<int>& agglomProcIDs,
-
-            const label levelI,
-
-            // Resulting matrix
-            autoPtr<lduMatrix>& allMatrixPtr,
-            FieldField<gpuField, scalar>& allInterfaceBouCoeffs,
-            FieldField<gpuField, scalar>& allInterfaceIntCoeffs,
-            PtrList<lduInterfaceField>& allPrimitiveInterfaces,
-            lduInterfaceFieldPtrsList& allInterfaces
-        ) const;
-
-        //- Agglomerate processor matrices
-        void procAgglomerateMatrix
-        (
-            const labelList& procAgglomMap,
-            const List<int>& agglomProcIDs,
-            const label levelI
-        );
-
         //- Interpolate the correction after injected prolongation
         void interpolate
         (

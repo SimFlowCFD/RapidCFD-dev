@@ -37,7 +37,7 @@ void Foam::lduMatrix::sumDiag()
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
     const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upperSort();
 
-    matrixOperation
+    matrixFastOperation
     (
         diag().begin(),
         diag(),
@@ -60,7 +60,7 @@ void Foam::lduMatrix::negSumDiag()
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
     const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upperSort();
 
-    matrixOperation
+    matrixFastOperation
     (
         diag().begin(),
         diag(),
@@ -87,7 +87,7 @@ void Foam::lduMatrix::sumMagOffDiag
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lowerSort();
     const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
 
-    matrixOperation
+    matrixFastOperation
     (
         sumOff.begin(),
         sumOff,
@@ -105,6 +105,48 @@ void Foam::lduMatrix::sumMagOffDiag
     ); 
 }
 
+template<>
+Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField<Foam::scalar>& psi) const
+{
+    tmp<gpuField<scalar> > tHpsi
+    (
+        new gpuField<scalar>(lduAddr().size(), 0)
+    );
+
+    if (lowerPtr_ || upperPtr_)
+    {
+        gpuField<scalar> & Hpsi = tHpsi();
+
+        const scalargpuField& Lower = this->lowerSort();
+        const scalargpuField& Upper = this->upper();
+
+        const labelgpuList& l = lduAddr().ownerSortAddr();
+        const labelgpuList& u = lduAddr().upperAddr();
+        
+        matrixFastOperation
+        (
+            Hpsi.begin(),
+            Hpsi,
+            lduAddr(),
+            matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >
+            (
+                psi.data(),
+                Upper.data(),
+                u.data(),
+                negateUnaryOperatorFunctor<scalar,scalar>()
+            ),
+            matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >
+            (
+                psi.data(),
+                Lower.data(),
+                l.data(),
+                negateUnaryOperatorFunctor<scalar,scalar>()
+            )
+        );                                        
+    }
+
+    return tHpsi;
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

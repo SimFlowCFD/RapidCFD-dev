@@ -303,7 +303,7 @@ void Foam::lduMatrix::sumA
     const lduInterfaceFieldPtrsList& interfaces
 ) const
 {
-    matrixOperation
+    matrixFastOperation
     (
         diag().begin(),
         sumA,
@@ -393,7 +393,7 @@ void Foam::lduMatrix::residual
         cmpt
     );
 								   
-    matrixOperation
+    matrixFastOperation
     (
         thrust::make_transform_iterator
         (
@@ -464,7 +464,7 @@ Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
         const scalargpuField& Lower = lowerSort();
         const scalargpuField& Upper = upper();
         
-        matrixOperation
+        matrixFastOperation
         (
             H_.begin(),
             H_,

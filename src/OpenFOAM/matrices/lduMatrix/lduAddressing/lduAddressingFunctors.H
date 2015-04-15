@@ -12,6 +12,7 @@ struct lduAddressingFunctor
 {
     const label* ownStart;
     const label* neiStart;
+    const label* losort;
     OwnFun oFun;
     NeiFun nFun;
     OwnOp oOp;
@@ -21,6 +22,7 @@ struct lduAddressingFunctor
     (
         const label* _ownStart,
         const label* _neiStart,
+        const label* _losort,
         const OwnFun _oFun,
         const NeiFun _nFun,
         const OwnOp _oOp,
@@ -28,6 +30,7 @@ struct lduAddressingFunctor
     ):
         ownStart(_ownStart),
         neiStart(_neiStart),
+        losort(_losort),
         oFun(_oFun),
         nFun(_nFun),
         oOp(_oOp),
@@ -52,7 +55,7 @@ struct lduAddressingFunctor
 
         for(label i = 0; i<nSize; i++)
         {
-            label face = nStart + i;
+            label face = losort[nStart + i];
             out = nOp(out,nFun(id,face));
         }
 
@@ -267,6 +270,7 @@ inline void matrixOperation
 {
     const labelgpuList& ownStart = addr.ownerStartAddr();
     const labelgpuList& losortStart = addr.losortStartAddr();
+    const labelgpuList& losort = addr.losortAddr();
     
     thrust::transform
     (
@@ -278,6 +282,7 @@ inline void matrixOperation
         (
             ownStart.data(),
             losortStart.data(),
+            losort.data(),
             o,
             n,
             oo,
@@ -310,7 +315,7 @@ inline void matrixOperation
 }
 
 template<class Input, class OwnFun,class NeiFun>
-inline void matrixOperation
+inline void matrixFastOperation
 (
     Input in, 
     gpuList<scalar>& out,

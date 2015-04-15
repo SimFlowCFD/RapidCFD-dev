@@ -68,7 +68,7 @@ void Foam::GAMGSolver::interpolate
         cmpt
     );
 
-    matrixOperation
+    matrixFastOperation
     (
         thrust::make_constant_iterator(scalar(0.0)),
         Apsi,

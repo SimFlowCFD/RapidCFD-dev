@@ -75,9 +75,11 @@ public:
 
             //- Return face transformation tensor
             virtual const tensorField& forwardT() const = 0;
+            virtual const tensorgpuField& getForwardT() const = 0;
 
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const = 0;
+            virtual const tensorgpuField& getReverseT() const = 0;
 
             //- Return rank of component for transform
             virtual int rank() const = 0;
@@ -85,12 +87,12 @@ public:
 
         //- Transform given patch field
         template<class Type>
-        void transformCoupleField(Field<Type>& f) const;
+        void transformCoupleField(gpuField<Type>& f) const;
 
         //- Transform given patch internal field
         void transformCoupleField
         (
-            scalarField& psiInternal,
+            scalargpuField& psiInternal,
             const direction cmpt
         ) const;
 };
@@ -107,7 +109,7 @@ public:
 template<class Type>
 void Foam::cyclicAMILduInterfaceField::transformCoupleField
 (
-    Field<Type>& f
+    gpuField<Type>& f
 ) const
 {
     if (doTransform())
@@ -118,7 +120,7 @@ void Foam::cyclicAMILduInterfaceField::transformCoupleField
         }
         else
         {
-            transform(f, forwardT(), f);
+            transform(f, getForwardT(), f);
         }
     }
 }

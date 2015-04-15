@@ -35,12 +35,14 @@ namespace Foam
     defineTypeNameAndDebug(cyclicACMIFvPatch, 0);
     addToRunTimeSelectionTable(fvPatch, cyclicACMIFvPatch, polyPatch);
     
-    struct cyclicACMIFvPatchMakeWeightsFunctor{
-		__HOST____DEVICE__
-		scalar operator () (const scalar& deltas, const scalar& nbrDeltas){
-			return nbrDeltas/(deltas + nbrDeltas);
-		}
-	};
+    struct cyclicACMIFvPatchMakeWeightsFunctor
+    {
+        __HOST____DEVICE__
+        scalar operator () (const scalar& deltas, const scalar& nbrDeltas)
+        {
+            return nbrDeltas/(deltas + nbrDeltas);
+        }
+    };
 }
 
 
@@ -100,17 +102,15 @@ void Foam::cyclicACMIFvPatch::makeWeights(scalargpuField& w) const
                 nbrPatchNonOverlap.nf() & nbrPatchNonOverlap.delta()
             )
         );
-/*
-        forAll(deltas, faceI)
-        {
-            scalar di = deltas[faceI];
-            scalar dni = nbrDeltas[faceI];
 
-            w[faceI] = dni/(di + dni);
-        }
-*/
-        thrust::transform(deltas.begin(),deltas.end(),nbrDeltas.begin(),w.begin(),
-                          cyclicACMIFvPatchMakeWeightsFunctor());
+        thrust::transform
+        (
+            deltas.begin(),
+            deltas.end(),
+            nbrDeltas.begin(),
+            w.begin(),
+            cyclicACMIFvPatchMakeWeightsFunctor()
+        );
     }
     else
     {
@@ -128,16 +128,16 @@ bool Foam::cyclicACMIFvPatch::coupled() const
 }
 
 
-Foam::tmp<Foam::vectorField> Foam::cyclicACMIFvPatch::delta() const
+Foam::tmp<Foam::vectorgpuField> Foam::cyclicACMIFvPatch::delta() const
 {
     if (coupled())
     {
         const cyclicACMIFvPatch& nbrPatchCoupled = neighbFvPatch();
         const fvPatch& nbrPatchNonOverlap = nonOverlapPatch();
 
-        const vectorField patchD(coupledFvPatch::delta());
+        const vectorgpuField patchD(coupledFvPatch::delta());
 
-        vectorField nbrPatchD
+        vectorgpuField nbrPatchD
         (
             interpolate
             (
@@ -146,40 +146,48 @@ Foam::tmp<Foam::vectorField> Foam::cyclicACMIFvPatch::delta() const
             )
         );
 
-        const vectorField nbrPatchD0
+        const vectorgpuField nbrPatchD0
         (
             interpolate
             (
-                vectorField(nbrPatchCoupled.size(), vector::zero),
+                vectorgpuField(nbrPatchCoupled.size(), vector::zero),
                 nbrPatchNonOverlap.delta()()
             )
         );
 
         nbrPatchD -= nbrPatchD0;
 
-        tmp<vectorField> tpdv(new vectorField(patchD.size()));
-        vectorField& pdv = tpdv();
+        tmp<vectorgpuField> tpdv(new vectorgpuField(patchD.size()));
+        vectorgpuField& pdv = tpdv();
 
         // do the transformation if necessary
         if (parallel())
         {
-            forAll(patchD, faceI)
-            {
-                const vector& ddi = patchD[faceI];
-                const vector& dni = nbrPatchD[faceI];
-
-                pdv[faceI] = ddi - dni;
-            }
+            thrust::transform
+            (
+                patchD.begin(),
+                patchD.end(),
+                nbrPatchD.begin(),
+                pdv.begin(),
+                subtractOperatorFunctor<vector,vector,vector>()
+            );
         }
         else
         {
-            forAll(patchD, faceI)
-            {
-                const vector& ddi = patchD[faceI];
-                const vector& dni = nbrPatchD[faceI];
-
-                pdv[faceI] = ddi - transform(forwardT()[0], dni);
-            }
+            tensor t = forwardT()[0];
+			
+            thrust::transform
+            (
+                patchD.begin(),
+                patchD.end(),
+                thrust::make_transform_iterator
+                (
+                    nbrPatchD.begin(),
+                    transformBinaryFunctionSFFunctor<tensor,vector,vector>(t)
+                ),
+                pdv.begin(),
+                subtractOperatorFunctor<vector,vector,vector>()
+            );
         }
 
         return tpdv;

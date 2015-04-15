@@ -135,12 +135,16 @@ private:
 
             //- Addresses of target faces per source face
             labelListList srcAddress_;
+            labelgpuList srcgpuAddress_;
+            labelgpuList srcgpuStartAddress_;
 
             //- Weights of target faces per source face
             scalarListList srcWeights_;
+            scalargpuList srcgpuWeights_;
 
             //- Sum of weights of target faces per source face
             scalarField srcWeightsSum_;
+            scalargpuField srcgpuWeightsSum_;
 
 
         // Target patch
@@ -150,12 +154,16 @@ private:
 
             //- Addresses of source faces per target face
             labelListList tgtAddress_;
+            labelgpuList tgtgpuAddress_;
+            labelgpuList tgtgpuStartAddress_;
 
             //- Weights of source faces per target face
             scalarListList tgtWeights_;
+            scalargpuList tgtgpuWeights_;
 
             //- Sum of weights of source faces per target face
             scalarField tgtWeightsSum_;
+            scalargpuField tgtgpuWeightsSum_;
 
 
         //- Face triangulation mode
@@ -267,6 +275,16 @@ private:
                 scalarListList& srcWeights,
                 scalarField& srcWeightsSum,
                 autoPtr<mapDistribute>& tgtMap
+            );
+
+            static void copyAddressingToGpu
+            (
+                const labelListList& address,
+                const scalarListList& weights,
+
+                labelgpuList& gpuAddress,
+                labelgpuList& gpuStartAddress,
+                scalargpuList& gpuWeights
             );
 
             void constructFromSurface
@@ -512,6 +530,100 @@ public:
             (
                 const tmp<Field<Type> >& tFld,
                 const UList<Type>& defaultValues = UList<Type>::null()
+            ) const;
+
+            //GPU
+            // Low-level
+
+                //- Interpolate from target to source with supplied op
+                //  to combine existing value with remote value and weight
+                template<class Type, class CombineOp>
+                void interpolateToSource
+                (
+                    const gpuList<Type>& fld,
+                    const CombineOp& cop,
+                    gpuList<Type>& result,
+                    const gpuList<Type>& defaultValues = gpuList<Type>::null()
+                ) const;
+
+                //- Interpolate from source to target with supplied op
+                //  to combine existing value with remote value and weight
+                template<class Type, class CombineOp>
+                void interpolateToTarget
+                (
+                    const gpuList<Type>& fld,
+                    const CombineOp& cop,
+                    gpuList<Type>& result,
+                    const gpuList<Type>& defaultValues = gpuList<Type>::null()
+                ) const;
+
+
+            //- Interpolate from target to source with supplied op
+            template<class Type, class CombineOp>
+            tmp<gpuField<Type> > interpolateToSource
+            (
+                const gpuField<Type>& fld,
+                const CombineOp& cop,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from target tmp field to source with supplied op
+            template<class Type, class CombineOp>
+            tmp<gpuField<Type> > interpolateToSource
+            (
+                const tmp<gpuField<Type> >& tFld,
+                const CombineOp& cop,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from source to target with supplied op
+            template<class Type, class CombineOp>
+            tmp<gpuField<Type> > interpolateToTarget
+            (
+                const gpuField<Type>& fld,
+                const CombineOp& cop,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from source tmp field to target with supplied op
+            template<class Type, class CombineOp>
+            tmp<gpuField<Type> > interpolateToTarget
+            (
+                const tmp<gpuField<Type> >& tFld,
+                const CombineOp& cop,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from target to source
+            template<class Type>
+            tmp<gpuField<Type> > interpolateToSource
+            (
+                const gpuField<Type>& fld,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from target tmp field
+            template<class Type>
+            tmp<gpuField<Type> > interpolateToSource
+            (
+                const tmp<gpuField<Type> >& tFld,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from source to target
+            template<class Type>
+            tmp<gpuField<Type> > interpolateToTarget
+            (
+                const gpuField<Type>& fld,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
+            ) const;
+
+            //- Interpolate from source tmp field
+            template<class Type>
+            tmp<gpuField<Type> > interpolateToTarget
+            (
+                const tmp<gpuField<Type> >& tFld,
+                const gpuList<Type>& defaultValues = gpuList<Type>::null()
             ) const;
 
 

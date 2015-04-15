@@ -66,14 +66,14 @@ Foam::fixedJumpAMIFvPatchField<Type>::fixedJumpAMIFvPatchField
 {
     if (this->cyclicAMIPatch().owner())
     {
-        jump_ = Field<Type>("jump", dict, p.size());
+        jump_ = gpuField<Type>("jump", dict, p.size());
     }
 
     if (dict.found("value"))
     {
         fvPatchField<Type>::operator=
         (
-            Field<Type>("value", dict, p.size())
+            gpuField<Type>("value", dict, p.size())
         );
     }
     else
@@ -109,7 +109,7 @@ Foam::fixedJumpAMIFvPatchField<Type>::fixedJumpAMIFvPatchField
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> > Foam::fixedJumpAMIFvPatchField<Type>::jump() const
+Foam::tmp<Foam::gpuField<Type> > Foam::fixedJumpAMIFvPatchField<Type>::jump() const
 {
     if (this->cyclicAMIPatch().owner())
     {
@@ -128,7 +128,7 @@ Foam::tmp<Foam::Field<Type> > Foam::fixedJumpAMIFvPatchField<Type>::jump() const
             return this->cyclicAMIPatch().interpolate
             (
                 nbrPatch.jump(),
-                Field<Type>(this->size(), pTraits<Type>::zero)
+                gpuField<Type>(this->size(), pTraits<Type>::zero)
             );
         }
         else
@@ -154,7 +154,7 @@ template<class Type>
 void Foam::fixedJumpAMIFvPatchField<Type>::rmap
 (
     const fvPatchField<Type>& ptf,
-    const labelList& addr
+    const labelgpuList& addr
 )
 {
     jumpCyclicAMIFvPatchField<Type>::rmap(ptf, addr);

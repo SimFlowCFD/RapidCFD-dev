@@ -100,6 +100,9 @@ void Foam::cyclicACMIPolyPatch::resetAMI
 
         setNeighbourFaceAreas();
 
+        srcgpuMask_ = srcMask_;
+        tgtgpuMask_ = tgtMask_;
+
         // set the updated flag
         updated_ = true;
     }

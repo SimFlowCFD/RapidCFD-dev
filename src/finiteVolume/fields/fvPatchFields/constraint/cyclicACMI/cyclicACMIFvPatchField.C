@@ -25,6 +25,7 @@ License
 
 #include "cyclicACMIFvPatchField.H"
 #include "transformField.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -148,7 +149,7 @@ bool Foam::cyclicACMIFvPatchField<Type>::coupled() const
 
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> >
+Foam::tmp<Foam::gpuField<Type> >
 Foam::cyclicACMIFvPatchField<Type>::patchNeighbourField() const
 {
     const gpuField<Type>& iField = this->internalField();
@@ -174,7 +175,7 @@ Foam::cyclicACMIFvPatchField<Type>::patchNeighbourField() const
 
     if (doTransform())
     {
-        tpnf() = transform(forwardT(), tpnf());
+        tpnf() = transform(getForwardT(), tpnf());
     }
 
     return tpnf;
@@ -188,7 +189,7 @@ Foam::cyclicACMIFvPatchField<Type>::neighbourPatchField() const
     const GeometricField<Type, fvPatchField, volMesh>& fld =
         static_cast<const GeometricField<Type, fvPatchField, volMesh>&>
         (
-            this->internalField()
+            this->dimensionedInternalField()
         );
 
     return refCast<const cyclicACMIFvPatchField<Type> >
@@ -205,7 +206,7 @@ Foam::cyclicACMIFvPatchField<Type>::nonOverlapPatchField() const
     const GeometricField<Type, fvPatchField, volMesh>& fld =
         static_cast<const GeometricField<Type, fvPatchField, volMesh>&>
         (
-            this->internalField()
+            this->dimensionedInternalField()
         );
 
     return fld.boundaryField()[cyclicACMIPatch_.nonOverlapPatchID()];
@@ -214,9 +215,11 @@ Foam::cyclicACMIFvPatchField<Type>::nonOverlapPatchField() const
 namespace Foam
 {
     template<class Type>
-    struct updateCyclicACMIInterfaceMatrixFunctor{
+    struct updateCyclicACMIInterfaceMatrixFunctor
+    {
         __HOST____DEVICE__
-        Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c){
+        Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c)
+        {
              return s - thrust::get<0>(c) * thrust::get<1>(c);
         }
     };
@@ -242,20 +245,19 @@ void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
     // Transform according to the transformation tensors
     transformCoupleField(pnf, cmpt);
 
-    const labelgpuList& faceCells = cyclicACMIPatch_.faceCells();
-
     pnf = cyclicACMIPatch_.interpolate(pnf);
-/*
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-*/
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      updateCyclicACMIInterfaceMatrixFunctor<scalar>());
+
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<scalar>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 
@@ -278,20 +280,19 @@ void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
     // Transform according to the transformation tensors
     transformCoupleField(pnf);
 
-    const labelgpuList& faceCells = cyclicACMIPatch_.faceCells();
-
     pnf = cyclicACMIPatch_.interpolate(pnf);
-/*
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-*/
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      updateCyclicACMIInterfaceMatrixFunctor<Type>());
+
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<Type>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 

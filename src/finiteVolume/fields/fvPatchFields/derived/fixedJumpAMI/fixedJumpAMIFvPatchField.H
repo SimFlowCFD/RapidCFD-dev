@@ -90,7 +90,7 @@ protected:
     // Protected data
 
         //- "jump" field
-        Field<Type> jump_;
+        gpuField<Type> jump_;
 
 
 public:
@@ -166,7 +166,7 @@ public:
         // Access
 
             //- Return the "jump" across the patch
-            virtual tmp<Field<Type> > jump() const;
+            virtual tmp<gpuField<Type> > jump() const;
 
 
         // Mapping functions
@@ -175,7 +175,7 @@ public:
             virtual void autoMap(const fvPatchFieldMapper&);
 
             //- Reverse map the given fvPatchField onto this fvPatchField
-            virtual void rmap(const fvPatchField<Type>&, const labelList&);
+            virtual void rmap(const fvPatchField<Type>&, const labelgpuList&);
 
 
         //- Write

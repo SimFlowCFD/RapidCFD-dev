@@ -72,12 +72,12 @@ public:
 
         //- Transform given patch field
         template<class Type>
-        void transformCoupleField(Field<Type>& f) const;
+        void transformCoupleField(gpuField<Type>& f) const;
 
         //- Transform given patch internal field
         void transformCoupleField
         (
-            scalarField& psiInternal,
+            scalargpuField& psiInternal,
             const direction cmpt
         ) const;
 };
@@ -94,7 +94,7 @@ public:
 template<class Type>
 void Foam::cyclicACMILduInterfaceField::transformCoupleField
 (
-    Field<Type>& f
+    gpuField<Type>& f
 ) const
 {
     cyclicAMILduInterfaceField::transformCoupleField(f);

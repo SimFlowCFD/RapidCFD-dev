@@ -35,12 +35,14 @@ namespace Foam
     defineTypeNameAndDebug(cyclicAMIFvPatch, 0);
     addToRunTimeSelectionTable(fvPatch, cyclicAMIFvPatch, polyPatch);
     
-    struct cyclicAMIFvPatchMakeWeightsFunctor{
-		__HOST____DEVICE__
-		scalar operator () (const scalar& deltas, const scalar& nbrDeltas){
-			return nbrDeltas/(deltas + nbrDeltas);
-		}
-	};
+    struct cyclicAMIFvPatchMakeWeightsFunctor
+    {
+        __HOST____DEVICE__
+        scalar operator () (const scalar& deltas, const scalar& nbrDeltas)
+        {
+            return nbrDeltas/(deltas + nbrDeltas);
+        }
+    };
 }
 
 
@@ -77,17 +79,15 @@ void Foam::cyclicAMIFvPatch::makeWeights(scalargpuField& w) const
         }
 
         const scalargpuField& nbrDeltas = tnbrDeltas();
-/*
-        forAll(deltas, faceI)
-        {
-            scalar di = deltas[faceI];
-            scalar dni = nbrDeltas[faceI];
 
-            w[faceI] = dni/(di + dni);
-        }
-*/
-        thrust::transform(deltas.begin(),deltas.end(),nbrDeltas.begin(),w.begin(),
-                          cyclicAMIFvPatchMakeWeightsFunctor());
+        thrust::transform
+        (
+            deltas.begin(),
+            deltas.end(),
+            nbrDeltas.begin(),
+            w.begin(),
+            cyclicAMIFvPatchMakeWeightsFunctor()
+        );
     }
     else
     {
@@ -128,35 +128,31 @@ Foam::tmp<Foam::vectorgpuField> Foam::cyclicAMIFvPatch::delta() const
         // do the transformation if necessary
         if (parallel())
         {
-			/*
-            forAll(patchD, faceI)
-            {
-                const vector& ddi = patchD[faceI];
-                const vector& dni = nbrPatchD[faceI];
-
-                pdv[faceI] = ddi - dni;
-            }
-            */
-            thrust::transform(patchD.begin(),patchD.end(),nbrPatchD.begin(),pdv.begin(),
-                              subtractOperatorFunctor<vector,vector,vector>());
+            thrust::transform
+            (
+                patchD.begin(),
+                patchD.end(),
+                nbrPatchD.begin(),
+                pdv.begin(),
+                subtractOperatorFunctor<vector,vector,vector>()
+            );
         }
         else
         {
-			tensor t = forwardT()[0];
+            tensor t = forwardT()[0];
 			
-			thrust::transform(patchD.begin(),patchD.end(),
-			                  thrust::make_transform_iterator(nbrPatchD.begin(),transformBinaryFunctionSFFunctor<tensor,vector,vector>(t)),
-			                  pdv.begin(),
-                              subtractOperatorFunctor<vector,vector,vector>());
-			/*
-            forAll(patchD, faceI)
-            {
-                const vector& ddi = patchD[faceI];
-                const vector& dni = nbrPatchD[faceI];
-
-                pdv[faceI] = ddi - transform(forwardT()[0], dni);
-            }
-            */
+            thrust::transform
+            (
+                patchD.begin(),
+                patchD.end(),
+                thrust::make_transform_iterator
+                (
+                    nbrPatchD.begin(),
+                    transformBinaryFunctionSFFunctor<tensor,vector,vector>(t)
+                ),
+                pdv.begin(),
+                subtractOperatorFunctor<vector,vector,vector>()
+            );
         }
 
         return tpdv;

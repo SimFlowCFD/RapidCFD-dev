@@ -141,10 +141,20 @@ public:
                 return fineCyclicAMIInterface_.forwardT();
             }
 
+            virtual const tensorgpuField& getForwardT() const
+            {
+                return fineCyclicAMIInterface_.getForwardT();
+            }
+
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const
             {
                 return fineCyclicAMIInterface_.reverseT();
+            }
+
+            virtual const tensorgpuField& getReverseT() const
+            {
+                return fineCyclicAMIInterface_.getReverseT();
             }
 
 

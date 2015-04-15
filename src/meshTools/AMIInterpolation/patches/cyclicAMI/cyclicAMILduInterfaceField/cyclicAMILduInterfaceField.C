@@ -44,7 +44,7 @@ Foam::cyclicAMILduInterfaceField::~cyclicAMILduInterfaceField()
 
 void Foam::cyclicAMILduInterfaceField::transformCoupleField
 (
-    scalarField& f,
+    scalargpuField& f,
     const direction cmpt
 ) const
 {
@@ -56,7 +56,7 @@ void Foam::cyclicAMILduInterfaceField::transformCoupleField
         }
         else
         {
-            f *= pow(diag(forwardT())().component(cmpt), rank());
+            f *= pow(diag(getForwardT())().component(cmpt), rank());
         }
     }
 }

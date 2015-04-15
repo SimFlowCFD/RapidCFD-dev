@@ -26,6 +26,7 @@ License
 #include "jumpCyclicAMIFvPatchFields.H"
 #include "addToRunTimeSelectionTable.H"
 #include "volFields.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -41,24 +42,24 @@ makePatchFieldsTypeName(jumpCyclicAMI);
 template<>
 void Foam::jumpCyclicAMIFvPatchField<scalar>::updateInterfaceMatrix
 (
-    scalarField& result,
-    const scalarField& psiInternal,
-    const scalarField& coeffs,
+    scalargpuField& result,
+    const scalargpuField& psiInternal,
+    const scalargpuField& coeffs,
     const direction cmpt,
     const Pstream::commsTypes
 ) const
 {
-    const labelUList& nbrFaceCells =
+    const labelgpuList& nbrFaceCells =
         this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().faceCells();
 
-    scalarField pnf(psiInternal, nbrFaceCells);
+    scalargpuField pnf(psiInternal, nbrFaceCells);
 
     pnf = this->cyclicAMIPatch().interpolate(pnf);
 
     // only apply jump to original field
     if (&psiInternal == &this->internalField())
     {
-        Field<scalar> jf(this->jump());
+        gpuField<scalar> jf(this->jump());
 
         if (!this->cyclicAMIPatch().owner())
         {
@@ -72,11 +73,17 @@ void Foam::jumpCyclicAMIFvPatchField<scalar>::updateInterfaceMatrix
     this->transformCoupleField(pnf, cmpt);
 
     // Multiply the field by coefficients and add into the result
-    const labelUList& faceCells = this->cyclicAMIPatch().faceCells();
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<scalar>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 

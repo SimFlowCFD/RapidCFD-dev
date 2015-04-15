@@ -152,10 +152,20 @@ public:
                 return cyclicACMIPolyPatch_.forwardT();
             }
 
+            virtual const tensorgpuField& getForwardT() const
+            {
+                return cyclicACMIPolyPatch_.getForwardT();
+            }
+
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const
             {
                 return cyclicACMIPolyPatch_.reverseT();
+            }
+
+            virtual const tensorgpuField& getReverseT() const
+            {
+                return cyclicACMIPolyPatch_.getReverseT();
             }
 
             const cyclicACMIFvPatch& neighbFvPatch() const

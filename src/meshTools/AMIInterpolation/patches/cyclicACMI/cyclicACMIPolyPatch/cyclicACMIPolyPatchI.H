@@ -67,15 +67,15 @@ inline Foam::polyPatch& Foam::cyclicACMIPolyPatch::nonOverlapPatch()
 }
 
 
-inline const Foam::scalarField& Foam::cyclicACMIPolyPatch::mask() const
+inline const Foam::scalargpuField& Foam::cyclicACMIPolyPatch::mask() const
 {
     if (owner())
     {
-        return srcMask_;
+        return srcgpuMask_;
     }
     else
     {
-        return neighbPatch().tgtMask();
+        return neighbPatch().tgtgpuMask_;
     }
 }
 

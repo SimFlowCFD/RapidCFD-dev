@@ -237,31 +237,16 @@ void cyclicFvPatchField<Type>::updateInterfaceMatrix
     transformCoupleField(pnf, cmpt);
 
     // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = cyclicPatch_.faceCells();
-
-    thrust::transform
+    matrixPatchOperation
     (
-        thrust::make_permutation_iterator
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<scalar>
         (
-            result.begin(),
-            faceCells.begin()
-        ),
-        thrust::make_permutation_iterator
-        (
-            result.begin(),
-            faceCells.end()
-        ),
-        thrust::make_zip_iterator(thrust::make_tuple
-        (
-            coeffs.begin(),
-            pnf.begin()
-        )),
-        thrust::make_permutation_iterator
-        (
-            result.begin(),
-            faceCells.begin()
-        ),
-        updateCyclicInterfaceMatrixFunctor<scalar>()
+            coeffs.data(),
+            pnf.data()
+        )
     );
 }
 
@@ -291,8 +276,8 @@ void cyclicFvPatchField<Type>::updateInterfaceMatrix
         this->patch().boundaryMesh().mesh().lduAddr(),
         matrixInterfaceFunctor<Type>
         (
-                coeffs.data(),
-                pnf.data()
+            coeffs.data(),
+            pnf.data()
         )
     );
 }

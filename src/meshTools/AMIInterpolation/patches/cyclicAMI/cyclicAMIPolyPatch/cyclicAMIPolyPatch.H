@@ -358,6 +358,32 @@ public:
                     const UList<Type>& defaultValues = UList<Type>()
                 ) const;
 
+           //GPU
+                template<class Type>
+                tmp<gpuField<Type> > interpolate
+                (
+                    const gpuField<Type>& fld,
+                    const gpuList<Type>& defaultValues = gpuList<Type>()
+                ) const;
+
+                //- Interpolate tmp field
+                template<class Type>
+                tmp<gpuField<Type> > interpolate
+                (
+                    const tmp<gpuField<Type> >& tFld,
+                    const gpuList<Type>& defaultValues = gpuList<Type>()
+                ) const;
+
+                //- Low-level interpolate List
+                template<class Type, class CombineOp>
+                void interpolate
+                (
+                    const gpuList<Type>& fld,
+                    const CombineOp& cop,
+                    gpuList<Type>& result,
+                    const gpuList<Type>& defaultValues = gpuList<Type>()
+                ) const;
+
 
         //- Calculate the patch geometry
         virtual void calcGeometry

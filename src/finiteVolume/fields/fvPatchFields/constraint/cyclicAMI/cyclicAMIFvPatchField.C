@@ -23,6 +23,8 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "lduAddressingFunctors.H"
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class Type>
@@ -166,7 +168,7 @@ Foam::cyclicAMIFvPatchField<Type>::patchNeighbourField() const
 
     if (doTransform())
     {
-        tpnf() = transform(forwardT(), tpnf());
+        tpnf() = transform(getForwardT(), tpnf());
     }
 
     return tpnf;
@@ -180,7 +182,7 @@ Foam::cyclicAMIFvPatchField<Type>::neighbourPatchField() const
     const GeometricField<Type, fvPatchField, volMesh>& fld =
         static_cast<const GeometricField<Type, fvPatchField, volMesh>&>
         (
-            this->internalField()
+            this->dimensionedInternalField()
         );
 
     return refCast<const cyclicAMIFvPatchField<Type> >
@@ -192,9 +194,11 @@ Foam::cyclicAMIFvPatchField<Type>::neighbourPatchField() const
 namespace Foam
 {
     template<class Type>
-    struct updateCyclicAMIInterfaceMatrixFunctor{
+    struct updateCyclicAMIInterfaceMatrixFunctor
+    {
         __HOST____DEVICE__
-        Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c){
+        Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c)
+        {
              return s - thrust::get<0>(c) * thrust::get<1>(c);
         }
     };
@@ -230,18 +234,17 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
     }
 
     // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = cyclicAMIPatch_.faceCells();
-/*
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-*/
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      updateCyclicAMIInterfaceMatrixFunctor<scalar>());
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<scalar>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 
@@ -273,18 +276,17 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
     }
 
     // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = cyclicAMIPatch_.faceCells();
-/*
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-*/
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      updateCyclicAMIInterfaceMatrixFunctor<Type>());
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<Type>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 

@@ -174,7 +174,7 @@ public:
             //  Poissons equations
             virtual bool fixesValue() const
             {
-                const scalarField& mask =
+                const scalargpuField& mask =
                     cyclicACMIPatch_.cyclicACMIPatch().mask();
 
                 if (gMax(mask) > 1e-5)
@@ -294,10 +294,20 @@ public:
                 return cyclicACMIPatch_.forwardT();
             }
 
+            virtual const tensorgpuField& getForwardT() const
+            {
+                return cyclicACMIPatch_.getForwardT();
+            }
+
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const
             {
                 return cyclicACMIPatch_.reverseT();
+            }
+
+            virtual const tensorgpuField& getReverseT() const
+            {
+                return cyclicACMIPatch_.getReverseT();
             }
 
             //- Return rank of component for transform

@@ -96,5 +96,77 @@ void Foam::cyclicACMIPolyPatch::interpolate
     }
 }
 
+//- GPU functions
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::cyclicACMIPolyPatch::interpolate
+(
+    const gpuField<Type>& fldCouple,
+    const gpuField<Type>& fldNonOverlap
+) const
+{
+    // note: do not scale AMI field as face areas have already been taken
+    // into account
+
+    if (owner())
+    {
+        const scalargpuField& w = srcgpuMask_;
+
+        tmp<gpuField<Type> > interpField(AMI().interpolateToSource(fldCouple));
+
+        return interpField + (1.0 - w)*fldNonOverlap;
+    }
+    else
+    {
+        const scalargpuField& w = neighbPatch().tgtgpuMask();
+
+        tmp<gpuField<Type> > interpField
+        (
+            neighbPatch().AMI().interpolateToTarget(fldCouple)
+        );
+
+        return interpField + (1.0 - w)*fldNonOverlap;
+    }
+}
+
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::cyclicACMIPolyPatch::interpolate
+(
+    const tmp<gpuField<Type> >& tFldCouple,
+    const tmp<gpuField<Type> >& tFldNonOverlap
+) const
+{
+    return interpolate(tFldCouple(), tFldNonOverlap());
+}
+
+
+template<class Type, class CombineOp>
+void Foam::cyclicACMIPolyPatch::interpolate
+(
+    const gpuList<Type>& fldCouple,
+    const gpuList<Type>& fldNonOverlap,
+    const CombineOp& cop,
+    gpuList<Type>& result
+) const
+{
+    // note: do not scale AMI field as face areas have already been taken
+    // into account
+
+    if (owner())
+    {
+        const scalargpuField& w = srcgpuMask_;
+
+        AMI().interpolateToSource(fldCouple, cop, result);
+        result = result + (1.0 - w)*fldNonOverlap;
+    }
+    else
+    {
+        const scalargpuField& w = neighbPatch().tgtgpuMask();
+
+        neighbPatch().AMI().interpolateToTarget(fldCouple, cop, result);
+        result = result + (1.0 - w)*fldNonOverlap;
+    }
+}
+
 
 // ************************************************************************* //

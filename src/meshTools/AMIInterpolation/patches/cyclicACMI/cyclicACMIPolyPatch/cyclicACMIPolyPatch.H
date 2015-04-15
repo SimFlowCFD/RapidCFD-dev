@@ -68,9 +68,11 @@ private:
 
         //- Mask/weighting for source patch
         mutable scalarField srcMask_;
+        mutable scalargpuField srcgpuMask_;
 
         //- Mask/weighting for target patch
         mutable scalarField tgtMask_;
+        mutable scalargpuField tgtgpuMask_;
 
         //- Flag to indicate that AMI has been updated
         mutable bool updated_;
@@ -119,9 +121,11 @@ protected:
 
         //- Return the mask/weighting for the source patch
         virtual const scalarField& srcMask() const;
+        virtual const scalargpuField& srcgpuMask() const;
 
         //- Return the mask/weighting for the target patch
         virtual const scalarField& tgtMask() const;
+        virtual const scalargpuField& tgtgpuMask() const;
 
 
 public:
@@ -273,7 +277,7 @@ public:
             inline polyPatch& nonOverlapPatch();
 
             //- Mask field where 1 = overlap, 0 = no-overlap
-            inline const scalarField& mask() const;
+            inline const scalargpuField& mask() const;
 
 
             // Interpolations
@@ -302,6 +306,33 @@ public:
                     const UList<Type>& fldNonOverlap,
                     const CombineOp& cop,
                     List<Type>& result
+                ) const;
+
+        //GPU
+                //- Interpolate field
+                template<class Type>
+                tmp<gpuField<Type> > interpolate
+                (
+                    const gpuField<Type>& fldCouple,
+                    const gpuField<Type>& fldNonOverlap
+                ) const;
+
+                //- Interpolate tmp field
+                template<class Type>
+                tmp<gpuField<Type> > interpolate
+                (
+                    const tmp<gpuField<Type> >& tFldCouple,
+                    const tmp<gpuField<Type> >& tFldNonOverlap
+                ) const;
+
+                //- Low-level interpolate List
+                template<class Type, class CombineOp>
+                void interpolate
+                (
+                    const gpuList<Type>& fldCouple,
+                    const gpuList<Type>& fldNonOverlap,
+                    const CombineOp& cop,
+                    gpuList<Type>& result
                 ) const;
 
 

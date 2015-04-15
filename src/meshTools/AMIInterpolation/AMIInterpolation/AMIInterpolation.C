@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "AMIInterpolation.H"
+#include "AMIInterpolationF.H"
 #include "AMIMethod.H"
 #include "meshTools.H"
 #include "mapDistribute.H"
@@ -1118,6 +1119,30 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::update
         );
     }
 
+    //copy to gpu
+    srcgpuWeightsSum_ = srcWeightsSum_;
+    tgtgpuWeightsSum_ = tgtWeightsSum_;
+
+    copyAddressingToGpu
+    (
+        srcAddress_,
+        srcWeights_,
+
+        srcgpuAddress_,
+        srcgpuStartAddress_,
+        srcgpuWeights_
+    );
+
+    copyAddressingToGpu
+    (
+        tgtAddress_,
+        tgtWeights_,
+
+        tgtgpuAddress_,
+        tgtgpuStartAddress_,
+        tgtgpuWeights_
+    );
+
     if (debug)
     {
         Info<< "AMIInterpolation : Constructed addressing and weights" << nl
@@ -1128,6 +1153,51 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::update
             << "    tgtMagSf       :" << gSum(tgtMagSf_) << nl
             << endl;
     }
+}
+
+template<class SourcePatch, class TargetPatch>
+void Foam::AMIInterpolation<SourcePatch, TargetPatch>::copyAddressingToGpu
+(
+    const labelListList& address,
+    const scalarListList& weights,
+
+    labelgpuList& gpuAddress,
+    labelgpuList& gpuStartAddress,
+    scalargpuList& gpuWeights
+)
+{
+    labelList starts(address.size()+1);
+    label sum = 0;
+
+    forAll(address,i)
+    {
+        starts[i] = sum;
+        sum += address[i].size();
+    }
+    starts[address.size()] = sum;
+
+    gpuStartAddress = starts;
+
+    labelList addressTmp(sum);
+    scalarList weightsTmp(sum);
+
+    label pos = 0;
+    
+    forAll(address,i)
+    {
+        const labelList& a = address[i];
+        const scalarList& w = weights[i];
+
+        forAll(a,j)
+        {
+            addressTmp[pos+j] = a[j];
+            weightsTmp[pos+j] = w[j];
+        }
+        pos += a.size();
+    }
+
+    gpuAddress = addressTmp;
+    gpuWeights = weightsTmp;
 }
 
 
@@ -1474,6 +1544,342 @@ Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
     return interpolateToTarget(tFld(), plusEqOp<Type>(), defaultValues);
 }
 
+///////////////////////////////////////////////////////////////////////////
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type, class CombineOp>
+void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
+(
+    const gpuList<Type>& fld,
+    const CombineOp& cop,
+    gpuList<Type>& result,
+    const gpuList<Type>& defaultValues
+) const
+{
+    if (fld.size() != srcAddress_.size())
+    {
+        FatalErrorIn
+        (
+            "AMIInterpolation::interpolateToTarget"
+            "("
+                "const gpuList<Type>&, "
+                "const CombineOp&, "
+                "gpuList<Type>&, "
+                "const gpuList<Type>&"
+            ") const"
+        )   << "Supplied field size is not equal to source patch size" << nl
+            << "    source patch   = " << srcAddress_.size() << nl
+            << "    target patch   = " << tgtAddress_.size() << nl
+            << "    supplied field = " << fld.size()
+            << abort(FatalError);
+    }
+
+    if (lowWeightCorrection_ > 0)
+    {
+        if (defaultValues.size() != tgtAddress_.size())
+        {
+            FatalErrorIn
+            (
+                "AMIInterpolation::interpolateToTarget"
+                "("
+                    "const gpuList<Type>&, "
+                    "const CombineOp&, "
+                    "gpuList<Type>&, "
+                    "const gpuList<Type>&"
+                ") const"
+            )   << "Employing default values when sum of weights falls below "
+                << lowWeightCorrection_
+                << " but supplied default field size is not equal to target "
+                << "patch size" << nl
+                << "    default values = " << defaultValues.size() << nl
+                << "    target patch   = " << tgtAddress_.size() << nl
+                << abort(FatalError);
+        }
+    }
+
+    result.setSize(tgtAddress_.size());
+
+    gpuList<Type> work;
+    const gpuList<Type>* listPtr;
+
+    if (singlePatchProc_ == -1)
+    {
+        const mapDistribute& map = srcMapPtr_();
+
+        List<Type> workTmp(fld.size());
+
+        thrust::copy(fld.begin(),fld.end(),workTmp.begin());
+        
+        map.distribute(workTmp);
+        work = workTmp;
+
+        listPtr = &work;
+    }
+    else
+    {
+        listPtr = &fld;
+    }
+    
+    const gpuList<Type>& f = *listPtr;
+
+    thrust::transform
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+result.size(),
+        result.begin(),
+        AMIInterpolationInterpolateFunctor<Type,CombineOp>
+        (
+            lowWeightCorrection_,
+            cop,
+            defaultValues.data(),
+            f.data(),
+            tgtgpuAddress_.data(),
+            tgtgpuStartAddress_.data(),
+            tgtgpuWeights_.data(),
+            tgtgpuWeightsSum_.data()
+        )
+    );
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type, class CombineOp>
+void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
+(
+    const gpuList<Type>& fld,
+    const CombineOp& cop,
+    gpuList<Type>& result,
+    const gpuList<Type>& defaultValues
+) const
+{
+    if (fld.size() != tgtAddress_.size())
+    {
+        FatalErrorIn
+        (
+            "AMIInterpolation::interpolateToSource"
+            "("
+                "const gpuList<Type>&, "
+                "const CombineOp&, "
+                "gpuList<Type>&, "
+                "const gpuList<Type>&"
+            ") const"
+        )   << "Supplied field size is not equal to target patch size" << nl
+            << "    source patch   = " << srcAddress_.size() << nl
+            << "    target patch   = " << tgtAddress_.size() << nl
+            << "    supplied field = " << fld.size()
+            << abort(FatalError);
+    }
+
+    if (lowWeightCorrection_ > 0)
+    {
+        if (defaultValues.size() != srcAddress_.size())
+        {
+            FatalErrorIn
+            (
+                "AMIInterpolation::interpolateToSource"
+                "("
+                    "const UList<Type>&, "
+                    "const CombineOp&, "
+                    "List<Type>&, "
+                    "const UList<Type>&"
+                ") const"
+            )   << "Employing default values when sum of weights falls below "
+                << lowWeightCorrection_
+                << " but supplied default field size is not equal to target "
+                << "patch size" << nl
+                << "    default values = " << defaultValues.size() << nl
+                << "    source patch   = " << srcAddress_.size() << nl
+                << abort(FatalError);
+        }
+    }
+
+    result.setSize(srcAddress_.size());
+
+    gpuList<Type> work;
+    const gpuList<Type>* listPtr;
+
+    if (singlePatchProc_ == -1)
+    {
+        const mapDistribute& map = tgtMapPtr_();
+
+        List<Type> workTmp(fld.size());
+        thrust::copy(fld.begin(),fld.end(),workTmp.begin());
+        
+        map.distribute(workTmp);
+        work = workTmp;
+
+        listPtr = &work;
+    }
+    else
+    {
+        listPtr = &fld;
+    }
+    
+    const gpuList<Type>& f = *listPtr;
+
+    thrust::transform
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+result.size(),
+        result.begin(),
+        AMIInterpolationInterpolateFunctor<Type,CombineOp>
+        (
+            lowWeightCorrection_,
+            cop,
+            defaultValues.data(),
+            f.data(),
+            srcgpuAddress_.data(),
+            srcgpuStartAddress_.data(),
+            srcgpuWeights_.data(),
+            srcgpuWeightsSum_.data()
+        )
+    );
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type, class CombineOp>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
+(
+    const gpuField<Type>& fld,
+    const CombineOp& cop,
+    const gpuList<Type>& defaultValues
+) const
+{
+    tmp<gpuField<Type> > tresult
+    (
+        new gpuField<Type>
+        (
+            srcAddress_.size(),
+            pTraits<Type>::zero
+        )
+    );
+
+    interpolateToSource
+    (
+        fld,
+        multiplyWeightedOp<Type, CombineOp>(cop),
+        tresult(),
+        defaultValues
+    );
+
+    return tresult;
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type, class CombineOp>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
+(
+    const tmp<gpuField<Type> >& tFld,
+    const CombineOp& cop,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolateToSource(tFld(), cop, defaultValues);
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type, class CombineOp>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
+(
+    const gpuField<Type>& fld,
+    const CombineOp& cop,
+    const gpuList<Type>& defaultValues
+) const
+{
+    tmp<gpuField<Type> > tresult
+    (
+        new gpuField<Type>
+        (
+            tgtAddress_.size(),
+            pTraits<Type>::zero
+        )
+    );
+
+    interpolateToTarget
+    (
+        fld,
+        multiplyWeightedOp<Type, CombineOp>(cop),
+        tresult(),
+        defaultValues
+    );
+
+    return tresult;
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type, class CombineOp>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
+(
+    const tmp<gpuField<Type> >& tFld,
+    const CombineOp& cop,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolateToTarget(tFld(), cop, defaultValues);
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
+(
+    const gpuField<Type>& fld,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolateToSource(fld, plusEqOp<Type>(), defaultValues);
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
+(
+    const tmp<gpuField<Type> >& tFld,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolateToSource(tFld(), plusEqOp<Type>(), defaultValues);
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
+(
+    const gpuField<Type>& fld,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolateToTarget(fld, plusEqOp<Type>(), defaultValues);
+}
+
+
+template<class SourcePatch, class TargetPatch>
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
+(
+    const tmp<gpuField<Type> >& tFld,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolateToTarget(tFld(), plusEqOp<Type>(), defaultValues);
+}
+
+///////////////////////////////////////////////////////////////////////////
 
 template<class SourcePatch, class TargetPatch>
 Foam::label Foam::AMIInterpolation<SourcePatch, TargetPatch>::srcPointFace

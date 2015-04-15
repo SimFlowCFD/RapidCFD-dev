@@ -139,10 +139,20 @@ public:
                 return cyclicAMIPolyPatch_.forwardT();
             }
 
+            virtual const tensorgpuField& getForwardT() const
+            {
+                return cyclicAMIPolyPatch_.getForwardT();
+            }
+
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const
             {
                 return cyclicAMIPolyPatch_.reverseT();
+            }
+
+            virtual const tensorgpuField& getReverseT() const
+            {
+                return cyclicAMIPolyPatch_.getReverseT();
             }
 
             const cyclicAMIFvPatch& neighbFvPatch() const

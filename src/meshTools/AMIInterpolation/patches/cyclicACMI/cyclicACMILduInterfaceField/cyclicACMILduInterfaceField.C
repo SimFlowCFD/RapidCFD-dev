@@ -44,7 +44,7 @@ Foam::cyclicACMILduInterfaceField::~cyclicACMILduInterfaceField()
 
 void Foam::cyclicACMILduInterfaceField::transformCoupleField
 (
-    scalarField& f,
+    scalargpuField& f,
     const direction cmpt
 ) const
 {

@@ -25,6 +25,7 @@ License
 
 #include "jumpCyclicAMIFvPatchField.H"
 #include "transformField.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -117,7 +118,7 @@ Foam::jumpCyclicAMIFvPatchField<Type>::patchNeighbourField() const
 
     if (this->doTransform())
     {
-        tpnf = transform(this->forwardT(), tpnf);
+        tpnf = transform(this->getForwardT(), tpnf);
     }
 
     tmp<gpuField<Type> > tjf = jump();
@@ -199,11 +200,17 @@ void Foam::jumpCyclicAMIFvPatchField<Type>::updateInterfaceMatrix
     this->transformCoupleField(pnf);
 
     // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = this->cyclicAMIPatch().faceCells();
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<Type>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 

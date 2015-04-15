@@ -86,4 +86,66 @@ void Foam::cyclicAMIPolyPatch::interpolate
 }
 
 
+//GPU
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::cyclicAMIPolyPatch::interpolate
+(
+    const gpuField<Type>& fld,
+    const gpuList<Type>& defaultValues
+) const
+{
+    if (owner())
+    {
+        return AMI().interpolateToSource(fld, defaultValues);
+    }
+    else
+    {
+        return neighbPatch().AMI().interpolateToTarget(fld, defaultValues);
+    }
+}
+
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::cyclicAMIPolyPatch::interpolate
+(
+    const tmp<gpuField<Type> >& tFld,
+    const gpuList<Type>& defaultValues
+) const
+{
+    return interpolate(tFld(), defaultValues);
+}
+
+
+template<class Type, class CombineOp>
+void Foam::cyclicAMIPolyPatch::interpolate
+(
+    const gpuList<Type>& fld,
+    const CombineOp& cop,
+    gpuList<Type>& result,
+    const gpuList<Type>& defaultValues
+) const
+{
+    if (owner())
+    {
+        AMI().interpolateToSource
+        (
+            fld,
+            cop,
+            result,
+            defaultValues
+        );
+    }
+    else
+    {
+        neighbPatch().AMI().interpolateToTarget
+        (
+            fld,
+            cop,
+            result,
+            defaultValues
+        );
+    }
+}
+
+
 // ************************************************************************* //

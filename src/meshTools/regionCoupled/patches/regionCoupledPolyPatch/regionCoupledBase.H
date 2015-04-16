@@ -178,6 +178,27 @@ public:
                     const BinaryOp& bop,
                     List<Type>& result
                 ) const;
+ 
+           //GPU
+                //- Interpolate field
+                template<class Type>
+                tmp<gpuField<Type> > interpolate(const gpuField<Type>& fld) const;
+
+                //- Interpolate tmp field
+                template<class Type>
+                tmp<gpuField<Type> > interpolate
+                (
+                    const tmp<gpuField<Type> >& tFld
+                ) const;
+
+                //- Low-level interpolate List
+                template<class Type, class BinaryOp>
+                void interpolate
+                (
+                    const gpuList<Type>& fld,
+                    const BinaryOp& bop,
+                    gpuList<Type>& result
+                ) const;
 
 
         //- Return new ordering for primitivePatch.

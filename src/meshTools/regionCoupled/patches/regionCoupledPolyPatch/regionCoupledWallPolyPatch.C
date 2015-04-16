@@ -139,7 +139,7 @@ void Foam::regionCoupledWallPolyPatch::calcGeometry(PstreamBuffers& pBufs)
 void Foam::regionCoupledWallPolyPatch::initMovePoints
 (
     PstreamBuffers& pBufs,
-    const pointField& p
+    const pointgpuField& p
 )
 {
     wallPolyPatch::initMovePoints(pBufs, p);
@@ -149,7 +149,7 @@ void Foam::regionCoupledWallPolyPatch::initMovePoints
 void Foam::regionCoupledWallPolyPatch::movePoints
 (
     PstreamBuffers& pBufs,
-    const pointField& p
+    const pointgpuField& p
 )
 {
     wallPolyPatch::movePoints(pBufs, p);

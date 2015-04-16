@@ -166,7 +166,7 @@ mappedPatchFieldBase<Type>::sampleField() const
 
 
 template<class Type>
-tmp<Field<Type> > mappedPatchFieldBase<Type>::mappedField() const
+tmp<gpuField<Type> > mappedPatchFieldBase<Type>::mappedField() const
 {
     typedef GeometricField<Type, fvPatchField, volMesh> fieldType;
 
@@ -179,8 +179,8 @@ tmp<Field<Type> > mappedPatchFieldBase<Type>::mappedField() const
     const fvMesh& nbrMesh = refCast<const fvMesh>(mapper_.sampleMesh());
 
     // Result of obtaining remote values
-    tmp<gpuField<Type> > tnewValues(new gpuField<Type>(0));
-    gpuField<Type>& newValues = tnewValues();
+    tmp<Field<Type> > tnewValues(new Field<Type>(0));
+    Field<Type>& newValues = tnewValues();
 
     switch (mapper_.mode())
     {
@@ -261,7 +261,7 @@ tmp<Field<Type> > mappedPatchFieldBase<Type>::mappedField() const
         }
         case mappedPatchBase::NEARESTFACE:
         {
-            gpuField<Type> allValues(nbrMesh.nFaces(), pTraits<Type>::zero);
+            Field<Type> allValues(nbrMesh.nFaces(), pTraits<Type>::zero);
 
             const fieldType& nbrField = sampleField();
 

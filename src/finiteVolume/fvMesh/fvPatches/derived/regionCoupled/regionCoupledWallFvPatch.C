@@ -37,21 +37,21 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::tmp<Foam::labelgpuField> Foam::regionCoupledWallFvPatch::
+Foam::tmp<Foam::labelField> Foam::regionCoupledWallFvPatch::
 interfaceInternalField
 (
-    const labelgpuList& internalData
+    const labelUList& internalData
 ) const
 {
     return patchInternalField(internalData);
 }
 
 
-Foam::tmp<Foam::labelgpuField> Foam::regionCoupledWallFvPatch::
+Foam::tmp<Foam::labelField> Foam::regionCoupledWallFvPatch::
 internalFieldTransfer
 (
     const Pstream::commsTypes commsType,
-    const labelgpuList& iF
+    const labelUList& iF
 ) const
 {
     if (neighbFvPatch().sameRegion())
@@ -60,7 +60,7 @@ internalFieldTransfer
     }
     else
     {
-        return tmp<labelgpuField>(new labelgpuField(iF.size(), 0));
+        return tmp<labelField>(new labelField(iF.size(), 0));
     }
 }
 

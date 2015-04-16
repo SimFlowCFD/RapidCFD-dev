@@ -31,13 +31,13 @@ $(constraintFvPatches)/wedge/wedgeFvPatch.C
 
 derivedFvPatches = $(fvPatches)/derived
 $(derivedFvPatches)/wall/wallFvPatch.C
-/*
+
 $(derivedFvPatches)/mapped/mappedFvPatch.C
 $(derivedFvPatches)/mapped/mappedWallFvPatch.C
 $(derivedFvPatches)/regionCoupled/regionCoupledBaseFvPatch.C
 $(derivedFvPatches)/regionCoupled/regionCoupledFvPatch.C
 $(derivedFvPatches)/regionCoupled/regionCoupledWallFvPatch.C
-*/
+
 wallDist = fvMesh/wallDist
 $(wallDist)/patchDist.C
 $(wallDist)/wallPointYPlus/wallPointYPlus.C
@@ -184,7 +184,6 @@ $(basicFvsPatchFields)/calculated/calculatedFvsPatchFields.C
 $(basicFvsPatchFields)/coupled/coupledFvsPatchFields.C
 $(basicFvsPatchFields)/fixedValue/fixedValueFvsPatchFields.C
 $(basicFvsPatchFields)/sliced/slicedFvsPatchFields.C
-
 
 constraintFvsPatchFields = $(fvsPatchFields)/constraint
 $(constraintFvsPatchFields)/cyclic/cyclicFvsPatchFields.C

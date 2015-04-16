@@ -194,7 +194,8 @@ public:
 
 
              //- Return faceCell addressing
-            virtual const labelUList& faceCells() const = 0;
+            virtual const labelgpuList& faceCells() const = 0;
+            virtual const labelList& faceCellsHost() const = 0;
 
 };
 

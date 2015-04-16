@@ -77,5 +77,57 @@ void Foam::regionCoupledBase::interpolate
     }
 }
 
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::regionCoupledBase::interpolate
+(
+    const gpuField<Type>& fld
+) const
+{
+    if (owner())
+    {
+        return AMI().interpolateToSource(fld);
+    }
+    else
+    {
+        return neighbPatch().AMI().interpolateToTarget(fld);
+    }
+}
+
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::regionCoupledBase::interpolate
+(
+    const tmp<gpuField<Type> >& tFld
+) const
+{
+    if (owner())
+    {
+        return AMI().interpolateToSource(tFld);
+    }
+    else
+    {
+        return neighbPatch().AMI().interpolateToTarget(tFld);
+    }
+}
+
+
+template<class Type, class BinaryOp>
+void Foam::regionCoupledBase::interpolate
+(
+    const gpuList<Type>& fld,
+    const BinaryOp& bop,
+    gpuList<Type>& result
+) const
+{
+    if (owner())
+    {
+        AMI().interpolateToSource(fld, bop, result);
+    }
+    else
+    {
+        neighbPatch().AMI().interpolateToTarget(fld, bop, result);
+    }
+}
+
 
 // ************************************************************************* //

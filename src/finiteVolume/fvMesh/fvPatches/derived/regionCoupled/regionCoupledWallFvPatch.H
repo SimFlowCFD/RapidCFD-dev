@@ -114,9 +114,14 @@ public:
         // Access
 
             //- Return faceCell addressing
-            virtual const labelUList& faceCells() const
+            virtual const labelgpuList& faceCells() const
             {
                 return fvPatch::faceCells();
+            }
+
+            virtual const labelList& faceCellsHost() const
+            {
+                return fvPatch::faceCellsHost();
             }
 
             //- Return true because this patch is coupled

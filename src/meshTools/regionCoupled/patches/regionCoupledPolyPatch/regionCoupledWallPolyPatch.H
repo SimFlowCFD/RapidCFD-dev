@@ -65,10 +65,10 @@ protected:
         virtual void calcGeometry(PstreamBuffers&);
 
         //- Initialise the patches for moving points
-        virtual void initMovePoints(PstreamBuffers&, const pointField&);
+        virtual void initMovePoints(PstreamBuffers&, const pointgpuField&);
 
         //- Correct patches after moving points
-        virtual void movePoints(PstreamBuffers&, const pointField&);
+        virtual void movePoints(PstreamBuffers&, const pointgpuField&);
 
         //- Initialise the update of the patch topology
         virtual void initUpdateMesh(PstreamBuffers&);

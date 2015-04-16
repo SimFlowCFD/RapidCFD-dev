@@ -112,9 +112,9 @@ public:
             //- Interface matrix update
             virtual void updateInterfaceMatrix
             (
-                scalarField&,
-                const scalarField&,
-                const scalarField&,
+                scalargpuField&,
+                const scalargpuField&,
+                const scalargpuField&,
                 const direction,
                 const Pstream::commsTypes commsType
             ) const

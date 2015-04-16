@@ -145,7 +145,7 @@ public:
         const GeometricField<Type, fvPatchField, volMesh>& sampleField() const;
 
         //- Map sampleField onto *this patch
-        virtual tmp<Field<Type> > mappedField() const;
+        virtual tmp<gpuField<Type> > mappedField() const;
 
         //- Write
         virtual void write(Ostream&) const;

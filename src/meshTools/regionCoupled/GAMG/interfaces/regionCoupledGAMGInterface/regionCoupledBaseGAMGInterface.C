@@ -89,8 +89,17 @@ Foam::regionCoupledBaseGAMGInterface::regionCoupledBaseGAMGInterface
             }
         }
 
-        faceCells_.transfer(dynFaceCells);
-        faceRestrictAddressing_.transfer(dynFaceRestrictAddressing);
+        faceCellsHost_.transfer(dynFaceCells);
+        faceRestrictAddressingHost_.transfer(dynFaceRestrictAddressing);
+
+
+        faceCellsHost_.transfer(dynFaceCells);
+        faceRestrictAddressingHost_.transfer(dynFaceRestrictAddressing);
+
+        faceCells_ = faceCellsHost_;
+        faceRestrictAddressing_ = faceRestrictAddressingHost_;
+
+        updateAddressing();
     }
 
     /*

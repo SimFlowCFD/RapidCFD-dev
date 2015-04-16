@@ -116,6 +116,11 @@ public:
                 return fvPatch::faceCells();
             }
 
+            virtual const labelList& faceCellsHost() const
+            {
+                return fvPatch::faceCellsHost();
+            }
+
             //- Return true because this patch is coupled
             virtual bool coupled() const
             {
@@ -127,16 +132,16 @@ public:
 
             //- Return the values of the given internal data adjacent to
             //  the interface as a field
-            virtual tmp<labelgpuField> interfaceInternalField
+            virtual tmp<labelField> interfaceInternalField
             (
-                const labelgpuList& internalData
+                const labelUList& internalData
             ) const;
 
             //- Initialise neighbour field transfer
             virtual void initInternalFieldTransfer
             (
                 const Pstream::commsTypes commsType,
-                labelgpuList& iF
+                labelUList& iF
             ) const
             {}
 
@@ -144,7 +149,7 @@ public:
             virtual tmp<labelField> internalFieldTransfer
             (
                 const Pstream::commsTypes commsType,
-                const labelgpuList& iF
+                const labelUList& iF
             ) const;
 };
 

@@ -26,6 +26,7 @@ License
 #include "processorGAMGInterfaceField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "lduMatrix.H"
+#include "GAMGInterfaceFunctors.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -44,15 +45,6 @@ namespace Foam
         processorGAMGInterfaceField,
         lduInterfaceField
     );
-
-    struct processorGAMGInterfaceFieldFunctor
-    {
-        __HOST____DEVICE__
-        scalar operator()(const scalar& f,const thrust::tuple<scalar,scalar>& t)
-        {
-            return f - thrust::get<0>(t)*thrust::get<1>(t);
-        }
-    };
 }
 
 
@@ -167,8 +159,6 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
     label oldWarn = UPstream::warnComm;
     UPstream::warnComm = comm();
 
-    const labelgpuList& faceCells = procInterface_.faceCells();
-
     if (commsType == Pstream::nonBlocking && !Pstream::floatTransfer)
     {
         // Fast path.
@@ -189,31 +179,14 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
-        // Multiply the field by coefficients and add into the result        
-        thrust::transform
+        // Multiply the field by coefficients and add into the result  
+        GAMGUpdateInterfaceMatrix
         (
-            thrust::make_permutation_iterator
-            (
-                result.begin(),
-                faceCells.begin()
-            ),
-            thrust::make_permutation_iterator
-            (
-                result.begin(),
-                faceCells.end()
-            ),
-            thrust::make_zip_iterator(thrust::make_tuple
-            (
-                coeffs.begin(),
-                scalargpuReceiveBuf_.begin()
-            )),
-            thrust::make_permutation_iterator
-            (
-                result.begin(),
-                faceCells.begin()
-            ),
-            processorGAMGInterfaceFieldFunctor()
-        );
+            result,
+            coeffs,
+            scalargpuReceiveBuf_,
+            procInterface_
+        );      
     }
     else
     {
@@ -224,30 +197,13 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
 
         transformCoupleField(pnf, cmpt);
 
-        thrust::transform
+        GAMGUpdateInterfaceMatrix
         (
-            thrust::make_permutation_iterator
-            (
-                result.begin(),
-                faceCells.begin()
-            ),
-            thrust::make_permutation_iterator
-            (
-                result.begin(),
-                faceCells.end()
-            ),
-            thrust::make_zip_iterator(thrust::make_tuple
-            (
-                coeffs.begin(),
-                pnf.begin()
-            )),
-            thrust::make_permutation_iterator
-            (
-                result.begin(),
-                faceCells.begin()
-            ),
-            processorGAMGInterfaceFieldFunctor()
-        );
+            result,
+            coeffs,
+            pnf,
+            procInterface_
+        ); 
     }
 
     const_cast<processorGAMGInterfaceField&>(*this).updatedMatrix() = true;

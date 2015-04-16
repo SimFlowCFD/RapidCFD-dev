@@ -26,6 +26,7 @@ License
 #include "cyclicGAMGInterfaceField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "lduMatrix.H"
+#include "GAMGInterfaceFunctors.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -60,15 +61,6 @@ namespace Foam
         lduInterfaceField,
         cyclicSlip
     );
-
-    struct cyclicGAMGInterfaceFieldFunctor
-    {
-        __HOST____DEVICE__
-        scalar operator()(const scalar& f,const thrust::tuple<scalar,scalar>& t)
-        {
-            return f - thrust::get<0>(t)*thrust::get<1>(t);
-        }
-    };
 }
 
 
@@ -132,32 +124,12 @@ void Foam::cyclicGAMGInterfaceField::updateInterfaceMatrix
 
     transformCoupleField(pnf, cmpt);
 
-    const labelgpuList& faceCells = cyclicInterface_.faceCells();
-
-    //FIXME Is transformation in this simple form allowed here?
-    thrust::transform
+    GAMGUpdateInterfaceMatrix
     (
-        thrust::make_permutation_iterator
-        (
-            result.begin(),
-            faceCells.begin()
-        ),
-        thrust::make_permutation_iterator
-        (
-            result.begin(),
-            faceCells.end()
-        ),
-        thrust::make_zip_iterator(thrust::make_tuple
-        (
-            coeffs.begin(),
-            pnf.begin()
-        )),
-        thrust::make_permutation_iterator
-        (
-            result.begin(),
-            faceCells.begin()
-        ),
-        cyclicGAMGInterfaceFieldFunctor()
+        result,
+        coeffs,
+        pnf,
+        cyclicInterface_
     );
 }
 

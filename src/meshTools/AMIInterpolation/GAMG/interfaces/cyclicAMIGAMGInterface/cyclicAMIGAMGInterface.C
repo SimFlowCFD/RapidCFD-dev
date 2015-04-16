@@ -102,8 +102,13 @@ Foam::cyclicAMIGAMGInterface::cyclicAMIGAMGInterface
             }
         }
 
-        faceCells_.transfer(dynFaceCells);
-        faceRestrictAddressing_.transfer(dynFaceRestrictAddressing);
+        faceCellsHost_.transfer(dynFaceCells);
+        faceRestrictAddressingHost_.transfer(dynFaceRestrictAddressing);
+
+        faceCells_ = faceCellsHost_;
+        faceRestrictAddressing_ = faceRestrictAddressingHost_;
+
+        updateAddressing();
     }
 
 
@@ -156,7 +161,7 @@ Foam::cyclicAMIGAMGInterface::cyclicAMIGAMGInterface
             new AMIPatchToPatchInterpolation
             (
                 fineCyclicAMIInterface_.AMI(),
-                faceRestrictAddressing_,
+                faceRestrictAddressingHost_,
                 nbrFaceRestrictAddressing
             )
         );
@@ -180,7 +185,7 @@ Foam::tmp<Foam::labelField> Foam::cyclicAMIGAMGInterface::internalFieldTransfer
 {
     const cyclicAMIGAMGInterface& nbr =
         dynamic_cast<const cyclicAMIGAMGInterface&>(neighbPatch());
-    const labelUList& nbrFaceCells = nbr.faceCells();
+    const labelUList& nbrFaceCells = nbr.faceCellsHost();
 
     tmp<labelField> tpnf(new labelField(nbrFaceCells.size()));
     labelField& pnf = tpnf();

@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "GAMGInterface.H"
+#include "GAMGInterfaceF.H"
 #include "GAMGAgglomeration.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -33,35 +34,6 @@ namespace Foam
     defineTypeNameAndDebug(GAMGInterface, 0);
     defineRunTimeSelectionTable(GAMGInterface, lduInterface);
     defineRunTimeSelectionTable(GAMGInterface, Istream);
-
-    struct GAMGInterfaceAgglomerateCoeffs
-    {
-        const scalar* ff;
-        const label* sort;
-
-        GAMGInterfaceAgglomerateCoeffs
-        (
-            const scalar* _ff,
-            const label* _sort
-        ):
-            ff(_ff),
-            sort(_sort)
-        {}
-
-        __HOST____DEVICE__
-        scalar operator()(const label& start, const label& end)
-        {
-            scalar out = 0;
-
-            for(label i = start; i<end; i++)
-            {
-                out += ff[sort[i]];
-            }
-
-            return out;
-        }
-        
-    };
 }
 
 
@@ -102,6 +74,20 @@ void Foam::GAMGInterface::updateAddressing()
         faceRestrictTargetAddressing_,
         faceRestrictTargetStartAddressing_
     );
+
+    GAMGAgglomeration::createSort
+    (
+        faceCells_,
+        sortCells_
+    );
+
+    GAMGAgglomeration::createTarget
+    (
+        faceCells_,
+        sortCells_,
+        cellFaces_,
+        cellFacesStart_
+    );
 }
 
 void Foam::GAMGInterface::combine(const GAMGInterface& coarseGi)
@@ -133,6 +119,8 @@ void Foam::GAMGInterface::combine(const GAMGInterface& coarseGi)
 
     faceCells_ = coarseGi.faceCells_;
     faceCellsHost_ = coarseGi.faceCellsHost_;
+
+    updateAddressing();
 }
 
 

@@ -191,20 +191,6 @@ Foam::cyclicAMIFvPatchField<Type>::neighbourPatchField() const
     );
 }
 
-namespace Foam
-{
-    template<class Type>
-    struct updateCyclicAMIInterfaceMatrixFunctor
-    {
-        __HOST____DEVICE__
-        Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c)
-        {
-             return s - thrust::get<0>(c) * thrust::get<1>(c);
-        }
-    };
-}
-
-
 template<class Type>
 void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
 (

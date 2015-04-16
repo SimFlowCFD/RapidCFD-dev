@@ -119,9 +119,9 @@ public:
             //- Update result field based on interface functionality
             virtual void updateInterfaceMatrix
             (
-                scalarField& result,
-                const scalarField& psiInternal,
-                const scalarField& coeffs,
+                scalargpuField& result,
+                const scalargpuField& psiInternal,
+                const scalargpuField& coeffs,
                 const direction cmpt,
                 const Pstream::commsTypes commsType
             ) const;
@@ -141,10 +141,20 @@ public:
                 return cyclicACMIInterface_.forwardT();
             }
 
+            virtual const tensorgpuField& getForwardT() const
+            {
+                return cyclicACMIInterface_.getForwardT();
+            }
+
             //- Return neighbour-cell transformation tensor
             virtual const tensorField& reverseT() const
             {
                 return cyclicACMIInterface_.reverseT();
+            }
+
+            virtual const tensorgpuField& getReverseT() const
+            {
+                return cyclicACMIInterface_.getReverseT();
             }
 
             //- Return rank of component for transform

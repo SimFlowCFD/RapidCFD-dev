@@ -26,6 +26,7 @@ License
 #include "cyclicACMIGAMGInterfaceField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "lduMatrix.H"
+#include "GAMGInterfaceFunctors.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -92,15 +93,15 @@ Foam::cyclicACMIGAMGInterfaceField::~cyclicACMIGAMGInterfaceField()
 
 void Foam::cyclicACMIGAMGInterfaceField::updateInterfaceMatrix
 (
-    scalarField& result,
-    const scalarField& psiInternal,
-    const scalarField& coeffs,
+    scalargpuField& result,
+    const scalargpuField& psiInternal,
+    const scalargpuField& coeffs,
     const direction cmpt,
     const Pstream::commsTypes
 ) const
 {
     // Get neighbouring field
-    scalarField pnf
+    scalargpuField pnf
     (
         cyclicACMIInterface_.neighbPatch().interfaceInternalField(psiInternal)
     );
@@ -117,12 +118,13 @@ void Foam::cyclicACMIGAMGInterfaceField::updateInterfaceMatrix
         pnf = cyclicACMIInterface_.neighbPatch().AMI().interpolateToTarget(pnf);
     }
 
-    const labelUList& faceCells = cyclicACMIInterface_.faceCells();
-
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
+    GAMGUpdateInterfaceMatrix
+    (
+        result,
+        coeffs,
+        pnf,
+        cyclicACMIInterface_
+    );
 }
 
 

@@ -851,6 +851,30 @@ Foam::AMIInterpolation<SourcePatch, TargetPatch>::AMIInterpolation
         srcMapPtr_
     );
 
+    //copy to gpu
+    srcgpuWeightsSum_ = srcWeightsSum_;
+    tgtgpuWeightsSum_ = tgtWeightsSum_;
+
+    copyAddressingToGpu
+    (
+        srcAddress_,
+        srcWeights_,
+
+        srcgpuAddress_,
+        srcgpuStartAddress_,
+        srcgpuWeights_
+    );
+
+    copyAddressingToGpu
+    (
+        tgtAddress_,
+        tgtWeights_,
+
+        tgtgpuAddress_,
+        tgtgpuStartAddress_,
+        tgtgpuWeights_
+    );
+
     //if (srcMapPtr_.valid())
     //{
     //    Pout<< "srcMap:" << endl;
@@ -1557,7 +1581,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
     const gpuList<Type>& defaultValues
 ) const
 {
-    if (fld.size() != srcAddress_.size())
+    if (fld.size() != srcgpuAddress_.size())
     {
         FatalErrorIn
         (
@@ -1569,15 +1593,15 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
                 "const gpuList<Type>&"
             ") const"
         )   << "Supplied field size is not equal to source patch size" << nl
-            << "    source patch   = " << srcAddress_.size() << nl
-            << "    target patch   = " << tgtAddress_.size() << nl
+            << "    source patch   = " << srcgpuAddress_.size() << nl
+            << "    target patch   = " << tgtgpuAddress_.size() << nl
             << "    supplied field = " << fld.size()
             << abort(FatalError);
     }
 
     if (lowWeightCorrection_ > 0)
     {
-        if (defaultValues.size() != tgtAddress_.size())
+        if (defaultValues.size() != tgtgpuAddress_.size())
         {
             FatalErrorIn
             (
@@ -1653,7 +1677,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
     const gpuList<Type>& defaultValues
 ) const
 {
-    if (fld.size() != tgtAddress_.size())
+    if (fld.size() != tgtgpuAddress_.size())
     {
         FatalErrorIn
         (
@@ -1665,15 +1689,15 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
                 "const gpuList<Type>&"
             ") const"
         )   << "Supplied field size is not equal to target patch size" << nl
-            << "    source patch   = " << srcAddress_.size() << nl
-            << "    target patch   = " << tgtAddress_.size() << nl
+            << "    source patch   = " << srcgpuAddress_.size() << nl
+            << "    target patch   = " << tgtgpuAddress_.size() << nl
             << "    supplied field = " << fld.size()
             << abort(FatalError);
     }
 
     if (lowWeightCorrection_ > 0)
     {
-        if (defaultValues.size() != srcAddress_.size())
+        if (defaultValues.size() != srcgpuAddress_.size())
         {
             FatalErrorIn
             (
@@ -1715,7 +1739,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
     {
         listPtr = &fld;
     }
-    
+ 
     const gpuList<Type>& f = *listPtr;
 
     thrust::transform

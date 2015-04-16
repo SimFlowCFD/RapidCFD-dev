@@ -37,7 +37,7 @@ namespace Foam
             zero(pTraits<Type>::zero)
         {}
 
-        __HOST____DEVICE__
+        __device__
         Type operator()(const label& faceI)
         {
             if (weightsSum[faceI] < lowWeightCorrection)

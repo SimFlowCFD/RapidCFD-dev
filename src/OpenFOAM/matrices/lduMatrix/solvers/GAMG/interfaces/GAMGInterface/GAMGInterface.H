@@ -66,6 +66,9 @@ protected:
 
         //- Face-cell addressing
         labelgpuList faceCells_;
+        labelgpuList sortCells_;
+        labelgpuList cellFaces_;
+        labelgpuList cellFacesStart_;
         labelList faceCellsHost_;
 
         //- Face restrict addressing
@@ -233,6 +236,21 @@ public:
             virtual const labelgpuList& faceCells() const
             {
                 return faceCells_;
+            }
+
+            virtual const labelgpuList& sortCells() const
+            {
+                return sortCells_;
+            }
+
+            virtual const labelgpuList& cellFaces() const
+            {
+                return cellFaces_;
+            }
+
+            virtual const labelgpuList& cellFacesStart() const
+            {
+                return cellFacesStart_;
             }
 
             virtual const labelList& faceCellsHost() const

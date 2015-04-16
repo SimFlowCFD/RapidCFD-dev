@@ -193,6 +193,17 @@ const Foam::scalarField& Foam::cyclicACMIPolyPatch::tgtMask() const
     return tgtMask_;
 }
 
+const Foam::scalargpuField& Foam::cyclicACMIPolyPatch::srcgpuMask() const
+{
+    return srcgpuMask_;
+}
+
+
+const Foam::scalargpuField& Foam::cyclicACMIPolyPatch::tgtgpuMask() const
+{
+    return tgtgpuMask_;
+}
+
 
 // * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * //
 

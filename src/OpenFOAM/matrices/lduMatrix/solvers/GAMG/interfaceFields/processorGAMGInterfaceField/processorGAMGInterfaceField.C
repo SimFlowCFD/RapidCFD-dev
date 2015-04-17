@@ -107,15 +107,41 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
 
     if (commsType == Pstream::nonBlocking && !Pstream::floatTransfer)
     {
-        // Fast path.
-        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+        std::streamsize nBytes = scalargpuSendBuf_.byteSize();
+
+        scalar* readData;
+        const scalar* sendData;
+
+        if(Pstream::gpuDirectTransfer)
+        {
+            // Fast path.
+            scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+
+            sendData = scalargpuSendBuf_.data();
+            readData = scalargpuReceiveBuf_.data();
+        }
+        else
+        {
+            scalarSendBuf_.setSize(scalargpuSendBuf_.size());
+            scalarReceiveBuf_.setSize(scalarSendBuf_.size());
+            thrust::copy
+            (
+                scalargpuSendBuf_.begin(),
+                scalargpuSendBuf_.end(),
+                scalarSendBuf_.begin()
+            );
+
+            sendData = scalarSendBuf_.begin();
+            readData = scalarReceiveBuf_.begin();
+        }
+
         outstandingRecvRequest_ = UPstream::nRequests();
         IPstream::read
         (
             Pstream::nonBlocking,
             procInterface_.neighbProcNo(),
-            reinterpret_cast<char*>(scalargpuReceiveBuf_.data()),
-            scalargpuReceiveBuf_.byteSize(),
+            reinterpret_cast<char*>(readData),
+            nBytes,
             procInterface_.tag(),
             comm()
         );
@@ -125,8 +151,8 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
         (
             Pstream::nonBlocking,
             procInterface_.neighbProcNo(),
-            reinterpret_cast<const char*>(scalargpuSendBuf_.data()),
-            scalargpuSendBuf_.byteSize(),
+            reinterpret_cast<const char*>(sendData),
+            nBytes,
             procInterface_.tag(),
             comm()
         );
@@ -175,7 +201,12 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
         outstandingRecvRequest_ = -1;
 
         // Consume straight from scalarReceiveBuf_
- 
+
+        if( ! Pstream::gpuDirectTransfer)
+        {
+            scalargpuReceiveBuf_ = scalarReceiveBuf_;
+        }
+
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
@@ -190,18 +221,16 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
     }
     else
     {
-        scalargpuField pnf
-        (
-            procInterface_.compressedReceive<scalar>(commsType, coeffs.size())
-        );
+        scalargpuReceiveBuf_.setSize(coeffs.size());
+        procInterface_.compressedReceive<scalar>(commsType, coeffs.size());
 
-        transformCoupleField(pnf, cmpt);
+        transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
         GAMGUpdateInterfaceMatrix
         (
             result,
             coeffs,
-            pnf,
+            scalargpuReceiveBuf_,
             procInterface_
         ); 
     }

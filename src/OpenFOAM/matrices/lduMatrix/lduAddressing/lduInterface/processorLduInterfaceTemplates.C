@@ -132,11 +132,22 @@ void Foam::processorLduInterface::send
 
     if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
     {
+        const char* sendData;
+        if(Pstream::gpuDirectTransfer)
+        {
+            sendData = reinterpret_cast<const char*>(f.data());
+        }
+        else
+        {
+            cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost);
+            sendData = sendBuf_.begin();
+        }
+
         OPstream::write
         (
             commsType,
             neighbProcNo(),
-            reinterpret_cast<const char*>(f.data()),
+            sendData,
             nBytes,
             tag(),
             comm()
@@ -144,26 +155,45 @@ void Foam::processorLduInterface::send
     }
     else if (commsType == Pstream::nonBlocking)
     {
-        resizeBuf(gpuReceiveBuf_, nBytes);
+        char* receive;
+        const char* send;
+
+        if(Pstream::gpuDirectTransfer)
+        {
+            resizeBuf(gpuReceiveBuf_, nBytes);
+            resizeBuf(gpuSendBuf_, nBytes);
+
+            cudaMemcpy(gpuSendBuf_.data(), f.data(), nBytes,cudaMemcpyDeviceToDevice);
+
+            send = gpuSendBuf_.data();
+            receive = gpuReceiveBuf_.data();
+        }
+        else
+        {
+            resizeBuf(receiveBuf_, nBytes);
+            resizeBuf(sendBuf_, nBytes);
+
+            cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost);
+
+            send = sendBuf_.begin();
+            receive = receiveBuf_.begin();
+        }
 
         IPstream::read
         (
             commsType,
             neighbProcNo(),
-            gpuReceiveBuf_.data(),
+            receive,
             nBytes,
             tag(),
             comm()
         );
 
-        resizeBuf(gpuSendBuf_, nBytes);
-        cudaMemcpy(gpuSendBuf_.data(), f.data(), nBytes,cudaMemcpyDeviceToDevice);
-
         OPstream::write
         (
             commsType,
             neighbProcNo(),
-            gpuSendBuf_.data(),
+            send,
             nBytes,
             tag(),
             comm()
@@ -218,19 +248,42 @@ void Foam::processorLduInterface::receive
 {
     if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
     {
+        char * read;
+        if(Pstream::gpuDirectTransfer)
+        {
+            read = reinterpret_cast<char*>(f.data());
+        }
+        else
+        {
+            resizeBuf(receiveBuf_, f.byteSize());
+            read = receiveBuf_.begin();
+        }
+
         IPstream::read
         (
             commsType,
             neighbProcNo(),
-            reinterpret_cast<char*>(f.data()),
+            reinterpret_cast<char*>(read),
             f.byteSize(),
             tag(),
             comm()
         );
+
+        if( ! Pstream::gpuDirectTransfer)
+        {
+            cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice);
+        }
     }
     else if (commsType == Pstream::nonBlocking)
     {
-        cudaMemcpy(f.data(), gpuReceiveBuf_.data(), f.byteSize(),cudaMemcpyDeviceToDevice);
+        if(Pstream::gpuDirectTransfer)
+        {
+            cudaMemcpy(f.data(), gpuReceiveBuf_.data(), f.byteSize(),cudaMemcpyDeviceToDevice);
+        }
+        else
+        {
+            cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice);
+        }
     }
     else
     {
@@ -365,11 +418,23 @@ void Foam::processorLduInterface::compressedSend
 
         if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
         {
+            const char* sendData;
+            if(Pstream::gpuDirectTransfer)
+            {
+                sendData = gpuSendBuf_.data();
+            }
+            else
+            {
+                resizeBuf(sendBuf_, nBytes);
+                cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost);
+                sendData = sendBuf_.begin();
+            }
+
             OPstream::write
             (
                 commsType,
                 neighbProcNo(),
-                gpuSendBuf_.data(),
+                sendData,
                 nBytes,
                 tag(),
                 comm()
@@ -377,13 +442,31 @@ void Foam::processorLduInterface::compressedSend
         }
         else if (commsType == Pstream::nonBlocking)
         {
-            resizeBuf(gpuReceiveBuf_, nBytes);
+            const char* sendData;
+            char * readData;
+
+            if(Pstream::gpuDirectTransfer)
+            {
+                resizeBuf(gpuReceiveBuf_, nBytes);
+                readData = gpuReceiveBuf_.data();
+                sendData = gpuSendBuf_.data();
+            }
+            else
+            {
+                resizeBuf(receiveBuf_, nBytes);
+                resizeBuf(sendBuf_, nBytes);
+
+                cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost);
+
+                sendData = sendBuf_.begin();
+                readData = receiveBuf_.begin();
+            }
 
             IPstream::read
             (
                 commsType,
                 neighbProcNo(),
-                gpuReceiveBuf_.data(),
+                readData,
                 nBytes,
                 tag(),
                 comm()
@@ -393,7 +476,7 @@ void Foam::processorLduInterface::compressedSend
             (
                 commsType,
                 neighbProcNo(),
-                gpuSendBuf_.data(),
+                sendData,
                 nBytes,
                 tag(),
                 comm()
@@ -482,17 +565,32 @@ void Foam::processorLduInterface::compressedReceive
 
         if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
         {
+            char* readData;
             resizeBuf(gpuReceiveBuf_, nBytes);
+            if(Pstream::gpuDirectTransfer)
+            {
+                readData = gpuReceiveBuf_.data();
+            }
+            else
+            {
+                resizeBuf(receiveBuf_, nBytes);
+                readData = receiveBuf_.begin();
+            }
 
             IPstream::read
             (
                 commsType,
                 neighbProcNo(),
-                gpuReceiveBuf_.data(),
+                readData,
                 nBytes,
                 tag(),
                 comm()
             );
+
+            if( ! Pstream::gpuDirectTransfer)
+            {
+                cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice);
+            }
         }
         else if (commsType != Pstream::nonBlocking)
         {

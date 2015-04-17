@@ -79,6 +79,11 @@ class processorGAMGInterfaceField
             //- Scalar receive buffer
             mutable gpuField<scalar> scalargpuReceiveBuf_;
 
+            //- Scalar send buffer
+            mutable Field<scalar> scalarSendBuf_;
+
+            //- Scalar receive buffer
+            mutable Field<scalar> scalarReceiveBuf_;
 
 
     // Private Member Functions

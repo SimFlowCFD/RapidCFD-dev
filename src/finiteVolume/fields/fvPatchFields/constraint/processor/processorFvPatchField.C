@@ -238,15 +238,40 @@ void Foam::processorFvPatchField<Type>::initEvaluate
 
         if (commsType == Pstream::nonBlocking && !Pstream::floatTransfer)
         {
-            // Fast path. Receive into *this
+            std::streamsize nBytes = gpuSendBuf_.byteSize();
+
+            Type* receive;
+            const Type* send;
+
             this->setSize(gpuSendBuf_.size());
+            if(Pstream::gpuDirectTransfer)
+            {
+                // Fast path.
+                send = gpuSendBuf_.data();
+                receive = this->data();
+            }
+            else
+            {
+                sendBuf_.setSize(gpuSendBuf_.size());
+                receiveBuf_.setSize(sendBuf_.size());
+                thrust::copy
+                (
+                    gpuSendBuf_.begin(),
+                    gpuSendBuf_.end(),
+                    sendBuf_.begin()
+                );
+
+                send = sendBuf_.begin();
+                receive = receiveBuf_.begin();
+            }
+
             outstandingRecvRequest_ = UPstream::nRequests();
             UIPstream::read
             (
                 Pstream::nonBlocking,
                 procPatch_.neighbProcNo(),
-                reinterpret_cast<char*>(this->data()),
-                this->byteSize(),
+                reinterpret_cast<char*>(receive),
+                nBytes,
                 procPatch_.tag(),
                 procPatch_.comm()
             );
@@ -256,8 +281,8 @@ void Foam::processorFvPatchField<Type>::initEvaluate
             (
                 Pstream::nonBlocking,
                 procPatch_.neighbProcNo(),
-                reinterpret_cast<const char*>(gpuSendBuf_.data()),
-                this->byteSize(),
+                reinterpret_cast<const char*>(send),
+                nBytes,
                 procPatch_.tag(),
                 procPatch_.comm()
             );
@@ -293,6 +318,16 @@ void Foam::processorFvPatchField<Type>::evaluate
             outstandingSendRequest_ = -1;
             outstandingRecvRequest_ = -1;
 
+            if( ! Pstream::gpuDirectTransfer)
+            {
+                scalargpuReceiveBuf_ = scalarReceiveBuf_;
+                thrust::copy
+                (
+                    receiveBuf_.begin(),
+                    receiveBuf_.end(),
+                    this->begin()
+                );
+            }
         }
         else
         {
@@ -342,15 +377,41 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
                 << abort(FatalError);
         }
 
+        std::streamsize nBytes = scalargpuSendBuf_.byteSize();
 
-        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+        scalar* receive;
+        const scalar* send;
+
+        if(Pstream::gpuDirectTransfer)
+        {
+            // Fast path.
+            scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+
+            send = scalargpuSendBuf_.data();
+            receive = scalargpuReceiveBuf_.data();
+        }
+        else
+        {
+            scalarSendBuf_.setSize(scalargpuSendBuf_.size());
+            scalarReceiveBuf_.setSize(scalarSendBuf_.size());
+            thrust::copy
+            (
+                scalargpuSendBuf_.begin(),
+                scalargpuSendBuf_.end(),
+                scalarSendBuf_.begin()
+            );
+
+            send = scalarSendBuf_.begin();
+            receive = scalarReceiveBuf_.begin();
+        }
+
         outstandingRecvRequest_ = UPstream::nRequests();
         UIPstream::read
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<char*>(scalargpuReceiveBuf_.data()),
-            scalargpuReceiveBuf_.byteSize(),
+            reinterpret_cast<char*>(receive),
+            nBytes,
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -360,8 +421,8 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<const char*>(scalargpuSendBuf_.data()),
-            scalargpuSendBuf_.byteSize(),
+            reinterpret_cast<const char*>(send),
+            nBytes,
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -407,6 +468,11 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
 
         // Consume straight from scalarReceiveBuf_
 
+        if( ! Pstream::gpuDirectTransfer)
+        {
+            scalargpuReceiveBuf_ = scalarReceiveBuf_;
+        }
+
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
@@ -425,13 +491,11 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
     }
     else
     {
-        scalargpuField pnf
-        (
-            procPatch_.compressedReceive<scalar>(commsType, this->size())()
-        );
+        scalargpuReceiveBuf_.setSize(this->size());
+        procPatch_.compressedReceive<scalar>(commsType, scalargpuReceiveBuf_);
 
         // Transform according to the transformation tensor
-        transformCoupleField(pnf, cmpt);
+        transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
         // Multiply the field by coefficients and add into the result
         matrixPatchOperation
@@ -442,7 +506,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
             matrixInterfaceFunctor<scalar>
             (
                 coeffs.data(),
-                pnf.data()
+                scalargpuReceiveBuf_.data()
             )
        );
     }
@@ -475,15 +539,41 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
                 << abort(FatalError);
         }
 
+        std::streamsize nBytes = gpuSendBuf_.byteSize();
 
-        gpuReceiveBuf_.setSize(gpuSendBuf_.size());
+        Type* receive;
+        const Type* send;
+
+        if(Pstream::gpuDirectTransfer)
+        {
+            // Fast path.
+            gpuReceiveBuf_.setSize(gpuSendBuf_.size());
+
+            send = gpuSendBuf_.data();
+            receive = gpuReceiveBuf_.data();
+        }
+        else
+        {
+            sendBuf_.setSize(gpuSendBuf_.size());
+            receiveBuf_.setSize(sendBuf_.size());
+            thrust::copy
+            (
+                gpuSendBuf_.begin(),
+                gpuSendBuf_.end(),
+                sendBuf_.begin()
+            );
+
+            send = sendBuf_.begin();
+            receive = receiveBuf_.begin();
+        }
+
         outstandingRecvRequest_ = UPstream::nRequests();
         IPstream::read
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<char*>(gpuReceiveBuf_.data()),
-            gpuReceiveBuf_.byteSize(),
+            reinterpret_cast<char*>(receive),
+            nBytes,
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -493,8 +583,8 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<const char*>(gpuSendBuf_.data()),
-            gpuSendBuf_.byteSize(),
+            reinterpret_cast<const char*>(send),
+            nBytes,
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -539,6 +629,11 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
 
         // Consume straight from receiveBuf_
 
+        if( ! Pstream::gpuDirectTransfer)
+        {
+            gpuReceiveBuf_ = receiveBuf_;
+        }
+
         // Transform according to the transformation tensor
         transformCoupleField(gpuReceiveBuf_);
 
@@ -557,13 +652,11 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
     }
     else
     {
-        gpuField<Type> pnf
-        (
-            procPatch_.compressedReceive<Type>(commsType, this->size())()
-        );
+        gpuReceiveBuf_.setSize(this->size());
+        procPatch_.compressedReceive<Type>(commsType, gpuReceiveBuf_);
 
         // Transform according to the transformation tensor
-        transformCoupleField(pnf);
+        transformCoupleField(gpuReceiveBuf_);
 
         // Multiply the field by coefficients and add into the result
         matrixPatchOperation
@@ -574,7 +667,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
             matrixInterfaceFunctor<Type>
             (
                 coeffs.data(),
-                pnf.data()
+                gpuReceiveBuf_.data()
             )
         );
     }

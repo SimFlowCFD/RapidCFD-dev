@@ -248,6 +248,10 @@ public:
         //  in accuracy
         static bool floatTransfer;
 
+        //- Should GPU data be transferred directly without staging on the CPU
+        //  Requires GPU-Aware MPI.
+        static bool gpuDirectTransfer;
+
         //- Number of processors at which the sum algorithm changes from linear
         //  to tree
         static int nProcsSimpleSum;

@@ -427,6 +427,17 @@ registerOptSwitchWithName
     "floatTransfer"
 );
 
+bool Foam::UPstream::gpuDirectTransfer
+(
+    debug::optimisationSwitch("gpuDirectTransfer", 0)
+);
+registerOptSwitchWithName
+(
+    Foam::UPstream::gpuDirectTransfer,
+    gpuDirectTransfer,
+    "gpuDirectTransfer"
+);
+
 // Number of processors at which the reduce algorithm changes from linear to
 // tree
 int Foam::UPstream::nProcsSimpleSum

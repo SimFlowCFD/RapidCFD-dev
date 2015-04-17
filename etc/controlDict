@@ -57,9 +57,10 @@ OptimisationSwitches
     //  - inotifyMaster     : do inotify (and file reading) only on master.
     fileModificationChecking timeStampMaster;//inotify;timeStamp;inotifyMaster;
 
-    commsType      blocking;// nonBlocking; //scheduled; //blocking;
-    floatTransfer   0;
-    nProcsSimpleSum 0;
+    commsType      nonBlocking;// nonBlocking; //scheduled; //blocking;
+    floatTransfer     0;
+    nProcsSimpleSum   0;
+    gpuDirectTransfer 0;
 
     // Force dumping (at next timestep) upon signal (-1 to disable)
     writeNowSignal              -1; //10;

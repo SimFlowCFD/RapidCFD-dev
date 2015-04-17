@@ -58,14 +58,41 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
                 << abort(FatalError);
         }
 
-        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+        std::streamsize nBytes = scalargpuSendBuf_.byteSize();
+
+        scalar* receive;
+        const scalar* send;
+
+        if(Pstream::gpuDirectTransfer)
+        {
+            // Fast path.
+            scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+
+            send = scalargpuSendBuf_.data();
+            receive = scalargpuReceiveBuf_.data();
+        }
+        else
+        {
+            scalarSendBuf_.setSize(scalargpuSendBuf_.size());
+            scalarReceiveBuf_.setSize(scalarSendBuf_.size());
+            thrust::copy
+            (
+                scalargpuSendBuf_.begin(),
+                scalargpuSendBuf_.end(),
+                scalarSendBuf_.begin()
+            );
+
+            send = scalarSendBuf_.begin();
+            receive = scalarReceiveBuf_.begin();
+        }
+
         outstandingRecvRequest_ = UPstream::nRequests();
         UIPstream::read
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<char*>(scalargpuReceiveBuf_.data()),
-            scalargpuReceiveBuf_.byteSize(),
+            reinterpret_cast<char*>(receive),
+            nBytes,
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -75,8 +102,8 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
         (
             Pstream::nonBlocking,
             procPatch_.neighbProcNo(),
-            reinterpret_cast<const char*>(scalargpuSendBuf_.data()),
-            scalargpuSendBuf_.byteSize(),
+            reinterpret_cast<const char*>(send),
+            nBytes,
             procPatch_.tag(),
             procPatch_.comm()
         );
@@ -121,6 +148,11 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         outstandingSendRequest_ = -1;
         outstandingRecvRequest_ = -1;
 
+        if( ! Pstream::gpuDirectTransfer)
+        {
+            scalargpuReceiveBuf_ = scalarReceiveBuf_;
+        }
+
         // Consume straight from scalargpuReceiveBuf_
         matrixPatchOperation
         (
@@ -136,10 +168,8 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
     }
     else
     {
-        scalargpuField pnf
-        (
-            procPatch_.compressedReceive<scalar>(commsType, this->size())()
-        );
+        scalargpuReceiveBuf_.setSize(this->size());
+        procPatch_.compressedReceive<scalar>(commsType, scalargpuReceiveBuf_);
 
         matrixPatchOperation
         (
@@ -149,7 +179,7 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
             matrixInterfaceFunctor<scalar>
             (
                 coeffs.data(),
-                pnf.data()
+                scalargpuReceiveBuf_.data()
             )
         );
     }

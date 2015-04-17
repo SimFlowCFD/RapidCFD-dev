@@ -92,6 +92,18 @@ class processorFvPatchField
             //- Scalar receive buffer
             mutable gpuField<scalar> scalargpuReceiveBuf_;
 
+            //- Send buffer.
+            mutable Field<Type> sendBuf_;
+
+            //- Receive buffer.
+            mutable Field<Type> receiveBuf_;
+
+            //- Scalar send buffer
+            mutable Field<scalar> scalarSendBuf_;
+
+            //- Scalar receive buffer
+            mutable Field<scalar> scalarReceiveBuf_;
+
 public:
 
     //- Runtime type information

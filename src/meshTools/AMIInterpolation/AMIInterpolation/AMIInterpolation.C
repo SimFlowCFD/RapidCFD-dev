@@ -1647,23 +1647,43 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToTarget
     
     const gpuList<Type>& f = *listPtr;
 
-    thrust::transform
-    (
-        thrust::make_counting_iterator(0),
-        thrust::make_counting_iterator(0)+result.size(),
-        result.begin(),
-        AMIInterpolationInterpolateFunctor<Type,CombineOp>
+    if(lowWeightCorrection_ > 0)
+    {
+        thrust::transform
         (
-            lowWeightCorrection_,
-            cop,
-            defaultValues.data(),
-            f.data(),
-            tgtgpuAddress_.data(),
-            tgtgpuStartAddress_.data(),
-            tgtgpuWeights_.data(),
-            tgtgpuWeightsSum_.data()
-        )
-    );
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+result.size(),
+            result.begin(),
+            AMIInterpolationInterpolateFunctor<Type,CombineOp>
+            (
+                lowWeightCorrection_,
+                cop,
+                defaultValues.data(),
+                f.data(),
+                tgtgpuAddress_.data(),
+                tgtgpuStartAddress_.data(),
+                tgtgpuWeights_.data(),
+                tgtgpuWeightsSum_.data()
+            )
+        );
+    }
+    else
+    {
+        thrust::transform
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+result.size(),
+            result.begin(),
+            AMIInterpolationInterpolateNoCorrectionFunctor<Type,CombineOp>
+            (
+                cop,
+                f.data(),
+                tgtgpuAddress_.data(),
+                tgtgpuStartAddress_.data(),
+                tgtgpuWeights_.data()
+            )
+        );
+    }
 }
 
 
@@ -1690,7 +1710,9 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
             ") const"
         )   << "Supplied field size is not equal to target patch size" << nl
             << "    source patch   = " << srcgpuAddress_.size() << nl
+            << "    source patch   = " << srcAddress_.size() << nl
             << "    target patch   = " << tgtgpuAddress_.size() << nl
+            << "    target patch   = " << tgtAddress_.size() << nl
             << "    supplied field = " << fld.size()
             << abort(FatalError);
     }
@@ -1742,23 +1764,43 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::interpolateToSource
  
     const gpuList<Type>& f = *listPtr;
 
-    thrust::transform
-    (
-        thrust::make_counting_iterator(0),
-        thrust::make_counting_iterator(0)+result.size(),
-        result.begin(),
-        AMIInterpolationInterpolateFunctor<Type,CombineOp>
+    if(lowWeightCorrection_ > 0)
+    {
+        thrust::transform
         (
-            lowWeightCorrection_,
-            cop,
-            defaultValues.data(),
-            f.data(),
-            srcgpuAddress_.data(),
-            srcgpuStartAddress_.data(),
-            srcgpuWeights_.data(),
-            srcgpuWeightsSum_.data()
-        )
-    );
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+result.size(),
+            result.begin(),
+            AMIInterpolationInterpolateFunctor<Type,CombineOp>
+            (
+                lowWeightCorrection_,
+                cop,
+                defaultValues.data(),
+                f.data(),
+                srcgpuAddress_.data(),
+                srcgpuStartAddress_.data(),
+                srcgpuWeights_.data(),
+                srcgpuWeightsSum_.data()
+            )
+        );
+    }
+    else
+    {
+        thrust::transform
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+result.size(),
+            result.begin(),
+            AMIInterpolationInterpolateNoCorrectionFunctor<Type,CombineOp>
+            (
+                cop,
+                f.data(),
+                srcgpuAddress_.data(),
+                srcgpuStartAddress_.data(),
+                srcgpuWeights_.data()
+            )
+        );
+    }
 }
 
 

@@ -57,7 +57,7 @@ OptimisationSwitches
     //  - inotifyMaster     : do inotify (and file reading) only on master.
     fileModificationChecking timeStampMaster;//inotify;timeStamp;inotifyMaster;
 
-    commsType       nonBlocking; //scheduled; //blocking;
+    commsType      blocking;// nonBlocking; //scheduled; //blocking;
     floatTransfer   0;
     nProcsSimpleSum 0;
 

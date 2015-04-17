@@ -60,4 +60,47 @@ namespace Foam
             }
         }
     };
+
+    template<class Type, class CombineOp>
+    struct AMIInterpolationInterpolateNoCorrectionFunctor
+    {
+        const CombineOp cop;
+        const Type* fld;
+        const label* address;
+        const label* addressStart;
+        const scalar* weights;
+        const Type zero;
+
+        AMIInterpolationInterpolateNoCorrectionFunctor
+        (
+            const CombineOp _cop,
+            const Type* _fld,
+            const label* _address,
+            const label* _addressStart,
+            const scalar* _weights
+        ):
+            cop(_cop),
+            fld(_fld),
+            address(_address),
+            addressStart(_addressStart),
+            weights(_weights),
+            zero(pTraits<Type>::zero)
+        {}
+
+        __device__
+        Type operator()(const label& faceI)
+        {
+            Type out = zero;
+
+            label start = addressStart[faceI];
+            label end = addressStart[faceI+1];
+
+            for(label i = start; i< end; i++)
+            {
+                cop(out, faceI, fld[address[i]], weights[i]);
+            }
+
+            return out;
+        }
+    };
 }

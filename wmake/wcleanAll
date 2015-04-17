@@ -75,6 +75,4 @@ find . -depth -type d \( -name lnInclude -o -name ii_files -o -name Templates.DB
 echo "Removing misc files"
 find . \( -name exe -o -name log -o -name so_locations \) -exec rm {} \;
 
-tutorials/Allclean
-
 #------------------------------------------------------------------------------

@@ -75,17 +75,18 @@ void Foam::GAMGInterface::updateAddressing()
         faceRestrictTargetStartAddressing_
     );
 
+    labelgpuList sort(faceCells_.size());
     GAMGAgglomeration::createSort
     (
         faceCells_,
-        sortCells_
+        cellFaces_
     );
 
     GAMGAgglomeration::createTarget
     (
         faceCells_,
-        sortCells_,
         cellFaces_,
+        sortCells_,
         cellFacesStart_
     );
 }

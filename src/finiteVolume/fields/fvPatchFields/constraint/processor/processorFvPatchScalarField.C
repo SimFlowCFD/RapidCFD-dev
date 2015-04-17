@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "processorFvPatchScalarField.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -31,27 +32,6 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-struct processorFvPatchScalarFunctor
-{
-    const scalar* coeffs;
-    const scalar* val;
-
-    processorFvPatchScalarFunctor
-    (
-        const scalar* _coeffs, 
-        const scalar* _val
-    ):
-        coeffs(_coeffs),
-        val(_val)
-    {}
-
-    __HOST____DEVICE__
-    scalar operator()(const label&, const label& id)
-    {
-        return -coeffs[id]*val[id];
-    }
-};
 
 template<>
 void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
@@ -77,7 +57,6 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
                 << " outstanding request."
                 << abort(FatalError);
         }
-
 
         scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
         outstandingRecvRequest_ = UPstream::nRequests();
@@ -137,18 +116,18 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         {
             UPstream::waitRequest(outstandingRecvRequest_);
         }
+
         // Recv finished so assume sending finished as well.
         outstandingSendRequest_ = -1;
         outstandingRecvRequest_ = -1;
 
-
-        // Consume straight from scalarReceiveBuf_
+        // Consume straight from scalargpuReceiveBuf_
         matrixPatchOperation
         (
             this->patch().index(),
             result,
             this->patch().boundaryMesh().mesh().lduAddr(),
-            processorFvPatchScalarFunctor
+            matrixInterfaceFunctor<scalar>
             (
                 coeffs.data(),
                 scalargpuReceiveBuf_.data()
@@ -167,7 +146,7 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
             this->patch().index(),
             result,
             this->patch().boundaryMesh().mesh().lduAddr(),
-            processorFvPatchScalarFunctor
+            matrixInterfaceFunctor<scalar>
             (
                 coeffs.data(),
                 pnf.data()

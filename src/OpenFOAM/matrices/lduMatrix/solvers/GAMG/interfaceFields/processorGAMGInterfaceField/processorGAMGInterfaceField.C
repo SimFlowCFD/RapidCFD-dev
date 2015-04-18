@@ -222,7 +222,7 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
     else
     {
         scalargpuReceiveBuf_.setSize(coeffs.size());
-        procInterface_.compressedReceive<scalar>(commsType, coeffs.size());
+        procInterface_.compressedReceive<scalar>(commsType, scalargpuReceiveBuf_);
 
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 

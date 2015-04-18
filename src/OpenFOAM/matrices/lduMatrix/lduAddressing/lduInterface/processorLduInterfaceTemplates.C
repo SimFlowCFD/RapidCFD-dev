@@ -139,6 +139,7 @@ void Foam::processorLduInterface::send
         }
         else
         {
+            resizeBuf(sendBuf_, nBytes);
             cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost);
             sendData = sendBuf_.begin();
         }
@@ -563,10 +564,10 @@ void Foam::processorLduInterface::compressedReceive
         label nFloats = nm1 + nlast;
         label nBytes = nFloats*sizeof(float);
 
+        resizeBuf(gpuReceiveBuf_, nBytes);
         if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
         {
             char* readData;
-            resizeBuf(gpuReceiveBuf_, nBytes);
             if(Pstream::gpuDirectTransfer)
             {
                 readData = gpuReceiveBuf_.data();
@@ -592,7 +593,14 @@ void Foam::processorLduInterface::compressedReceive
                 cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice);
             }
         }
-        else if (commsType != Pstream::nonBlocking)
+        else if (commsType == Pstream::nonBlocking)
+        {
+            if( ! Pstream::gpuDirectTransfer)
+            {
+                cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice);
+            }
+        }
+        else
         {
             FatalErrorIn("processorLduInterface::compressedReceive")
                 << "Unsupported communications type " << commsType

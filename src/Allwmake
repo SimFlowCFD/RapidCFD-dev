@@ -18,7 +18,7 @@ wmakeCheckPwd "$WM_PROJECT_DIR/src" || {
 set -x
 
 # update OpenFOAM version strings if required
-wmakePrintBuild -check || /bin/rm -f GpuFOAM/Make/*/global.? 2>/dev/null
+wmakePrintBuild -check || /bin/rm -f OpenFOAM/Make/*/global.? 2>/dev/null
 
 wmakeLnInclude OpenFOAM
 wmakeLnInclude OSspecific/${WM_OSTYPE:-POSIX}

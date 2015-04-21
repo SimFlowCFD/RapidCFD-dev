@@ -97,7 +97,7 @@ Foam::jumpCyclicAMIFvPatchField<Type>::patchNeighbourField() const
 {
     const gpuField<Type>& iField = this->internalField();
     const labelgpuList& nbrFaceCells =
-        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().faceCells();
+        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().getFaceCells();
 
     gpuField<Type> pnf(iField, nbrFaceCells);
     tmp<gpuField<Type> > tpnf;
@@ -165,7 +165,7 @@ void Foam::jumpCyclicAMIFvPatchField<Type>::updateInterfaceMatrix
 ) const
 {
     const labelgpuList& nbrFaceCells =
-        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().faceCells();
+        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().getFaceCells();
 
     gpuField<Type> pnf(psiInternal, nbrFaceCells);
 

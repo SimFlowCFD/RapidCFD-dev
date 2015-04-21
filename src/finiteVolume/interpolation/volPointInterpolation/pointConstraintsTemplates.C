@@ -45,7 +45,7 @@ void pointConstraints::syncUntransformedData
     // Transfer onto coupled patch
     const globalMeshData& gmd = mesh.globalData();
     const indirectPrimitivePatch& cpp = gmd.coupledPatch();
-    const labelgpuList& meshPoints = cpp.meshPoints();
+    const labelgpuList& meshPoints = cpp.getMeshPoints();
 
     const mapDistribute& slavesMap = gmd.globalCoPointSlavesMap();
     const labelListList& slaves = gmd.globalCoPointSlaves();
@@ -65,12 +65,7 @@ void pointConstraints::syncUntransformedData
         ),
         elems.begin()
     );
-/*
-    forAll(meshPoints, i)
-    {
-        elems[i] = pointData[meshPoints[i]];
-    }
-*/
+
     // Pull slave data onto master. No need to update transformed slots.
     slavesMap.distribute(elems, false);
 

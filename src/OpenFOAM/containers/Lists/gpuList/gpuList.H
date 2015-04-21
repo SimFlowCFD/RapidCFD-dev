@@ -35,20 +35,20 @@ public:
 
         inline gpuList();
         explicit inline gpuList(label size);
-        inline gpuList(label size, const T&);
-        inline gpuList(const Xfer<gpuList<T> >&);
-        inline gpuList(gpuList<T>& a, bool reUse);
-        inline gpuList(const gpuList<T>& list);
-        inline gpuList(const UList<T>& list);
+        explicit inline gpuList(label size, const T&);
+        explicit inline gpuList(const Xfer<gpuList<T> >&);
+        explicit inline gpuList(gpuList<T>& a, bool reUse);
+        explicit inline gpuList(const gpuList<T>& list);
+        explicit inline gpuList(const UList<T>& list);
 
         template<class InputIterator>
         inline gpuList(InputIterator first, InputIterator last);
 
         //- Construct sublist from gpuList and sub-list size
-        inline gpuList(const gpuList<T>& list,const label subSize);
+        explicit inline gpuList(const gpuList<T>& list,const label subSize);
 
         //- Construct sublist from gpuList, sub-list size and start index
-        inline gpuList
+        explicit inline gpuList
         (
             const gpuList<T>& list,
             const label subSize,

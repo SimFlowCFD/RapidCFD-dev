@@ -168,7 +168,7 @@ tmp<gpuField<Type1> > pointPatchField<Type>::patchInternalField
     const gpuField<Type1>& iF
 ) const
 {
-    return patchInternalField(iF, patch().meshPoints());
+    return patchInternalField(iF, patch().getMeshPoints());
 }
 
 
@@ -208,7 +208,7 @@ void pointPatchField<Type>::addToInternalField
     }
 
     // Get the addressing
-    const labelgpuList& mp = patch().meshPoints();
+    const labelgpuList& mp = patch().getMeshPoints();
 
     thrust::transform
     (
@@ -270,7 +270,7 @@ void pointPatchField<Type>::addToInternalField
     }
 
     // Get the addressing
-    const labelgpuList& mp = patch().meshPoints();
+    const labelgpuList& mp = patch().getMeshPoints();
 
     thrust::transform
     (
@@ -368,7 +368,7 @@ void pointPatchField<Type>::setInInternalField
     const gpuField<Type1>& pF
 ) const
 {
-    setInInternalField(iF, pF, patch().meshPoints());
+    setInInternalField(iF, pF, patch().getMeshPoints());
 }
 
 

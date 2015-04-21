@@ -93,7 +93,7 @@ Foam::polyPatch::polyPatch
     start_(start),
     boundaryMesh_(bm),
     faceCellsPtr_(NULL),
-    gpuFaceCells(),
+    gpuFaceCellsPrt_(NULL),
     mePtr_(NULL)
 {
     if
@@ -131,7 +131,7 @@ Foam::polyPatch::polyPatch
     start_(readLabel(dict.lookup("startFace"))),
     boundaryMesh_(bm),
     faceCellsPtr_(NULL),
-    gpuFaceCells(),
+    gpuFaceCellsPrt_(NULL),
     mePtr_(NULL)
 {
     if
@@ -166,7 +166,7 @@ Foam::polyPatch::polyPatch
     start_(pp.start()),
     boundaryMesh_(bm),
     faceCellsPtr_(NULL),
-    gpuFaceCells(),
+    gpuFaceCellsPrt_(NULL),
     mePtr_(NULL)
 {}
 
@@ -194,7 +194,7 @@ Foam::polyPatch::polyPatch
     start_(newStart),
     boundaryMesh_(bm),
     faceCellsPtr_(NULL),
-    gpuFaceCells(),
+    gpuFaceCellsPrt_(NULL),
     mePtr_(NULL)
 {}
 
@@ -222,7 +222,7 @@ Foam::polyPatch::polyPatch
     start_(newStart),
     boundaryMesh_(bm),
     faceCellsPtr_(NULL),
-    gpuFaceCells(),
+    gpuFaceCellsPrt_(NULL),
     mePtr_(NULL)
 {}
 
@@ -234,7 +234,7 @@ Foam::polyPatch::polyPatch(const polyPatch& p)
     start_(p.start_),
     boundaryMesh_(p.boundaryMesh_),
     faceCellsPtr_(NULL),
-    gpuFaceCells(),
+    gpuFaceCellsPrt_(NULL),
     mePtr_(NULL)
 {}
 
@@ -362,12 +362,12 @@ const Foam::labelUList& Foam::polyPatch::faceCells() const
 
 const Foam::labelgpuList& Foam::polyPatch::getFaceCells() const
 {
-    if (!gpuFaceCells.size())
+    if ( ! gpuFaceCellsPrt_)
     {
-        gpuFaceCells = patchSlice(boundaryMesh().mesh().getFaceOwner());
+        gpuFaceCellsPrt_ = new labelgpuList(boundaryMesh().mesh().getFaceOwner(),this->size(), start_);
     }
 
-    return gpuFaceCells;
+    return *gpuFaceCellsPrt_;
 }
 
 
@@ -395,8 +395,7 @@ void Foam::polyPatch::clearAddressing()
     primitivePatch::clearTopology();
     primitivePatch::clearPatchMeshAddr();
 
-    gpuFaceCells.clear();
-
+    deleteDemandDrivenData(gpuFaceCellsPrt_);
     deleteDemandDrivenData(faceCellsPtr_);
     deleteDemandDrivenData(mePtr_);
 }

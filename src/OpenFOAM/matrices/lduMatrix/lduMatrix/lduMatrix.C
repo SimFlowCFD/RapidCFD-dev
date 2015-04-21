@@ -26,6 +26,7 @@ License
 #include "lduMatrix.H"
 #include "IOstreams.H"
 #include "Switch.H"
+#include "BasicCache.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -35,46 +36,44 @@ namespace Foam
 
     class lduMatrixCache
     {
+        static PtrList<scalargpuField> diagCache;
+        static PtrList<scalargpuField> lowerCache;
+        static PtrList<scalargpuField> upperCache;
+
         static PtrList<scalargpuField> lowerSortCache;
         static PtrList<scalargpuField> upperSortCache;
 
-        static scalargpuField* retrieve
-        (
-            PtrList<scalargpuField>& list, 
-            label level,
-            label size
-        )
-        {
-            if(level >= list.size())
-                list.setSize(level+1);
+        public:
 
-            if(list.set(level))
-            {
-                scalargpuField& out = list[level];
-                if(out.size() < size)
-                    out.setSize(size);
-                return &out; 
-            }
-            else
-            {
-                list.set(level,new scalargpuField(size));
-                return &list[level];
-            }
+        static scalargpuField& diag(label level, label size)
+        {
+            return cache::retrieve(diagCache,level,size);
         }
 
-        public:
+        static scalargpuField& lower(label level, label size)
+        {
+            return cache::retrieve(lowerCache,level,size);
+        }
+
+        static scalargpuField& upper(label level, label size)
+        {
+            return cache::retrieve(upperCache,level,size);
+        }
 
         static scalargpuField* lowerSort(label level, label size)
         {
-            return retrieve(lowerSortCache,level,size);
+            return &cache::retrieve(lowerSortCache,level,size);
         }
 
         static scalargpuField* upperSort(label level, label size)
         {
-            return retrieve(upperSortCache,level,size);
+            return &cache::retrieve(upperSortCache,level,size);
         }
     };
 
+    PtrList<scalargpuField> lduMatrixCache::diagCache(1);
+    PtrList<scalargpuField> lduMatrixCache::lowerCache(1);
+    PtrList<scalargpuField> lduMatrixCache::upperCache(1);
     PtrList<scalargpuField> lduMatrixCache::lowerSortCache(1);
     PtrList<scalargpuField> lduMatrixCache::upperSortCache(1);
 }
@@ -270,13 +269,14 @@ Foam::scalargpuField& Foam::lduMatrix::lower(const label nCoeffs)
 {
     if (!lowerPtr_)
     {
+        lowerPtr_ = new scalargpuField(const_cast<const scalargpuField&>(lduMatrixCache::lower(level(),nCoeffs)),nCoeffs);
         if (upperPtr_)
         {
-            lowerPtr_ = new scalargpuField(*upperPtr_);
+            *lowerPtr_ = *upperPtr_;
         }
         else
         {
-            lowerPtr_ = new scalargpuField(nCoeffs, 0.0);
+            *lowerPtr_ = 0.0;
         }
     }
 
@@ -290,7 +290,8 @@ Foam::scalargpuField& Foam::lduMatrix::diag(const label size)
 {
     if (!diagPtr_)
     {
-        diagPtr_ = new scalargpuField(size, 0.0);
+        diagPtr_ = new scalargpuField(const_cast<const scalargpuField&>(lduMatrixCache::diag(level(),size)),size);
+        *diagPtr_ = 0.0;
     }
 
     return *diagPtr_;
@@ -301,13 +302,16 @@ Foam::scalargpuField& Foam::lduMatrix::upper(const label nCoeffs)
 {
     if (!upperPtr_)
     {
+        upperPtr_ = new scalargpuField(const_cast<const scalargpuField&>(lduMatrixCache::upper(level(),nCoeffs)),nCoeffs);
+
         if (lowerPtr_)
         {
-            upperPtr_ = new scalargpuField(*lowerPtr_);
+            *upperPtr_ = *lowerPtr_;
         }
         else
         {
-            upperPtr_ = new scalargpuField(nCoeffs, 0.0);
+            
+            *upperPtr_ = 0.0;
         }
     }
 

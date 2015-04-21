@@ -250,6 +250,7 @@ $(lduMatrix)/solvers/PCG/PCG.C
 $(lduMatrix)/solvers/PBiCG/PBiCG.C
 $(lduMatrix)/solvers/ICCG/ICCG.C
 $(lduMatrix)/solvers/BICCG/BICCG.C
+$(lduMatrix)/solvers/PCGCache/PCGCache.C
 
 $(lduMatrix)/smoothers/Jacobi/JacobiSmoother.C
 $(lduMatrix)/smoothers/GaussSeidel/GaussSeidelSmoother.C

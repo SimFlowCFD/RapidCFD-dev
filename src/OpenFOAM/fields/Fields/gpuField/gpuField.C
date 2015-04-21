@@ -217,18 +217,6 @@ Foam::gpuField<Type>::gpuField(gpuField<Type>& f, bool reUse)
     gpuList<Type>(static_cast<gpuList<Type>&>(f), reUse)
 {}
 
-template<class Type>
-Foam::gpuField<Type>::gpuField(const gpuField<Type>& f, label size)
-:
-    gpuList<Type>(static_cast<const gpuList<Type>&>(f), size)
-{}
-
-template<class Type>
-Foam::gpuField<Type>::gpuField(const gpuField<Type>& f, label size, label start)
-:
-    gpuList<Type>(static_cast<const gpuList<Type>&>(f), size, start)
-{}
-
 
 template<class Type>
 Foam::gpuField<Type>::gpuField(const gpuList<Type>& l, label size)

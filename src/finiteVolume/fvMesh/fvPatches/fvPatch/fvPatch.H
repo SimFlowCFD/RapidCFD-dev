@@ -188,13 +188,6 @@ public:
                 return boundaryMesh_;
             }
 
-            //- Slice list to patch
-            template<class T>
-            const gpuList<T> patchSlice(const gpuList<T>& l) const
-            {
-                return gpuList<T>(l, size(), start());
-            }
-
             //- Return faceCells
             virtual const labelgpuList& faceCells() const;
             virtual const labelList& faceCellsHost() const;

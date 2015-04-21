@@ -43,7 +43,7 @@ slicedFvPatchField<Type>::slicedFvPatchField
     fvPatchField<Type>(p, iF, Field<Type>())
 {
     // Set the fvPatchField to a slice of the given complete field
-    gpuList<Type>::operator=(p.patchSlice(completeField));
+    gpuList<Type>::operator=(gpuList<Type>(completeField,p.size(),p.start()));
 }
 
 

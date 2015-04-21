@@ -111,7 +111,7 @@ public:
         explicit gpuField(const label);
 
         //- Construct given size and initial value
-        gpuField(const label, const Type&);
+        explicit gpuField(const label, const Type&);
 
         //- Construct as copy of a gpuList\<Type\>
         explicit gpuField(const gpuList<Type>&);
@@ -203,19 +203,13 @@ public:
         gpuField(const gpuField<Type>&);
 
         //- Construct as copy or re-use as specified.
-        gpuField(gpuField<Type>&, bool reUse);
-
-        //- Construct as subfield.
-        gpuField(const gpuField<Type>&, label size);
-
-        //- Construct as subfield.
-        gpuField(const gpuField<Type>&, label size, label start);
+        explicit gpuField(gpuField<Type>&, bool reUse);
 
         //- Construct as sublist.
-        gpuField(const gpuList<Type>&, label size);
+        explicit gpuField(const gpuList<Type>&, label size);
 
         //- Construct as sublist.
-        gpuField(const gpuList<Type>&, label size, label start);
+        explicit gpuField(const gpuList<Type>&, label size, label start);
 
         //- Construct by transferring the gpuField contents
         gpuField(const Xfer<gpuField<Type> >&);

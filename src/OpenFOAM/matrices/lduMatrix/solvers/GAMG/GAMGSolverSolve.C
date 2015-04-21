@@ -27,6 +27,32 @@ License
 #include "ICCG.H"
 #include "BICCG.H"
 #include "SubField.H"
+#include "BasicCache.H"
+
+namespace Foam
+{
+
+class GAMGSolverCache
+{
+    static PtrList<scalargpuField> coarseCorrCache;
+    static PtrList<scalargpuField> coarseSourcesCache;
+
+    public:
+
+    static scalargpuField* corr(label level, label size)
+    {
+        return new scalargpuField(const_cast<const scalargpuField&>(cache::retrieve(coarseCorrCache,level,size)),size);
+    }
+
+    static scalargpuField* source(label level, label size)
+    {
+        return new scalargpuField(const_cast<const scalargpuField&>(cache::retrieve(coarseSourcesCache,level,size)),size);
+    }
+};
+
+    PtrList<scalargpuField> GAMGSolverCache::coarseCorrCache(1);
+    PtrList<scalargpuField> GAMGSolverCache::coarseSourcesCache(1);
+}
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -480,8 +506,8 @@ void Foam::GAMGSolver::initVcycle
         if (agglomeration_.nCells(leveli) >= 0)
         {
             label nCoarseCells = agglomeration_.nCells(leveli);
-
-            coarseSources.set(leveli, new scalargpuField(nCoarseCells));
+            coarseSources.set(leveli,GAMGSolverCache::source(leveli,nCoarseCells));
+            //coarseSources.set(leveli, new scalargpuField(nCoarseCells));
         }
 
         if (matrixLevels_.set(leveli))
@@ -492,7 +518,8 @@ void Foam::GAMGSolver::initVcycle
 
             maxSize = max(maxSize, nCoarseCells);
 
-            coarseCorrFields.set(leveli, new scalargpuField(nCoarseCells));
+            //coarseCorrFields.set(leveli, new scalargpuField(nCoarseCells));
+            coarseCorrFields.set(leveli,GAMGSolverCache::corr(leveli,nCoarseCells));
 
             smoothers.set
             (

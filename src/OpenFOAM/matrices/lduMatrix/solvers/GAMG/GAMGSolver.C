@@ -72,6 +72,7 @@ Foam::GAMGSolver::GAMGSolver
     postSweepsLevelMultiplier_(1),
     maxPostSweeps_(4),
     nFinestSweeps_(2),
+    interpolateCorrection_(false),
     scaleCorrection_(matrix.symmetric()),
     agglomeration_(GAMGAgglomeration::New(matrix_, controlDict_)),
 

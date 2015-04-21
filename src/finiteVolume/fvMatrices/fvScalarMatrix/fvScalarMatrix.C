@@ -25,6 +25,7 @@ License
 
 #include "fvScalarMatrix.H"
 #include "zeroGradientFvPatchFields.H"
+#include "fvMatrixCache.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -66,7 +67,8 @@ Foam::fvMatrix<Foam::scalar>::solver
             << endl;
     }
 
-    scalargpuField saveDiag(diag());
+    scalargpuField saveDiag(fvMatrixCache::diag(level(),diag().size()),diag().size());
+    saveDiag = diag();
     addBoundaryDiag(diag(), 0);
 
     autoPtr<fvMatrix<scalar>::fvSolver> solverPtr
@@ -102,10 +104,14 @@ Foam::solverPerformance Foam::fvMatrix<Foam::scalar>::fvSolver::solve
         const_cast<GeometricField<scalar, fvPatchField, volMesh>&>
         (fvMat_.psi());
 
-    scalargpuField saveDiag(fvMat_.diag());
+    label size = fvMat_.diag().size();
+
+    scalargpuField saveDiag(fvMatrixCache::diag(fvMat_.level(),size),size);
+    saveDiag = fvMat_.diag();
     fvMat_.addBoundaryDiag(fvMat_.diag(), 0);
 
-    scalargpuField totalSource(fvMat_.source());
+    scalargpuField totalSource(fvMatrixCache::source(fvMat_.level(),size));
+    totalSource = fvMat_.source();
     fvMat_.addBoundarySource(totalSource, false);
 
     // assign new solver controls
@@ -150,10 +156,14 @@ Foam::solverPerformance Foam::fvMatrix<Foam::scalar>::solveSegregated
     GeometricField<scalar, fvPatchField, volMesh>& psi =
        const_cast<GeometricField<scalar, fvPatchField, volMesh>&>(psi_);
 
-    scalargpuField saveDiag(diag());
+    label size = diag().size();
+
+    scalargpuField saveDiag(fvMatrixCache::diag(level(),size),size);
+    saveDiag = diag();
     addBoundaryDiag(diag(), 0);
 
-    scalargpuField totalSource(source_);
+    scalargpuField totalSource(fvMatrixCache::source(level(),size),size);
+    totalSource = source_;
     addBoundarySource(totalSource, false);
 
     // Solver call
@@ -181,19 +191,47 @@ Foam::solverPerformance Foam::fvMatrix<Foam::scalar>::solveSegregated
     return solverPerf;
 }
 
+namespace Foam
+{
+
+struct fvScalarMatrixResidualFunctor
+{
+    template<class Tuple>
+    __HOST____DEVICE__ 
+    scalar operator()(const scalar& source, const Tuple& t)
+    {
+        return source - thrust::get<0>(t)*thrust::get<1>(t);
+    }
+};
+
+}
 
 template<>
 Foam::tmp<Foam::scalargpuField> Foam::fvMatrix<Foam::scalar>::residual() const
 {
-    scalargpuField boundaryDiag(psi_.size(), 0.0);
+    scalargpuField boundaryDiag(fvMatrixCache::diag(level(),psi_.size()),psi_.size());
+    boundaryDiag = 0.0;
     addBoundaryDiag(boundaryDiag, 0);
+
+    thrust::transform
+    (
+        source_.begin(),
+        source_.end(),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            boundaryDiag.begin(),
+            psi_.internalField().begin()
+        )),
+        boundaryDiag.begin(),
+        fvScalarMatrixResidualFunctor()
+    );
 
     tmp<scalargpuField> tres
     (
         lduMatrix::residual
         (
             psi_.internalField(),
-            source_ - boundaryDiag*psi_.internalField(),
+            boundaryDiag,
             boundaryCoeffs_,
             psi_.boundaryField().scalarInterfaces(),
             0

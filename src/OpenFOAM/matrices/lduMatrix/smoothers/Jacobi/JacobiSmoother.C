@@ -1,5 +1,6 @@
 #include "JacobiSmoother.H"
 #include "JacobiSmootherF.H"
+#include "BasicCache.H"
 
 namespace Foam
 {
@@ -16,40 +17,16 @@ namespace Foam
         static PtrList<scalargpuField> psiCache;
         static PtrList<scalargpuField> sourceCache;
 
-        static scalargpuField& retrieve
-        (
-            PtrList<scalargpuField>& list, 
-            label level,
-            label size
-        )
-        {
-            if(level >= list.size())
-                list.setSize(level+1);
-
-            if(list.set(level))
-            {
-                scalargpuField& out = list[level];
-                if(out.size() < size)
-                    out.setSize(size);
-                return out; 
-            }
-            else
-            {
-                list.set(level,new scalargpuField(size));
-                return list[level];
-            }
-        }
-
         public:
 
         static scalargpuField& psi(label level, label size)
         {
-            return retrieve(psiCache,level,size);
+            return cache::retrieve(psiCache,level,size);
         }
 
         static scalargpuField& source(label level, label size)
         {
-            return retrieve(sourceCache,level,size);
+            return cache::retrieve(sourceCache,level,size);
         }
     };
 

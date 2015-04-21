@@ -937,8 +937,8 @@ void Foam::forces::calcForcesMoment()
                 label zoneI = cellZoneIDs[i];
                 const cellZone& cZone = mesh.cellZones()[zoneI];
 
-                const vectorgpuField d(mesh.C(), cZone);
-                const vectorgpuField fP(fPTot, cZone);
+                const vectorgpuField d(mesh.C().getField(), cZone.getList());
+                const vectorgpuField fP(fPTot, cZone.getList());
                 const vectorgpuField Md(d - coordSys_.origin());
 
                 const vectorgpuField fDummy(Md.size(), vector::zero);

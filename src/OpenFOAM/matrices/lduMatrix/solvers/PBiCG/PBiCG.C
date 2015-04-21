@@ -25,6 +25,7 @@ License
 
 #include "PBiCG.H"
 #include "lduMatrixSolverFunctors.H"
+#include "PCGCache.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -79,13 +80,14 @@ Foam::solverPerformance Foam::PBiCG::solve
 
     register label nCells = psi.size();
 
-    scalargpuField pA(nCells);
+    scalargpuField pA(PCGCache::pA(matrix_.level(),nCells),nCells);
 
-    scalargpuField pT(nCells, 0.0);
+    scalargpuField pT(PCGCache::pT(matrix_.level(),nCells),nCells);
+    pT = 0.0;
 
-    scalargpuField wA(nCells);
+    scalargpuField wA(PCGCache::wA(matrix_.level(),nCells),nCells);
 
-    scalargpuField wT(nCells);
+    scalargpuField wT(PCGCache::wT(matrix_.level(),nCells),nCells);
 
     scalar wArT = solverPerf.great_;
     scalar wArTold = wArT;
@@ -95,8 +97,26 @@ Foam::solverPerformance Foam::PBiCG::solve
     matrix_.Tmul(wT, psi, interfaceIntCoeffs_, interfaces_, cmpt);
 
     // --- Calculate initial residual and transpose residual fields
-    scalargpuField rA(source - wA);
-    scalargpuField rT(source - wT);
+    scalargpuField rA(PCGCache::rA(matrix_.level(),nCells),nCells);
+    scalargpuField rT(PCGCache::rT(matrix_.level(),nCells),nCells);
+
+    thrust::transform
+    (
+        source.begin(),
+        source.end(),
+        wA.begin(),
+        rA.begin(),
+        minusOp<scalar>()
+    );
+
+    thrust::transform
+    (
+        source.begin(),
+        source.end(),
+        wT.begin(),
+        rT.begin(),
+        minusOp<scalar>()
+    );
 
     // --- Calculate normalisation factor
     scalar normFactor = this->normFactor(psi, source, wA, pA);

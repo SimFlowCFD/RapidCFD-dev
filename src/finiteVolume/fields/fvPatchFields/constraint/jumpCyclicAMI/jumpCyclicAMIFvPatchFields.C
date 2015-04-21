@@ -50,7 +50,7 @@ void Foam::jumpCyclicAMIFvPatchField<scalar>::updateInterfaceMatrix
 ) const
 {
     const labelgpuList& nbrFaceCells =
-        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().faceCells();
+        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().getFaceCells();
 
     scalargpuField pnf(psiInternal, nbrFaceCells);
 

@@ -154,9 +154,9 @@ Foam::cyclicACMIFvPatchField<Type>::patchNeighbourField() const
 {
     const gpuField<Type>& iField = this->internalField();
     const labelgpuList& nbrFaceCellsCoupled =
-        cyclicACMIPatch_.cyclicACMIPatch().neighbPatch().faceCells();
+        cyclicACMIPatch_.cyclicACMIPatch().neighbPatch().getFaceCells();
     const labelgpuList& faceCellsNonOverlap =
-        cyclicACMIPatch_.cyclicACMIPatch().nonOverlapPatch().faceCells();
+        cyclicACMIPatch_.cyclicACMIPatch().nonOverlapPatch().getFaceCells();
 
     gpuField<Type> pnfCoupled(iField, nbrFaceCellsCoupled);
     gpuField<Type> pfNonOverlap(iField, faceCellsNonOverlap);
@@ -238,7 +238,7 @@ void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
     // note: only applying coupled contribution
 
     const labelgpuList& nbrFaceCellsCoupled =
-        cyclicACMIPatch_.cyclicACMIPatch().neighbPatch().faceCells();
+        cyclicACMIPatch_.cyclicACMIPatch().neighbPatch().getFaceCells();
 
     scalargpuField pnf(psiInternal, nbrFaceCellsCoupled);
 
@@ -273,7 +273,7 @@ void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
     // note: only applying coupled contribution
 
     const labelgpuList& nbrFaceCellsCoupled =
-        cyclicACMIPatch_.cyclicACMIPatch().neighbPatch().faceCells();
+        cyclicACMIPatch_.cyclicACMIPatch().neighbPatch().getFaceCells();
 
     gpuField<Type> pnf(psiInternal, nbrFaceCellsCoupled);
 

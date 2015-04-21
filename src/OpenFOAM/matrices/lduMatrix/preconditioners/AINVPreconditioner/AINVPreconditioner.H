@@ -22,7 +22,7 @@ class AINVPreconditioner
 :
     public lduMatrix::preconditioner
 {
-        scalargpuField rD;
+        scalargpuField* rDPtr;
         textures<scalar> rDTex;
 
         AINVPreconditioner(const AINVPreconditioner&);

@@ -49,7 +49,7 @@ class directFvPatchFieldMapper
 {
 
     //- Addressing from new back to old
-    const labelgpuList& directAddressing_;
+    const labelgpuList directAddressing_;
 
     //- Does map contain any unmapped values
     bool hasUnmapped_;
@@ -61,6 +61,17 @@ public:
 
         //- Construct given addressing
         directFvPatchFieldMapper(const labelgpuList& directAddressing)
+        :
+            directAddressing_(directAddressing,directAddressing.size()),
+            hasUnmapped_(false)
+        {
+            if (directAddressing_.size() && min(directAddressing_) < 0)
+            {
+                hasUnmapped_ = true;
+            }
+        }
+
+        directFvPatchFieldMapper(const labelList& directAddressing)
         :
             directAddressing_(directAddressing),
             hasUnmapped_(false)

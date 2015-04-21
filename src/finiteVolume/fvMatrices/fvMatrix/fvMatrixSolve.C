@@ -25,6 +25,7 @@ License
 
 #include "LduMatrix.H"
 #include "diagTensorField.H"
+#include "fvMatrixCache.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -41,7 +42,7 @@ void Foam::fvMatrix<Type>::setComponentReference
     {
         if (Pstream::master())
         {
-			scalar delta = diag().get(psi_.mesh().boundary()[patchi].faceCells().get(facei));
+            scalar delta = diag().get(psi_.mesh().boundary()[patchi].faceCells().get(facei));
 			
             internalCoeffs_[patchi].set(facei, internalCoeffs_[patchi].get(facei)+delta);
 
@@ -123,7 +124,10 @@ Foam::solverPerformance Foam::fvMatrix<Type>::solveSegregated
         psi.name()
     );
 
-    scalargpuField saveDiag(diag());
+   label size = diag().size();
+
+    scalargpuField saveDiag(fvMatrixCache::diag(level(),size),size);
+    saveDiag = diag();
 
     gpuField<Type> source(source_);
 
@@ -147,10 +151,12 @@ Foam::solverPerformance Foam::fvMatrix<Type>::solveSegregated
 
         // copy field and source
 
-        scalargpuField psiCmpt(psi.internalField().component(cmpt));
+        scalargpuField psiCmpt(fvMatrixCache::psi(level(),size),size);
+        component(psiCmpt,psi.internalField(),cmpt);
         addBoundaryDiag(diag(), cmpt);
 
-        scalargpuField sourceCmpt(source.component(cmpt));
+        scalargpuField sourceCmpt(fvMatrixCache::source(level(),size),size);
+        component(sourceCmpt,source,cmpt);
 
         FieldField<gpuField, scalar> bouCoeffsCmpt
         (

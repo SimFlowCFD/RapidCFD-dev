@@ -25,6 +25,7 @@ License
 
 #include "PCG.H"
 #include "lduMatrixSolverFunctors.H"
+#include "PCGCache.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -81,9 +82,8 @@ Foam::solverPerformance Foam::PCG::solve
     register label nCells = psi.size();
 
 
-    scalargpuField pA(nCells);
-
-    scalargpuField wA(nCells);
+    scalargpuField pA(PCGCache::pA(matrix_.level(),nCells),nCells);
+    scalargpuField wA(PCGCache::wA(matrix_.level(),nCells),nCells);
 
     scalar wArA = solverPerf.great_;
     scalar wArAold = wArA;
@@ -92,7 +92,15 @@ Foam::solverPerformance Foam::PCG::solve
     matrix_.Amul(wA, psi, interfaceBouCoeffs_, interfaces_, cmpt);
 
     // --- Calculate initial residual field
-    scalargpuField rA(source - wA);
+    scalargpuField rA(PCGCache::rA(matrix_.level(),nCells),nCells);
+    thrust::transform
+    (
+        source.begin(),
+        source.end(),
+        wA.begin(),
+        rA.begin(),
+        minusOp<scalar>()
+    );
 
     // --- Calculate normalisation factor
     scalar normFactor = this->normFactor(psi, source, wA, pA);

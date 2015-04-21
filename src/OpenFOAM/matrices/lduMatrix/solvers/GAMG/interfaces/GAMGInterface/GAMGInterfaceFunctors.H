@@ -29,7 +29,7 @@ struct GAMGInterfaceFunctor
         op(_op)
     {}
 
-    __HOST____DEVICE__
+    __device__
     scalar operator()(const label& id,const scalar& s)
     {
         scalar out = s;
@@ -61,7 +61,7 @@ struct GAMGUpdateInterfaceMatrixFunctor
         pnf(_pnf)
     {}
 
-    __HOST____DEVICE__
+    __device__
     scalar operator()(const label& cell, const label& face)
     {
         return coeffs[face]*pnf[face];

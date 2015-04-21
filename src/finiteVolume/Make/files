@@ -203,6 +203,7 @@ fields/surfaceFields/surfaceFields.C
 
 fvMatrices/fvMatrices.C
 fvMatrices/fvScalarMatrix/fvScalarMatrix.C
+fvMatrices/fvMatrixCache/fvMatrixCache.C
 
 fvMatrices/solvers/MULES/MULES.C
 fvMatrices/solvers/MULES/CMULES.C

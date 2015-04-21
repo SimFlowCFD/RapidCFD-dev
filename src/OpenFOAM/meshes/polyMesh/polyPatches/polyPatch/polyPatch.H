@@ -83,7 +83,7 @@ class polyPatch
             //- face-cell addressing
             mutable labelList::subList* faceCellsPtr_;
 
-            mutable labelgpuList gpuFaceCells;
+            mutable labelgpuList* gpuFaceCellsPrt_;
 
             //- Global edge addressing
             mutable labelList* mePtr_;

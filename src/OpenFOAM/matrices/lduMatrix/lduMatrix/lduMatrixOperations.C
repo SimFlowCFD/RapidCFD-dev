@@ -35,9 +35,9 @@ Description
 void Foam::lduMatrix::sumDiag()
 {
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
-    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upperSort();
+    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
 
-    matrixFastOperation
+    matrixOperation
     (
         diag().begin(),
         diag(),
@@ -58,9 +58,9 @@ void Foam::lduMatrix::sumDiag()
 void Foam::lduMatrix::negSumDiag()
 {
     const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
-    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upperSort();
+    const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
 
-    matrixFastOperation
+    matrixOperation
     (
         diag().begin(),
         diag(),
@@ -76,7 +76,6 @@ void Foam::lduMatrix::negSumDiag()
             negateUnaryOperatorFunctor<scalar,scalar>()
         )
     );  
-                    
 }
 
 void Foam::lduMatrix::sumMagOffDiag

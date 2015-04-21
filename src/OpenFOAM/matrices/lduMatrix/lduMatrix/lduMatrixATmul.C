@@ -303,19 +303,23 @@ void Foam::lduMatrix::sumA
     const lduInterfaceFieldPtrsList& interfaces
 ) const
 {
-    matrixFastOperation
+    const scalargpuField& Lower = lower();
+    const scalargpuField& Upper = upper();
+    const scalargpuField& Diag = diag();
+
+    matrixOperation
     (
-        diag().begin(),
+        Diag.begin(),
         sumA,
         lduAddr(),
         matrixCoeffsFunctor<scalar,unityOp<scalar> >
         (
-            upper().data(),
+            Upper.data(),
             unityOp<scalar>()
         ),
         matrixCoeffsFunctor<scalar,unityOp<scalar> >
         (
-            lowerSort().data(),
+            Lower.data(),
             unityOp<scalar>()
         )
     );

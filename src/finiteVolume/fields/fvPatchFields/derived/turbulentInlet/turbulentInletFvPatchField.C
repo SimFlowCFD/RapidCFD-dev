@@ -30,6 +30,102 @@ License
 namespace Foam
 {
 
+struct turbulentInletSetupFunctor
+{
+    long seed;
+
+    turbulentInletSetupFunctor(long _seed):seed(_seed){};
+
+    __device__
+    stateType operator()(const int& id)
+    {
+        stateType state;
+        curand_init(seed,id,0,&state);
+        return state;
+    }
+};
+
+template<class Type>
+struct turbulentInletRandomiseFunctor
+{
+    __device__
+    inline Type operator()(stateType& state);
+};
+
+template<>
+__device__
+scalar turbulentInletRandomiseFunctor<scalar>::operator()(stateType& state)
+{
+    return curand_uniform(&state);
+}
+
+template<>
+__device__
+vector turbulentInletRandomiseFunctor<vector>::operator()(stateType& state)
+{
+    stateType localState = state;
+    vector out
+    (
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+        curand_uniform(&localState)
+    );
+
+    state = localState;
+    return out;
+}
+
+template<>
+__device__
+tensor turbulentInletRandomiseFunctor<tensor>::operator()(stateType& state)
+{
+    stateType localState = state;
+    tensor out
+    (
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+        curand_uniform(&localState)
+    );
+
+    state = localState;
+    return out;
+}
+
+template<>
+__device__
+sphericalTensor turbulentInletRandomiseFunctor<sphericalTensor>::operator()(stateType& state)
+{
+    return sphericalTensor(curand_uniform(&state));
+}
+
+template<>
+__device__
+symmTensor turbulentInletRandomiseFunctor<symmTensor>::operator()(stateType& state)
+{
+    stateType localState = state;
+    symmTensor out
+    (
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+
+        curand_uniform(&localState),
+        curand_uniform(&localState),
+        curand_uniform(&localState)
+    );
+
+    state = localState;
+    return out;
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class Type>
@@ -40,12 +136,14 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
 )
 :
     fixedValueFvPatchField<Type>(p, iF),
-    ranGen_(label(0)),
+    states_(p.size()),
     fluctuationScale_(pTraits<Type>::zero),
     referenceField_(p.size()),
     alpha_(0.1),
     curTimeIndex_(-1)
-{}
+{
+    updateRandomState();
+}
 
 
 template<class Type>
@@ -58,12 +156,14 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
 )
 :
     fixedValueFvPatchField<Type>(ptf, p, iF, mapper),
-    ranGen_(label(0)),
+    states_(p.size()),
     fluctuationScale_(ptf.fluctuationScale_),
     referenceField_(ptf.referenceField_, mapper),
     alpha_(ptf.alpha_),
     curTimeIndex_(-1)
-{}
+{
+    updateRandomState();
+}
 
 
 template<class Type>
@@ -75,7 +175,7 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
 )
 :
     fixedValueFvPatchField<Type>(p, iF),
-    ranGen_(label(0)),
+    states_(p.size()),
     fluctuationScale_(pTraits<Type>(dict.lookup("fluctuationScale"))),
     referenceField_("referenceField", dict, p.size()),
     alpha_(dict.lookupOrDefault<scalar>("alpha", 0.1)),
@@ -92,6 +192,8 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
     {
         fixedValueFvPatchField<Type>::operator==(referenceField_);
     }
+
+    updateRandomState();
 }
 
 
@@ -102,7 +204,7 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
 )
 :
     fixedValueFvPatchField<Type>(ptf),
-    ranGen_(ptf.ranGen_),
+    states_(ptf.states_),
     fluctuationScale_(ptf.fluctuationScale_),
     referenceField_(ptf.referenceField_),
     alpha_(ptf.alpha_),
@@ -118,7 +220,7 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
 )
 :
     fixedValueFvPatchField<Type>(ptf, iF),
-    ranGen_(ptf.ranGen_),
+    states_(ptf.states_),
     fluctuationScale_(ptf.fluctuationScale_),
     referenceField_(ptf.referenceField_),
     alpha_(ptf.alpha_),
@@ -127,6 +229,18 @@ turbulentInletFvPatchField<Type>::turbulentInletFvPatchField
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+template<class Type>
+void turbulentInletFvPatchField<Type>::updateRandomState()
+{
+    thrust::transform
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+this->size(),
+        states_.begin(),
+        turbulentInletSetupFunctor(0)
+    );
+}
 
 template<class Type>
 void turbulentInletFvPatchField<Type>::autoMap
@@ -169,10 +283,13 @@ void turbulentInletFvPatchField<Type>::updateCoeffs()
 
         gpuField<Type> randomField(this->size());
 
-        forAll(patchField, facei)
-        {
-            ranGen_.randomise(randomField[facei]);
-        }
+        thrust::transform
+        (
+            states_.begin(),
+            states_.end(),
+            randomField.begin(),
+            turbulentInletRandomiseFunctor<Type>()
+        );
 
         // Correction-factor to compensate for the loss of RMS fluctuation
         // due to the temporal correlation introduced by the alpha parameter.

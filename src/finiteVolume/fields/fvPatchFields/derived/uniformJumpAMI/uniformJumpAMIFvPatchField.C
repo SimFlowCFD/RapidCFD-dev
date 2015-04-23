@@ -71,7 +71,7 @@ Foam::uniformJumpAMIFvPatchField<Type>::uniformJumpAMIFvPatchField
 
     if (dict.found("value"))
     {
-        fvPatchField<Type>::operator=(Field<Type>("value", dict, p.size()));
+        fvPatchField<Type>::operator=(gpuField<Type>("value", dict, p.size()));
     }
     else
     {

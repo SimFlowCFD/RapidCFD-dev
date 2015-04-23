@@ -77,13 +77,15 @@ SourceFiles
 #ifndef turbulentInletFvPatchField_H
 #define turbulentInletFvPatchField_H
 
-#include "Random.H"
 #include "fixedValueFvPatchFields.H"
+#include <curand_kernel.h>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+
+typedef curandStatePhilox4_32_10_t stateType;
 
 /*---------------------------------------------------------------------------*\
                  Class turbulentInletFvPatchField Declaration
@@ -97,9 +99,9 @@ class turbulentInletFvPatchField
     // Private data
 
         //- Random number generator
-        Random ranGen_;
+        gpuList<stateType> states_;
 
-        //- Fluctuation scake
+        //- Fluctuation scale
         Type fluctuationScale_;
 
         //- Reference field
@@ -111,6 +113,7 @@ class turbulentInletFvPatchField
         //- Current time index (used for updating)
         label curTimeIndex_;
 
+        void updateRandomState();
 
 public:
 

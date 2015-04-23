@@ -1,6 +1,6 @@
 #include "JacobiSmoother.H"
 #include "JacobiSmootherF.H"
-#include "BasicCache.H"
+#include "JacobiCache.H"
 
 namespace Foam
 {
@@ -11,27 +11,6 @@ namespace Foam
 
     lduMatrix::smoother::addasymMatrixConstructorToTable<JacobiSmoother>
         addJacobiSmootherAsymMatrixConstructorToTable_;   
-
-    class JacobiCache
-    {
-        static PtrList<scalargpuField> psiCache;
-        static PtrList<scalargpuField> sourceCache;
-
-        public:
-
-        static scalargpuField& psi(label level, label size)
-        {
-            return cache::retrieve(psiCache,level,size);
-        }
-
-        static scalargpuField& source(label level, label size)
-        {
-            return cache::retrieve(sourceCache,level,size);
-        }
-    };
-
-    PtrList<scalargpuField> JacobiCache::psiCache(1);
-    PtrList<scalargpuField> JacobiCache::sourceCache(1);
 }
 
 Foam::JacobiSmoother::JacobiSmoother
@@ -65,8 +44,8 @@ void Foam::JacobiSmoother::smooth
     const label nSweeps
 ) const
 {
-    scalargpuField& Apsi = JacobiCache::psi(matrix_.level(),psi.size());
-    scalargpuField& sourceTmp = JacobiCache::source(matrix_.level(),source.size());
+    scalargpuField Apsi(JacobiCache::psi(matrix_.level(),psi.size()),psi.size());
+    scalargpuField sourceTmp(JacobiCache::source(matrix_.level(),source.size()),source.size());
 
     const labelgpuList& l = matrix_.lduAddr().ownerSortAddr();
     const labelgpuList& u = matrix_.lduAddr().upperAddr();
@@ -96,12 +75,7 @@ void Foam::JacobiSmoother::smooth
 
     for (label sweep=0; sweep<nSweeps; sweep++)
     {
-        thrust::copy
-        (
-            source.begin(),
-            source.end(),
-            sourceTmp.begin()
-        );
+        sourceTmp = source;
 
         matrix_.initMatrixInterfaces
         (
@@ -141,12 +115,7 @@ void Foam::JacobiSmoother::smooth
             )
         );
 
-        thrust::copy
-        (
-            Apsi.begin(),
-            Apsi.begin()+psi.size(),
-            psi.begin()
-        );
+        psi = Apsi;
     }
 
     forAll(mBouCoeffs, patchi)

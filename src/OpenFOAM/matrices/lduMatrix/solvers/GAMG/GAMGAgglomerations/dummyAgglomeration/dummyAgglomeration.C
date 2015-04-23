@@ -68,24 +68,24 @@ Foam::dummyAgglomeration::dummyAgglomeration
             new labelField(identity(nCoarseCells))
         );
 
-        restrictAddressing_.set
-        (
-            nCreatedLevels,
-            new labelgpuField(restrictAddressingHost_[nCreatedLevels])
-        );
+        labelgpuList restrictAddressingTmp(restrictAddressingHost_[nCreatedLevels]);
 
         restrictSortAddressing_.set(nCreatedLevels,new labelgpuField(nCoarseCells));
-
-        labelgpuList restrictAddressingTmp(restrictAddressing_[nCreatedLevels]);
         labelgpuList& restrictSortAddressing = restrictSortAddressing_[nCreatedLevels];
-        thrust::copy(
-                    thrust::make_counting_iterator(0),
-                    thrust::make_counting_iterator(0)+restrictSortAddressing.size(),
-                    restrictSortAddressing.begin());
-        thrust::stable_sort_by_key(
-                    restrictAddressingTmp.begin(),
-                    restrictAddressingTmp.end(),
-                    restrictSortAddressing.begin());
+
+        thrust::copy
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+restrictSortAddressing.size(),
+            restrictSortAddressing.begin()
+        );
+
+        thrust::stable_sort_by_key
+        (
+            restrictAddressingTmp.begin(),
+            restrictAddressingTmp.end(),
+            restrictSortAddressing.begin()
+        );
 
         agglomerateLduAddressing(nCreatedLevels);
     }

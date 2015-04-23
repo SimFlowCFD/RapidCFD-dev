@@ -80,7 +80,6 @@ protected:
 
         //- Cell restriction addressing array.
         //  Maps from the finer to the coarser level.
-        PtrList<labelgpuField> restrictAddressing_;
         PtrList<labelgpuField> restrictSortAddressing_;
         PtrList<labelgpuField> restrictTargetAddressing_;
         PtrList<labelgpuField> restrictTargetStartAddressing_;
@@ -96,7 +95,6 @@ protected:
         //  of the coarser cells to the corresponding coarser cell face.
         //  Negative indices map the finer faces which are internal to the
         //  coarser cells to minus the corresponding coarser cell index minus 1.
-        PtrList<labelgpuList> faceRestrictAddressing_;
         PtrList<labelgpuList> faceRestrictSortAddressing_;
         PtrList<labelgpuList> faceRestrictTargetAddressing_;
         PtrList<labelgpuList> faceRestrictTargetStartAddressing_;
@@ -115,7 +113,6 @@ protected:
         //- Patch-local face restriction addressing array.
         //  Maps from the finer to the coarser level. Always positive.
         //  Extracted from GAMGInterfaces after agglomeration.
-        PtrList<labelgpuListList> patchFaceRestrictAddressing_;
         PtrList<labelgpuListList> patchFaceRestrictSortAddressing_;
         PtrList<labelgpuListList> patchFaceRestrictTargetAddressing_;
         PtrList<labelgpuListList> patchFaceRestrictTargetStartAddressing_;
@@ -291,11 +288,6 @@ public:
             ) const;
 
             //- Return cell restrict addressing of given level
-            const labelgpuField& restrictAddressing(const label leveli) const
-            {
-                return restrictAddressing_[leveli];
-            }
-
             const labelgpuField& restrictSortAddressing(const label leveli) const
             {
                 return restrictSortAddressing_[leveli];
@@ -317,12 +309,7 @@ public:
                 return restrictAddressingHost_[leveli];
             }
 
-            //- Return face restrict addressing of given level
-            const labelgpuList& faceRestrictAddressing(const label leveli) const
-            {
-                return faceRestrictAddressing_[leveli];
-            }
-
+            //- Face restrict addressing of given level
             const labelgpuList& faceRestrictSortAddressing(const label leveli) const
             {
                 return faceRestrictSortAddressing_[leveli];
@@ -344,11 +331,6 @@ public:
                 return faceRestrictAddressingHost_[leveli];
             }
 
-
-            const labelgpuListList& patchFaceRestrictAddressing(const label leveli) const
-            {
-                return patchFaceRestrictAddressing_[leveli];
-            }
 
             const labelgpuListList& patchFaceRestrictSortAddressing(const label leveli) const
             {

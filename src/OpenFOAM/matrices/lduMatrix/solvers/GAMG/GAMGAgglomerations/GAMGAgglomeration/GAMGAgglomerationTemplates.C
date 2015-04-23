@@ -26,45 +26,9 @@ License
 #include "GAMGAgglomeration.H"
 #include "mapDistribute.H"
 #include "globalIndex.H"
+#include "GAMGAgglomerationF.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
-template<class Type>
-struct GAMGAgglomerationRestrictFunctor
-{
-    const Type* ff;
-    const label* sort;
-    const Type zero;
-
-    GAMGAgglomerationRestrictFunctor
-    (
-        const Type* _ff,
-        const label* _sort
-    ):
-        ff(_ff),
-        sort(_sort),
-        zero(pTraits<Type>::zero)
-    {}
-
-    __HOST____DEVICE__
-    Type operator()(const label& start, const label& end)
-    {
-        Type out = zero;
-
-        for(label i = start; i<end; i++)
-        {
-            out += ff[sort[i]];
-        }
-
-        return out;
-    }
-
-};
-
-}
 
 template<class Type>
 void Foam::GAMGAgglomeration::restrictField
@@ -131,22 +95,6 @@ void Foam::GAMGAgglomeration::restrictField
         targetStart
     );
 }
-
-namespace Foam
-{
-
-template<class Type>
-struct nonNegativeGAMGFunctor
-{
-    __HOST____DEVICE__
-    bool operator()(const Type& x)
-    {
-        return x >= 0;
-    }
-};
-
-}
-
 
 template<class Type>
 void Foam::GAMGAgglomeration::restrictFaceField
@@ -241,21 +189,22 @@ void Foam::GAMGAgglomeration::prolongField
     const label levelIndex
 ) const
 {
-    const labelgpuList& fineToCoarse = restrictAddressing_[levelIndex];
+    const labelgpuList& sort = restrictSortAddressing_[levelIndex];
+    const labelgpuList& target = restrictTargetAddressing_[levelIndex];
+    const labelgpuList& targetStart = restrictTargetStartAddressing_[levelIndex];
 
-    thrust::copy
+    thrust::for_each
     (
-        thrust::make_permutation_iterator
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+target.size(),
+        GAMGAgglomerationProlongFunctor<Type>
         (
-            cf.begin(),
-            fineToCoarse.begin()
-        ),
-        thrust::make_permutation_iterator
-        (
-            cf.begin(),
-            fineToCoarse.end()
-        ),
-        ff.begin()
+            ff.data(),
+            cf.data(),
+            sort.data(),
+            target.data(),
+            targetStart.data()
+        )
     );
 }
 

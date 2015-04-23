@@ -392,6 +392,17 @@ OPENMPI)
     _foamAddMan     $MPI_ARCH_PATH/share/man
     ;;
 
+MVAPICH2)
+    export FOAM_MPI=mvapich2-2.1
+    export MPI_HOME=$WM_THIRD_PARTY_DIR/$FOAM_MPI
+    export MPI_ARCH_PATH=$WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/$FOAM_MPI
+    export MV2_USE_CUDA=1
+
+    _foamAddPath    $MPI_ARCH_PATH/bin
+    _foamAddLib     $MPI_ARCH_PATH/lib
+    export FOAM_MPI_LIBBIN=$FOAM_LIBBIN/$FOAM_MPI
+;;
+
 MPICH)
     export FOAM_MPI=mpich2-1.1.1p1
     export MPI_HOME=$WM_THIRD_PARTY_DIR/$FOAM_MPI

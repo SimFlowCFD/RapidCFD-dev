@@ -372,6 +372,18 @@ case OPENMPI:
     _foamAddMan     $MPI_ARCH_PATH/share/man
     breaksw
 
+case MVAPICH2:
+    setenv FOAM_MPI mvapich2-2.1
+    setenv MPI_HOME $WM_THIRD_PARTY_DIR/$FOAM_MPI
+    setenv MPI_ARCH_PATH $WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/$FOAM_MPI
+    setenv MV2_USE_CUDA 1
+
+    _foamAddPath    $MPI_ARCH_PATH/bin
+    _foamAddLib     $MPI_ARCH_PATH/lib
+
+    setenv FOAM_MPI_LIBBIN $FOAM_LIBBIN/$FOAM_MPI
+    breaksw
+
 case MPICH:
     setenv FOAM_MPI mpich2-1.1.1p1
     setenv MPI_HOME $WM_THIRD_PARTY_DIR/$FOAM_MPI

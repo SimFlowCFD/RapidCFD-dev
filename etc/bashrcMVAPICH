@@ -80,7 +80,7 @@ export WM_COMPILE_OPTION=Opt
 
 #- CUDA aware MPI implementation:
 #    WM_MPLIB = OPENMPI | MVAPICH2
-export WM_MPLIB=OPENMPI
+export WM_MPLIB=MVAPICH2
 
 #- GPU API
 #    WM_GPU = CUDA | ???

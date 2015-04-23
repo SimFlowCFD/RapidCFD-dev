@@ -3,9 +3,6 @@
 
 #if WM_GPU == CUDA
 
-#define GPU_FUNCTOR(T) T
-#define GPU_TEMPLATE_FUNCTOR(T) T
-
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/device_ptr.h>
@@ -31,40 +28,33 @@
 
 namespace gpu_api = thrust;
 
+#define CUDA_CALL(x) do { if((x) != cudaSuccess) {         \
+ printf("Error at %s:%d\n",__FILE__,__LINE__);             \
+ printf("%s\n",cudaGetErrorString(cudaPeekAtLastError())); \
+ cudaDeviceReset();                                        \
+ ::exit(static_cast<int>(cudaPeekAtLastError()));          \
+ }} while(0)
 
-#define gpuErrorCheck(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+#define GPU_ERROR_CHECK()                                  \
+ cudaDeviceSynchronize();                                  \
+ CUDA_CALL( cudaPeekAtLastError());    
 
-#define GPU_ERROR_CHECK()                        \
-cudaDeviceSynchronize();                         \
-gpuErrorCheck( cudaPeekAtLastError() )    
+#define GPU_ERROR_CHECK_ASYNC()                            \
+ CUDA_CALL(cudaPeekAtLastError());    
 
 namespace Foam
 {
 
-inline void gpuAssert(cudaError_t code, const char *file, int line)
-{
-   if (code != cudaSuccess) 
-   {
-      
-      Info << "GPUassert: " << cudaGetErrorString(code)
-           << ", file: " << file
-           << ", line: " << line << endl;
-
-      cudaDeviceReset();
-      ::exit(static_cast<label>(code));
-   }
-}
-
 inline int getGpuDeviceCount()
 {
     int num_devices;
-    cudaGetDeviceCount(&num_devices);
+    CUDA_CALL(cudaGetDeviceCount(&num_devices));
     return num_devices;
 }
 
 inline void setGpuDevice(int device)
 {
-   cudaSetDevice(device);
+   CUDA_CALL(cudaSetDevice(device));
 }
 
 }

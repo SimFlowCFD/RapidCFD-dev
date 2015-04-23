@@ -278,7 +278,7 @@ extern messageStream Info;
  * Report a variable name and value using Foam::Pout in
  * file __FILE__ at line __LINE__
 */
-#define Debug(var)                                                            \
+#define FoamDebug(var)                                                            \
     ::Foam::Pout<< "["<< __FILE__ << ":" << __LINE__ << "] "                  \
         << #var " = " << var << ::Foam::endl
 

@@ -32,6 +32,7 @@ Description
 #define gpuFieldM_H
 
 #include "error.H"
+#include "unitConversion.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

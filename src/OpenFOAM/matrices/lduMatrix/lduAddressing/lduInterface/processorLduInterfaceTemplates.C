@@ -140,7 +140,7 @@ void Foam::processorLduInterface::send
         else
         {
             resizeBuf(sendBuf_, nBytes);
-            cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost);
+            CUDA_CALL(cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost));
             sendData = sendBuf_.begin();
         }
 
@@ -164,7 +164,7 @@ void Foam::processorLduInterface::send
             resizeBuf(gpuReceiveBuf_, nBytes);
             resizeBuf(gpuSendBuf_, nBytes);
 
-            cudaMemcpy(gpuSendBuf_.data(), f.data(), nBytes,cudaMemcpyDeviceToDevice);
+            CUDA_CALL(cudaMemcpy(gpuSendBuf_.data(), f.data(), nBytes,cudaMemcpyDeviceToDevice));
 
             send = gpuSendBuf_.data();
             receive = gpuReceiveBuf_.data();
@@ -174,7 +174,7 @@ void Foam::processorLduInterface::send
             resizeBuf(receiveBuf_, nBytes);
             resizeBuf(sendBuf_, nBytes);
 
-            cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost);
+            CUDA_CALL(cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost));
 
             send = sendBuf_.begin();
             receive = receiveBuf_.begin();
@@ -272,18 +272,18 @@ void Foam::processorLduInterface::receive
 
         if( ! Pstream::gpuDirectTransfer)
         {
-            cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice);
+            CUDA_CALL(cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice));
         }
     }
     else if (commsType == Pstream::nonBlocking)
     {
         if(Pstream::gpuDirectTransfer)
         {
-            cudaMemcpy(f.data(), gpuReceiveBuf_.data(), f.byteSize(),cudaMemcpyDeviceToDevice);
+            CUDA_CALL(cudaMemcpy(f.data(), gpuReceiveBuf_.data(), f.byteSize(),cudaMemcpyDeviceToDevice));
         }
         else
         {
-            cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice);
+            CUDA_CALL(cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice));
         }
     }
     else
@@ -415,7 +415,7 @@ void Foam::processorLduInterface::compressedSend
              )
         );
 
-        cudaMemcpy(fArray+nm1, f.data() + (f.size() - 1), sizeof(Type), cudaMemcpyDeviceToDevice);
+        CUDA_CALL(cudaMemcpy(fArray+nm1, f.data() + (f.size() - 1), sizeof(Type), cudaMemcpyDeviceToDevice));
 
         if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
         {
@@ -427,7 +427,7 @@ void Foam::processorLduInterface::compressedSend
             else
             {
                 resizeBuf(sendBuf_, nBytes);
-                cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost);
+                CUDA_CALL(cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost));
                 sendData = sendBuf_.begin();
             }
 
@@ -457,7 +457,7 @@ void Foam::processorLduInterface::compressedSend
                 resizeBuf(receiveBuf_, nBytes);
                 resizeBuf(sendBuf_, nBytes);
 
-                cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost);
+                CUDA_CALL(cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost));
 
                 sendData = sendBuf_.begin();
                 readData = receiveBuf_.begin();
@@ -590,14 +590,14 @@ void Foam::processorLduInterface::compressedReceive
 
             if( ! Pstream::gpuDirectTransfer)
             {
-                cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice);
+                CUDA_CALL(cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice));
             }
         }
         else if (commsType == Pstream::nonBlocking)
         {
             if( ! Pstream::gpuDirectTransfer)
             {
-                cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice);
+                CUDA_CALL(cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice));
             }
         }
         else
@@ -610,7 +610,7 @@ void Foam::processorLduInterface::compressedReceive
         const float *fArray =
             reinterpret_cast<const float*>(gpuReceiveBuf_.data());
 
-        cudaMemcpy(f.data()+(f.size() - 1),fArray+nm1, sizeof(Type), cudaMemcpyDeviceToDevice);
+        CUDA_CALL(cudaMemcpy(f.data()+(f.size() - 1),fArray+nm1, sizeof(Type), cudaMemcpyDeviceToDevice));
 
         scalar *sArray = reinterpret_cast<scalar*>(f.data());
         const scalar *slast = &sArray[nm1];

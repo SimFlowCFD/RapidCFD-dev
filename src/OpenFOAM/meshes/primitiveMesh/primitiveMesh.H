@@ -130,8 +130,8 @@ class primitiveMesh
 
             //- Cell-faces
             mutable cellList* cfPtr_;
-            mutable cellDatagpuList cdata;
-            mutable labelgpuList cellFaces;
+            mutable cellDatagpuList* gpuCellDataPtr_;
+            mutable labelgpuList* gpuCellFacesPtr_;
 
             //- Edge-faces
             mutable labelListList* efPtr_;
@@ -204,6 +204,7 @@ class primitiveMesh
 
             //- Calculate cell-face addressing
             void calcCells() const;
+            void calcgpuCells() const;
 
             //- Calculate edge list
             void calcCellEdges() const;

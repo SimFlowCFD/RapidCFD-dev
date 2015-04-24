@@ -166,9 +166,10 @@ void Foam::polyMesh::clearPrimitives()
     owner_.setSize(0);
     neighbour_.setSize(0);
 
-    gpuPoints_.clear();
-    gpuFaces_.clear();
-    gpuFaceNodes_.clear();
+    deleteDemandDrivenData(gpuPointsPtr_);
+    deleteDemandDrivenData(gpuFacesPtr_);
+    deleteDemandDrivenData(gpuFaceNodesPtr_);
+
     gpuOwner_.clear();
     gpuNeighbour_.clear();
 
@@ -180,6 +181,10 @@ void Foam::polyMesh::clearOut()
 {
     clearGeom();
     clearAddressing();
+
+    deleteDemandDrivenData(gpuPointsPtr_);
+    deleteDemandDrivenData(gpuFacesPtr_);
+    deleteDemandDrivenData(gpuFaceNodesPtr_);
 }
 
 

@@ -112,13 +112,13 @@ private:
 
             //- Points
             pointIOField points_;
-            pointgpuField gpuPoints_;
+            mutable pointgpuField* gpuPointsPtr_;
 
             //- Faces
             faceCompactIOList faces_;
 
-            faceDatagpuList gpuFaces_;
-            labelgpuList gpuFaceNodes_;
+            mutable faceDatagpuList* gpuFacesPtr_;
+            mutable labelgpuList* gpuFaceNodesPtr_;
 
             //- Face owner
             labelIOList owner_;
@@ -202,8 +202,9 @@ private:
         void initMesh();
 
         void initgpuMesh();
-        void initgpuFaces();
-        label getFacesCompactSize();
+        void initgpuFaces() const;
+
+        label getFacesCompactSize() const;
 
         //- Initialise the polyMesh from the given set of cells
         void initMesh(cellList& c);

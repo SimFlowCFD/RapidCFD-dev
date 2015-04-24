@@ -63,6 +63,8 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -103,6 +105,8 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -144,6 +148,8 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -184,6 +190,8 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -265,7 +273,7 @@ getEdges() const
 {
     if ( ! gpuEdgesPtr_)
     {
-        calcAddressing();
+        gpuEdgesPtr_ = new edgegpuList(edges());
     }
 
     return *gpuEdgesPtr_;
@@ -464,7 +472,7 @@ getMeshPoints() const
 {
     if ( ! gpuMeshPointsPtr_)
     {
-        calcMeshData();
+        gpuMeshPointsPtr_ = new labelgpuList(meshPoints());
     }
 
     return *gpuMeshPointsPtr_;
@@ -523,7 +531,7 @@ getLocalPoints() const
 {
     if ( ! gpuLocalPointsPtr_)
     {
-        calcLocalPoints();
+        gpuLocalPointsPtr_ = new gpuField<PointType>(localPoints());
     }
 
     return *gpuLocalPointsPtr_;
@@ -650,12 +658,49 @@ getPointNormals() const
 {
     if ( ! gpuPointNormalsPtr_)
     {
-        calcPointNormals();
+        gpuPointNormalsPtr_ = new gpuField<PointType>(pointNormals());
     }
 
     return *gpuPointNormalsPtr_;
 }
 
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+const Foam::faceDatagpuList&
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+getFaces() const
+{
+    if ( ! gpuFacesPtr_)
+    {
+        calcgpuFaceAddr();
+    }
+
+    return *gpuFacesPtr_;
+}
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+const Foam::labelgpuList&
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+getFaceNodes() const
+{
+    if ( ! gpuFaceNodesPtr_)
+    {
+        calcgpuFaceAddr();
+    }
+
+    return *gpuFaceNodesPtr_;
+}
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 

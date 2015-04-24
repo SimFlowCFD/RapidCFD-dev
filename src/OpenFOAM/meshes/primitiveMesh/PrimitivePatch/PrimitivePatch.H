@@ -54,6 +54,7 @@ SourceFiles
 #include "boolList.H"
 #include "labelList.H"
 #include "edgeList.H"
+#include "facegpuList.H"
 #include "point.H"
 #include "intersection.H"
 #include "HashSet.H"
@@ -120,6 +121,10 @@ private:
 
     // Demand driven private data
 
+        //- Face-node addressing on GPU
+        mutable faceDatagpuList* gpuFacesPtr_;
+        mutable labelgpuList* gpuFaceNodesPtr_;
+
         //- Edges of the patch; address into local point list;
         //  sorted with internal edges first in upper-triangular order
         //  and external edges last.
@@ -183,6 +188,9 @@ private:
 
 
     // Private Member Functions
+       
+        //- Calculate GPU face-node addressing
+        void calcgpuFaceAddr() const;
 
         //- Calculate edges of the patch
         void calcIntBdryEdges() const;
@@ -348,6 +356,10 @@ public:
 
 
         // Addressing into mesh
+
+            //- Return face-node addressing on GPU
+            const faceDatagpuList& getFaces() const;
+            const labelgpuList& getFaceNodes() const;
 
             //- Return labelList of mesh points in patch. They are constructed
             //  walking through the faces in incremental order and not sorted

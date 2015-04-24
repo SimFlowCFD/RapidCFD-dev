@@ -52,6 +52,8 @@ clearGeom()
     deleteDemandDrivenData(faceNormalsPtr_);
     deleteDemandDrivenData(pointNormalsPtr_);
 
+    deleteDemandDrivenData(gpuFacesPtr_),
+    deleteDemandDrivenData(gpuFaceNodesPtr_),
     deleteDemandDrivenData(gpuLocalPointsPtr_);
     deleteDemandDrivenData(gpuPointNormalsPtr_);
 }

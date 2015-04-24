@@ -131,10 +131,6 @@ calcMeshData() const
         }
     }
 
-    const labelList& meshPointsTmp = *meshPointsPtr_;
-
-    gpuMeshPointsPtr_ = new labelgpuList(meshPointsTmp);
-
     if (debug)
     {
         Pout<< "PrimitivePatch<Face, FaceList, PointField, PointType>::"
@@ -238,8 +234,6 @@ calcLocalPoints() const
         locPts[pointi] = points_[meshPts[pointi]];
     }
 
-    gpuLocalPointsPtr_ = new gpuField<PointType>(locPts);
-
     if (debug)
     {
         Pout<< "PrimitivePatch<Face, FaceList, PointField, PointType>::"
@@ -306,8 +300,6 @@ calcPointNormals() const
 
         curNormal /= mag(curNormal) + VSMALL;
     }
-
-    gpuPointNormalsPtr_ = new gpuField<PointType>(n);
 
     if (debug)
     {

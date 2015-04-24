@@ -296,17 +296,71 @@ calcAddressing() const
         faceFaces[faceI].transfer(ff[faceI]);
     }
 
-    //Copy to GPU
-
-    gpuEdgesPtr_ = new edgegpuList(edges);
-
-
     if (debug)
     {
         Info<< "PrimitivePatch<Face, FaceList, PointField, PointType>::"
             << "calcAddressing() : finished calculating patch addressing"
             << endl;
     }
+}
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+void
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+calcgpuFaceAddr() const
+{
+    if (debug)
+    {
+        Info<< "PrimitivePatch<Face, FaceList, PointField, PointType>::"
+            << "calcgpuFaceAddr() : calculating patch addressing"
+            << endl;
+    }
+
+    if (gpuFacesPtr_ || gpuFaceNodesPtr_)
+    {
+        FatalErrorIn
+        (
+            "PrimitivePatch<Face, FaceList, PointField, PointType>::"
+            "calcgpuFaceAddr()"
+        )   << "addressing already calculated"
+            << abort(FatalError);
+    }
+
+    const FaceList<Face>& facesTmp = *this;
+
+    label size = 0;
+    forAll(facesTmp,i)
+    {
+        size += facesTmp[i].size();
+    }
+
+    labelList fNodes(size);
+    faceDataList fData(facesTmp.size());
+
+    label pos = 0;
+    forAll(facesTmp,i)
+    {
+        Face f = facesTmp[i];
+        label size = f.size();
+        faceData fd(pos,size);
+        fData[i] = fd;
+        
+        forAll(f,j)
+        {
+            fNodes[pos+j] = f[j];
+        }
+        pos += size;
+    }
+
+    gpuFaceNodesPtr_ = new labelgpuList(fNodes);
+    gpuFacesPtr_ = new faceDatagpuList(fData);
+    
 }
 
 

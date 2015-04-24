@@ -267,11 +267,11 @@ Foam::polyMesh::polyMesh(const IOobject& io)
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuPoints_(points_.size()),
     gpuOwner_(owner_.size()),
     gpuNeighbour_(neighbour_.size()),
-    gpuFaceNodes_(getFacesCompactSize()),
-    gpuFaces_(faces_.size()),
+    gpuPointsPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
+    gpuFacesPtr_(NULL),
     gpuOldPointsPtr_(NULL),
     oldPointsPtr_(NULL)
 {
@@ -457,11 +457,11 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuPoints_(points_.size()),
     gpuOwner_(owner_.size()),
     gpuNeighbour_(neighbour_.size()),
-    gpuFaceNodes_(getFacesCompactSize()),
-    gpuFaces_(faces_.size()),
+    gpuPointsPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
+    gpuFacesPtr_(NULL),
     gpuOldPointsPtr_(NULL),
     oldPointsPtr_(NULL)
 {
@@ -624,11 +624,11 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuPoints_(points_.size()),
     gpuOwner_(owner_.size()),
     gpuNeighbour_(neighbour_.size()),
-    gpuFaceNodes_(getFacesCompactSize()),
-    gpuFaces_(faces_.size()),
+    gpuPointsPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
+    gpuFacesPtr_(NULL),
     gpuOldPointsPtr_(NULL),
     oldPointsPtr_(NULL)
 {
@@ -807,12 +807,12 @@ void Foam::polyMesh::resetPrimitives
         }
     }
 
-
-    gpuPoints_.setSize(points_.size());
     gpuOwner_.setSize(owner_.size());
     gpuNeighbour_.setSize(neighbour_.size());
-    gpuFaceNodes_.setSize(getFacesCompactSize());
-    gpuFaces_.setSize(faces_.size());
+
+    deleteDemandDrivenData(gpuPointsPtr_);
+    deleteDemandDrivenData(gpuFacesPtr_);
+    deleteDemandDrivenData(gpuFaceNodesPtr_);
 
     initgpuMesh();
 }
@@ -829,7 +829,7 @@ Foam::polyMesh::~polyMesh()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::label Foam::polyMesh::getFacesCompactSize()
+Foam::label Foam::polyMesh::getFacesCompactSize() const
 {
     label size = 0;
     forAll(faces_,i)
@@ -841,15 +841,21 @@ Foam::label Foam::polyMesh::getFacesCompactSize()
 
 void Foam::polyMesh::initgpuMesh()
 {
-    gpuPoints_ = points_;
     gpuOwner_ = owner_;
     gpuNeighbour_ = neighbour_;
-
-    initgpuFaces();
 }
 
-void Foam::polyMesh::initgpuFaces()
+void Foam::polyMesh::initgpuFaces() const
 {
+    if (gpuFacesPtr_ || gpuFaceNodesPtr_)
+    {
+        FatalErrorIn
+        (
+            "void polyMesh::initgpuFaces()"
+        )   << "GPU faces data already calculated"
+            << abort(FatalError);
+    }
+
     labelList fNodes(getFacesCompactSize());
     faceDataList fData(faces_.size());
 
@@ -868,8 +874,8 @@ void Foam::polyMesh::initgpuFaces()
         pos += size;
     }
 
-    gpuFaceNodes_ = fNodes;
-    gpuFaces_ = fData;
+    gpuFaceNodesPtr_ = new labelgpuList(fNodes);
+    gpuFacesPtr_ = new faceDatagpuList(fData);
 }
 
 const Foam::fileName& Foam::polyMesh::dbDir() const
@@ -1129,7 +1135,12 @@ const Foam::pointgpuField& Foam::polyMesh::getPoints() const
             << abort(FatalError);
     }
 
-    return gpuPoints_;
+    if( ! gpuPointsPtr_)
+    {
+        gpuPointsPtr_ = new pointgpuField(points());
+    }
+
+    return *gpuPointsPtr_;
 }
 
 
@@ -1166,7 +1177,12 @@ const Foam::faceDatagpuList& Foam::polyMesh::getFaces() const
             << abort(FatalError);
     }
 
-    return gpuFaces_;
+    if( ! gpuFacesPtr_)
+    {
+        initgpuFaces();
+    }
+
+    return *gpuFacesPtr_;
 }
 
 
@@ -1179,7 +1195,12 @@ const Foam::labelgpuList& Foam::polyMesh::getFaceNodes() const
             << abort(FatalError);
     }
 
-    return gpuFaceNodes_;
+    if( ! gpuFaceNodesPtr_)
+    {
+        initgpuFaces();
+    }
+
+    return *gpuFaceNodesPtr_;
 }
 
 const Foam::labelList& Foam::polyMesh::faceOwner() const
@@ -1233,7 +1254,7 @@ const Foam::pointgpuField& Foam::polyMesh::getOldPoints() const
                 << endl;
         }
 
-        gpuOldPointsPtr_.reset(new pointgpuField(gpuPoints_));
+        gpuOldPointsPtr_.reset(new pointgpuField(getPoints()));
         curMotionTimeIndex_ = time().timeIndex();
     }
 
@@ -1261,12 +1282,20 @@ Foam::tmp<Foam::scalargpuField> Foam::polyMesh::movePoints
         oldPointsPtr_.clear();
         oldPointsPtr_.reset(new pointField(points_));
         gpuOldPointsPtr_.clear();
-        gpuOldPointsPtr_.reset(new pointgpuField(gpuPoints_));
+        gpuOldPointsPtr_.reset(new pointgpuField(getPoints()));
         curMotionTimeIndex_ = time().timeIndex();
     }
 
-    gpuPoints_ = newPoints;
-    gpuPoints_.copyInto(points_.begin());
+    if(gpuPointsPtr_)
+    {
+        gpuPointsPtr_->operator=(newPoints);
+    }
+    else
+    {
+        gpuPointsPtr_ = new pointgpuField(newPoints);
+    }
+
+    gpuPointsPtr_->copyInto(points_.begin());
 
     bool moveError = false;
     if (debug)
@@ -1290,7 +1319,7 @@ Foam::tmp<Foam::scalargpuField> Foam::polyMesh::movePoints
 
     tmp<scalargpuField> sweptVols = primitiveMesh::movePoints
     (
-        gpuPoints_,
+        *gpuPointsPtr_,
         getOldPoints()
     );
 
@@ -1303,11 +1332,11 @@ Foam::tmp<Foam::scalargpuField> Foam::polyMesh::movePoints
     // Force recalculation of all geometric data with new points
 
     bounds_ = boundBox(points_);
-    boundary_.movePoints(gpuPoints_);
+    boundary_.movePoints(*gpuPointsPtr_);
 
-    pointZones_.movePoints(gpuPoints_);
-    faceZones_.movePoints(gpuPoints_);
-    cellZones_.movePoints(gpuPoints_);
+    pointZones_.movePoints(*gpuPointsPtr_);
+    faceZones_.movePoints(*gpuPointsPtr_);
+    cellZones_.movePoints(*gpuPointsPtr_);
 
     // Reset valid directions (could change with rotation)
     geometricD_ = Vector<label>::zero;

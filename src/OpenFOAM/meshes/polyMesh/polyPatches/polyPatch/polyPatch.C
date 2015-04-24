@@ -339,9 +339,20 @@ Foam::tmp<Foam::vectorgpuField> Foam::polyPatch::getFaceCellCentres() const
 
     const labelgpuList& faceCells = this->getFaceCells();
 
-    thrust::copy(thrust::make_permutation_iterator(gcc.begin(),faceCells.begin()),
-                 thrust::make_permutation_iterator(gcc.begin(),faceCells.end()),
-                 cc.begin());
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
+        (
+            gcc.begin(),
+            faceCells.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            gcc.begin(),
+            faceCells.end()
+        ),
+        cc.begin()
+    );
 
     return tcc;
 }

@@ -128,9 +128,27 @@ void Foam::primitiveMesh::calcCells() const
             faceNeighbour(),
             nCells()
         );
+    }
+}
 
+void Foam::primitiveMesh::calcgpuCells() const
+{
+    if (debug)
+    {
+        Pout<< "primitiveMesh::calcgpuCells() : calculating GPU cells"
+            << endl;
+    }
 
-        //calculate data for gpu
+    if (gpuCellDataPtr_ || gpuCellFacesPtr_)
+    {
+        FatalErrorIn("primitiveMesh::calcgpuCells() const")
+            << "cells already calculated"
+            << abort(FatalError);
+    }
+    else
+    {
+        const cellList& cellFaceAddr = cells();
+
         List<cellData> cdl(cellFaceAddr.size());
         label pos = 0;
         forAll(cdl,ci)
@@ -141,7 +159,7 @@ void Foam::primitiveMesh::calcCells() const
             pos+=c.size();
         }
         
-        cdata = cdl;
+        gpuCellDataPtr_ = new cellDatagpuList(cdl);
         
         List<label> cFaces(pos);
         
@@ -156,7 +174,7 @@ void Foam::primitiveMesh::calcCells() const
             pos+=c.size();
         }
     
-        cellFaces = cFaces;
+        gpuCellFacesPtr_ = new labelgpuList(cFaces);
     }
 }
 
@@ -175,22 +193,22 @@ const Foam::cellList& Foam::primitiveMesh::cells() const
 
 const Foam::cellDatagpuList& Foam::primitiveMesh::getCells() const
 {
-    if (!cfPtr_)
+    if ( ! gpuCellDataPtr_)
     {
-        calcCells();
+        calcgpuCells();
     }
 
-    return cdata;
+    return *gpuCellDataPtr_;
 }
 
 const Foam::labelgpuList& Foam::primitiveMesh::getCellFaces() const
 {
-    if (!cfPtr_)
+    if ( ! gpuCellFacesPtr_)
     {
-        calcCells();
+        calcgpuCells();
     }
 
-    return cellFaces;
+    return *gpuCellFacesPtr_;
 }
 
 

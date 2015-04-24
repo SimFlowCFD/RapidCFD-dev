@@ -557,11 +557,11 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuPoints_(points_.size()),
     gpuOwner_(owner_.size()),
     gpuNeighbour_(neighbour_.size()),
-    gpuFaceNodes_(getFacesCompactSize()),
-    gpuFaces_(faces_.size()),
+    gpuPointsPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
+    gpuFacesPtr_(NULL),
     oldPointsPtr_(NULL)
 {
     if (debug)
@@ -847,11 +847,11 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuPoints_(points_.size()),
     gpuOwner_(owner_.size()),
     gpuNeighbour_(neighbour_.size()),
-    gpuFaceNodes_(getFacesCompactSize()),
-    gpuFaces_(faces_.size()),
+    gpuPointsPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
+    gpuFacesPtr_(NULL),
     oldPointsPtr_(NULL)
 {
     if (debug)

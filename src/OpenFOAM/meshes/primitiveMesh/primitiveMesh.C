@@ -66,6 +66,9 @@ Foam::primitiveMesh::primitiveMesh()
     cpPtr_(NULL),
 
     labels_(0),
+ 
+    gpuCellDataPtr_(NULL),
+    gpuCellFacesPtr_(NULL),
 
     gpuCellCentresPtr_(NULL),
     gpuFaceCentresPtr_(NULL),
@@ -114,6 +117,9 @@ Foam::primitiveMesh::primitiveMesh
     cpPtr_(NULL),
 
     labels_(0),
+
+    gpuCellDataPtr_(NULL),
+    gpuCellFacesPtr_(NULL),
 
     gpuCellCentresPtr_(NULL),
     gpuFaceCentresPtr_(NULL),
@@ -329,9 +335,9 @@ struct primitiveMeshMovePointsFunctor
         const point* _newPoints,
         const label* _faceNodes
     ):
-    oldPoints(_oldPoints),
-    newPoints(_newPoints),
-    faceNodes(_faceNodes)
+        oldPoints(_oldPoints),
+        newPoints(_newPoints),
+        faceNodes(_faceNodes)
     {}
 
     __HOST____DEVICE__

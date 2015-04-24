@@ -122,8 +122,8 @@ $(derivedFvPatchFields)/mappedFixedValue/mappedFixedValueFvPatchFields.C
 $(derivedFvPatchFields)/mappedFlowRate/mappedFlowRateFvPatchVectorField.C
 $(derivedFvPatchFields)/mappedVelocityFluxFixedValue/mappedVelocityFluxFixedValueFvPatchField.C
 $(derivedFvPatchFields)/movingWallVelocity/movingWallVelocityFvPatchVectorField.C
-$(derivedFvPatchFields)/oscillatingFixedValue/oscillatingFixedValueFvPatchFields.C
 */
+$(derivedFvPatchFields)/oscillatingFixedValue/oscillatingFixedValueFvPatchFields.C
 $(derivedFvPatchFields)/outletInlet/outletInletFvPatchFields.C
 /*
 $(derivedFvPatchFields)/outletMappedUniformInlet/outletMappedUniformInletFvPatchFields.C

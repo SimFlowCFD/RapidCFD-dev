@@ -210,29 +210,6 @@ public:
                 return refValue_;
             }
 
-            //- Return amplitude
-            scalar amplitude() const
-            {
-                return amplitude_;
-            }
-
-            scalar& amplitude()
-            {
-                return amplitude_;
-            }
-
-            //- Return frequency
-            scalar frequency() const
-            {
-                return frequency_;
-            }
-
-            scalar& frequency()
-            {
-                return frequency_;
-            }
-
-
         // Mapping functions
 
             //- Map (and resize as needed) from self given a mapping object

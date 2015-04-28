@@ -1,6 +1,6 @@
 #include "JacobiSmoother.H"
 #include "JacobiSmootherF.H"
-#include "JacobiCache.H"
+#include "lduMatrixSolutionCache.H"
 
 namespace Foam
 {
@@ -31,7 +31,7 @@ Foam::JacobiSmoother::JacobiSmoother
         interfaceIntCoeffs,
         interfaces
     ),
-    omega_(0.8)
+    omega_(0.9)
 {
     solverControls.readIfPresent("omega", omega_);
 }
@@ -44,8 +44,8 @@ void Foam::JacobiSmoother::smooth
     const label nSweeps
 ) const
 {
-    scalargpuField Apsi(JacobiCache::psi(matrix_.level(),psi.size()),psi.size());
-    scalargpuField sourceTmp(JacobiCache::source(matrix_.level(),source.size()),source.size());
+    scalargpuField Apsi(lduMatrixSolutionCache::first(psi.size()),psi.size());
+    scalargpuField sourceTmp(lduMatrixSolutionCache::second(source.size()),source.size());
 
     const labelgpuList& l = matrix_.lduAddr().ownerSortAddr();
     const labelgpuList& u = matrix_.lduAddr().upperAddr();

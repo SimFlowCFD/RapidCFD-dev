@@ -1,6 +1,6 @@
 #include "AINVPreconditioner.H"
 #include "AINVPreconditionerF.H"
-#include "BasicCache.H"
+#include "lduMatrixSolutionCache.H"
 
 namespace Foam
 {
@@ -13,19 +13,6 @@ namespace Foam
     lduMatrix::preconditioner::
         addasymMatrixConstructorToTable<AINVPreconditioner>
         addAINVPreconditionerAsymMatrixConstructorToTable_;
-
-    class AINVPreconditionerCache
-    {
-        static PtrList<scalargpuField> rDCache;
-        public:
-
-        static scalargpuField& rD(label level, label size)
-        {
-            return cache::retrieve(rDCache,level,size);
-        }
-    };
-
-    PtrList<scalargpuField> AINVPreconditionerCache::rDCache(1);
 }
 
 Foam::AINVPreconditioner::AINVPreconditioner
@@ -35,19 +22,15 @@ Foam::AINVPreconditioner::AINVPreconditioner
 )
 :
     lduMatrix::preconditioner(sol),
-    rDPtr
+    rD
     (
-        &AINVPreconditionerCache::rD
-        (
-            sol.matrix().level(),
-            sol.matrix().diag().size()
-        )
+        lduMatrixSolutionCache::first(sol.matrix().diag().size()),
+        sol.matrix().diag().size()
     ),
-    rDTex(*rDPtr)
+    rDTex(rD)
 { 
   
     const scalargpuField& Diag = solver_.matrix().diag();
-    scalargpuField& rD = *rDPtr;
 
     thrust::transform
     (

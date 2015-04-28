@@ -243,6 +243,7 @@ $(lduMatrix)/lduMatrix/lduMatrixUpdateMatrixInterfaces.C
 $(lduMatrix)/lduMatrix/lduMatrixSolver.C
 $(lduMatrix)/lduMatrix/lduMatrixSmoother.C
 $(lduMatrix)/lduMatrix/lduMatrixPreconditioner.C
+$(lduMatrix)/lduMatrix/lduMatrixSolutionCache.C
 
 $(lduMatrix)/solvers/diagonalSolver/diagonalSolver.C
 $(lduMatrix)/solvers/smoothSolver/smoothSolver.C
@@ -253,7 +254,6 @@ $(lduMatrix)/solvers/BICCG/BICCG.C
 $(lduMatrix)/solvers/PCGCache/PCGCache.C
 
 $(lduMatrix)/smoothers/Jacobi/JacobiSmoother.C
-$(lduMatrix)/smoothers/JacobiCache/JacobiCache.C
 $(lduMatrix)/smoothers/GaussSeidel/GaussSeidelSmoother.C
 
 $(lduMatrix)/preconditioners/noPreconditioner/noPreconditioner.C

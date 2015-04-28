@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "diagonalPreconditioner.H"
+#include "lduMatrixSolutionCache.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -50,7 +51,11 @@ Foam::diagonalPreconditioner::diagonalPreconditioner
 )
 :
     lduMatrix::preconditioner(sol),
-    rD(sol.matrix().diag().size())
+    rD
+    (
+        lduMatrixSolutionCache::first(sol.matrix().diag().size()),
+        sol.matrix().diag().size()
+    )
 { 
     const scalargpuField& Diag = solver_.matrix().diag();
 

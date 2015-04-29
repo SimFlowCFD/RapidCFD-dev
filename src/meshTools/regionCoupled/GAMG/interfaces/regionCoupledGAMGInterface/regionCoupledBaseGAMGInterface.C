@@ -97,7 +97,6 @@ Foam::regionCoupledBaseGAMGInterface::regionCoupledBaseGAMGInterface
         faceRestrictAddressingHost_.transfer(dynFaceRestrictAddressing);
 
         faceCells_ = faceCellsHost_;
-        faceRestrictAddressing_ = faceRestrictAddressingHost_;
 
         updateAddressing();
     }

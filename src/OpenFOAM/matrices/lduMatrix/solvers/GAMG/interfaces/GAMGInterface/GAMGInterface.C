@@ -50,8 +50,7 @@ Foam::GAMGInterface::GAMGInterface
     coarseInterfaces_(coarseInterfaces),
     faceCellsHost_(is),
     faceCells_(faceCellsHost_),
-    faceRestrictAddressingHost_(is),
-    faceRestrictAddressing_(faceRestrictAddressingHost_)
+    faceRestrictAddressingHost_(is)
 {
     updateAddressing();
 }
@@ -61,15 +60,17 @@ Foam::GAMGInterface::GAMGInterface
 
 void Foam::GAMGInterface::updateAddressing()
 {
+    labelgpuList restrictTmp(faceRestrictAddressingHost_);
+
     GAMGAgglomeration::createSort
     (
-        faceRestrictAddressing_,
+        restrictTmp,
         faceRestrictSortAddressing_
     );
 
     GAMGAgglomeration::createTarget
     (
-        faceRestrictAddressing_,
+        restrictTmp,
         faceRestrictSortAddressing_,
         faceRestrictTargetAddressing_,
         faceRestrictTargetStartAddressing_
@@ -93,25 +94,7 @@ void Foam::GAMGInterface::updateAddressing()
 
 void Foam::GAMGInterface::combine(const GAMGInterface& coarseGi)
 {
-    const labelgpuList& coarseFra = coarseGi.faceRestrictAddressing_;
     const labelList& coarseFraHost = coarseGi.faceRestrictAddressingHost_;
-  
-    labelgpuList restTmp(faceRestrictAddressing_);
-
-    thrust::copy
-    (
-        thrust::make_permutation_iterator
-        (
-            coarseFra.begin(),
-            restTmp.begin()
-        ),
-        thrust::make_permutation_iterator
-        (
-            coarseFra.begin(),
-            restTmp.end()
-        ),
-        faceRestrictAddressing_.begin()
-    );
 
     forAll(faceRestrictAddressingHost_, ffi)
     {
@@ -150,23 +133,23 @@ Foam::tmp<Foam::scalargpuField> Foam::GAMGInterface::agglomerateCoeffs
     tmp<scalargpuField> tcoarseCoeffs(new scalargpuField(size(), 0.0));
     scalargpuField& coarseCoeffs = tcoarseCoeffs();
 
-    if (fineCoeffs.size() != faceRestrictAddressing_.size())
+    if (fineCoeffs.size() != faceRestrictAddressingHost_.size())
     {
         FatalErrorIn
         (
             "GAMGInterface::agglomerateCoeffs(const scalarField&) const"
         )   << "Size of coefficients " << fineCoeffs.size()
             << " does not correspond to the size of the restriction "
-            << faceRestrictAddressing_.size()
+            << faceRestrictAddressingHost_.size()
             << abort(FatalError);
     }
-    if (debug && max(faceRestrictAddressing_) > size())
+    if (debug && max(faceRestrictAddressingHost_) > size())
     {
         FatalErrorIn
         (
             "GAMGInterface::agglomerateCoeffs(const scalargpuField&) const"
         )   << "Face restrict addressing addresses outside of coarse interface"
-            << " size. Max addressing:" << max(faceRestrictAddressing_)
+            << " size. Max addressing:" << max(faceRestrictAddressingHost_)
             << " coarse size:" << size()
             << abort(FatalError);
     }
@@ -194,7 +177,7 @@ Foam::tmp<Foam::scalargpuField> Foam::GAMGInterface::agglomerateCoeffs
 
 void Foam::GAMGInterface::write(Ostream& os) const
 {
-    os  << faceCells_ << token::SPACE << faceRestrictAddressing_;
+    os  << faceCells_ << token::SPACE << faceRestrictAddressingHost_;
 }
 
 

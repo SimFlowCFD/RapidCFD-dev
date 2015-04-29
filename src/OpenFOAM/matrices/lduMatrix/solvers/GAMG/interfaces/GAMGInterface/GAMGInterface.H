@@ -72,7 +72,6 @@ protected:
         labelList faceCellsHost_;
 
         //- Face restrict addressing
-        labelgpuList faceRestrictAddressing_;
         labelgpuList faceRestrictSortAddressing_;
         labelgpuList faceRestrictTargetAddressing_;
         labelgpuList faceRestrictTargetStartAddressing_;
@@ -196,8 +195,7 @@ public:
             coarseInterfaces_(coarseInterfaces),
             faceCellsHost_(faceCells),
             faceCells_(faceCellsHost_),
-            faceRestrictAddressingHost_(faceRestrictAddressing),
-            faceRestrictAddressing_(faceRestrictAddressingHost_)
+            faceRestrictAddressingHost_(faceRestrictAddressing)
         {
             updateAddressing();
         }
@@ -259,11 +257,6 @@ public:
             }
 
             //- Return (local)face restrict addressing
-            virtual const labelgpuList& faceRestrictAddressing() const
-            {
-                return faceRestrictAddressing_;
-            }
-
             virtual const labelgpuList& faceRestrictSortAddressing() const
             {
                 return faceRestrictSortAddressing_;

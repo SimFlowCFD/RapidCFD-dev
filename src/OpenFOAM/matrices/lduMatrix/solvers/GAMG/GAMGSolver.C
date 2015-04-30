@@ -95,6 +95,12 @@ Foam::GAMGSolver::GAMGSolver
         );
     }
 
+    // Tell coarsest matrix its status
+    if(agglomeration_.size())
+    {
+        matrixLevels_[agglomeration_.size()-1].coarsestLevel() = true;
+    }
+
     if (debug)
     {
         for

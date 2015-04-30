@@ -84,6 +84,7 @@ namespace Foam
 Foam::lduMatrix::lduMatrix(const lduMesh& mesh)
 :
     lduMesh_(mesh),
+    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
@@ -95,6 +96,7 @@ Foam::lduMatrix::lduMatrix(const lduMesh& mesh)
 Foam::lduMatrix::lduMatrix(const lduMatrix& A)
 :
     lduMesh_(A.lduMesh_),
+    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
@@ -121,6 +123,7 @@ Foam::lduMatrix::lduMatrix(const lduMatrix& A)
 Foam::lduMatrix::lduMatrix(lduMatrix& A, bool reUse)
 :
     lduMesh_(A.lduMesh_),
+    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
@@ -170,6 +173,7 @@ Foam::lduMatrix::lduMatrix(lduMatrix& A, bool reUse)
 Foam::lduMatrix::lduMatrix(const lduMesh& mesh, Istream& is)
 :
     lduMesh_(mesh),
+    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),

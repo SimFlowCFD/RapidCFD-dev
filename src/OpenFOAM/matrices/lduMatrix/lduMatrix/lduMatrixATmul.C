@@ -29,6 +29,7 @@ Description
 
 #include "lduMatrix.H"
 #include "textures.H"
+#include "lduMatrixSolutionCache.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -37,6 +38,7 @@ namespace Foam
         
 #define MAX_NEI_SIZE 3
 
+template<bool fast>
 struct matrixMultiplyFunctor
 {
     textures<scalar> psi;
@@ -44,6 +46,7 @@ struct matrixMultiplyFunctor
     const scalar* upper;
     const label* own;
     const label* nei;
+    const label* losort;
 
     matrixMultiplyFunctor
     (
@@ -51,13 +54,15 @@ struct matrixMultiplyFunctor
         const scalar* _lower,
         const scalar* _upper,
         const label* _own,
-        const label* _nei
+        const label* _nei,
+        const label* _losort
     ):
         psi(_psi),
         lower(_lower),
         upper(_upper),
         own(_own),
-        nei(_nei)
+        nei(_nei),
+        losort(_losort)
     {}
 
     __device__
@@ -88,6 +93,8 @@ struct matrixMultiplyFunctor
             if(i<nSize)
             {
                  label face = nStart + i;
+                 if( ! fast)
+                     face = losort[face];
                    
                  tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]];
             }
@@ -109,6 +116,8 @@ struct matrixMultiplyFunctor
         for(label i = MAX_NEI_SIZE; i<nSize; i++)
         {
             label face = nStart + i;
+            if( ! fast)
+                face = losort[face];
 
             nExtra += lower[face]*psi[own[face]]; 
         }  
@@ -119,6 +128,7 @@ struct matrixMultiplyFunctor
     
 #undef MAX_NEI_SIZE
 
+template<bool fast>
 inline void callMultiply
 (
     scalargpuField& Apsi,
@@ -129,6 +139,7 @@ inline void callMultiply
 
     const labelgpuList& ownStart,
     const labelgpuList& losortStart,
+    const labelgpuList& losort,
 
     const scalargpuField& Lower,
     const scalargpuField& Upper,
@@ -165,13 +176,14 @@ inline void callMultiply
             losortStart.begin()+1
         )),
         Apsi.begin(),
-        matrixMultiplyFunctor
+        matrixMultiplyFunctor<fast>
         (
             psiTex,
             Lower.data(),
             Upper.data(),
             l.data(),
-            u.data()
+            u.data(),
+            losort.data()
         )
     );
 
@@ -190,13 +202,17 @@ void Foam::lduMatrix::Amul
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = lduAddr().ownerSortAddr();
+    bool fastPath = lduMatrixSolutionCache::favourSpeed >= 2 ||
+                    (lduMatrixSolutionCache::favourSpeed && ( coarsestLevel() || ! level()));
+
+    const labelgpuList& l = fastPath? lduAddr().ownerSortAddr(): lduAddr().lowerAddr();
     const labelgpuList& u = lduAddr().upperAddr();
 
     const labelgpuList& ownStart = lduAddr().ownerStartAddr();
     const labelgpuList& losortStart = lduAddr().losortStartAddr();
+    const labelgpuList& losort = lduAddr().losortAddr();
 
-    const scalargpuField& Lower = lowerSort();
+    const scalargpuField& Lower = fastPath? lowerSort(): lower();
     const scalargpuField& Upper = upper();
     const scalargpuField& Diag = diag();
 
@@ -212,18 +228,38 @@ void Foam::lduMatrix::Amul
         cmpt
     );
 
-    callMultiply
-    (
-        Apsi,
-        psi,
-        l,
-        u,
-        ownStart,
-        losortStart,
-        Lower,
-        Upper,
-        Diag
-    );
+    if(fastPath)
+    {
+        callMultiply<true>
+        (
+            Apsi,
+            psi,
+            l,
+            u,
+            ownStart,
+            losortStart,
+            losort,
+            Lower,
+            Upper,
+            Diag
+        );
+    }
+    else
+    {
+        callMultiply<false>
+        (
+            Apsi,
+            psi,
+            l,
+            u,
+            ownStart,
+            losortStart,
+            losort,
+            Lower,
+            Upper,
+            Diag
+        );
+    }
 
     updateMatrixInterfaces
     (
@@ -247,14 +283,17 @@ void Foam::lduMatrix::Tmul
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = lduAddr().ownerSortAddr();
+    bool fastPath = lduMatrixSolutionCache::favourSpeed;
+
+    const labelgpuList& l = fastPath? lduAddr().ownerSortAddr(): lduAddr().lowerAddr();
     const labelgpuList& u = lduAddr().upperAddr();
 
     const labelgpuList& ownStart = lduAddr().ownerStartAddr();
     const labelgpuList& losortStart = lduAddr().losortStartAddr();
+    const labelgpuList& losort = lduAddr().losortAddr();
 
     const scalargpuField& Lower = lower();
-    const scalargpuField& Upper = upperSort();
+    const scalargpuField& Upper = fastPath? upperSort(): upper();
     const scalargpuField& Diag = diag();
 
     const scalargpuField& psi = tpsi();
@@ -269,18 +308,38 @@ void Foam::lduMatrix::Tmul
         cmpt
     );
 
-    callMultiply
-    (
-        Tpsi,
-        psi,
-        l,
-        u,
-        ownStart,
-        losortStart,
-        Upper,
-        Lower,
-        Diag
-    );
+    if(fastPath)
+    {
+        callMultiply<true>
+        (
+            Tpsi,
+            psi,
+            l,
+            u,
+            ownStart,
+            losortStart,
+            losort,
+            Upper,
+            Lower,
+            Diag
+        );
+    }
+    else
+    {
+        callMultiply<false>
+        (
+            Tpsi,
+            psi,
+            l,
+            u,
+            ownStart,
+            losortStart,
+            losort,
+            Upper,
+            Lower,
+            Diag
+        );
+    }
 
     // Update interface interfaces
     updateMatrixInterfaces
@@ -348,6 +407,36 @@ void Foam::lduMatrix::sumA
     }
 }
 
+#define CALL_RESIDUAL_FUNCTION(functionName)                                                \
+functionName                                                                                \
+(                                                                                           \
+    thrust::make_transform_iterator                                                         \
+    (                                                                                       \
+        thrust::make_zip_iterator(thrust::make_tuple                                        \
+        (                                                                                   \
+            source.begin(),                                                                 \
+            Diag.begin(),                                                                   \
+            psi.begin()                                                                     \
+        )),                                                                                 \
+        lduMatrixDiagonalResidualFunctor()                                                  \
+    ),                                                                                      \
+    rA,                                                                                     \
+    lduAddr(),                                                                              \
+    matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >   \
+    (                                                                                       \
+        psi.data(),                                                                         \
+        Upper.data(),                                                                       \
+        u.data(),                                                                           \
+        negateUnaryOperatorFunctor<scalar,scalar>()                                         \
+    ),                                                                                      \
+    matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >   \
+    (                                                                                       \
+        psi.data(),                                                                         \
+        Lower.data(),                                                                       \
+        l.data(),                                                                           \
+        negateUnaryOperatorFunctor<scalar,scalar>()                                         \
+    )                                                                                       \
+);  
 
 void Foam::lduMatrix::residual
 (
@@ -359,10 +448,12 @@ void Foam::lduMatrix::residual
     const direction cmpt
 ) const
 {
-    const labelgpuList& l = lduAddr().ownerSortAddr();
+    bool fastPath = lduMatrixSolutionCache::favourSpeed;
+
+    const labelgpuList& l = fastPath? lduAddr().ownerSortAddr(): lduAddr().lowerAddr();
     const labelgpuList& u = lduAddr().upperAddr();
 
-    const scalargpuField& Lower = lowerSort();
+    const scalargpuField& Lower = fastPath? lowerSort(): lower();
     const scalargpuField& Upper = upper();
     const scalargpuField& Diag = diag();
 
@@ -396,36 +487,15 @@ void Foam::lduMatrix::residual
         rA,
         cmpt
     );
-								   
-    matrixFastOperation
-    (
-        thrust::make_transform_iterator
-        (
-            thrust::make_zip_iterator(thrust::make_tuple
-            ( 
-                 source.begin(),
-                 Diag.begin(),
-                 psi.begin() 
-            )), 
-            lduMatrixDiagonalResidualFunctor() 
-        ),
-        rA,
-        lduAddr(),
-        matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >
-        (
-            psi.data(),
-            Upper.data(),
-            u.data(),
-            negateUnaryOperatorFunctor<scalar,scalar>()
-        ),
-        matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >
-        (
-            psi.data(),
-            Lower.data(),
-            l.data(),
-            negateUnaryOperatorFunctor<scalar,scalar>()
-        )
-    );                                       
+
+    if(fastPath)
+    {
+        CALL_RESIDUAL_FUNCTION(matrixFastOperation);
+    }
+    else
+    {
+        CALL_RESIDUAL_FUNCTION(matrixOperation);
+    }							                                     
 
     // Update interface interfaces
     updateMatrixInterfaces
@@ -437,6 +507,8 @@ void Foam::lduMatrix::residual
         cmpt
     );
 }
+
+#undef CALL_RESIDUAL_FUNCTION
 
 
 Foam::tmp<Foam::scalargpuField> Foam::lduMatrix::residual
@@ -453,6 +525,23 @@ Foam::tmp<Foam::scalargpuField> Foam::lduMatrix::residual
     return trA;
 }
 
+#define CALL_H_FUNCTION(functionName)                                                \
+functionName                                                                         \
+(                                                                                    \
+    H_.begin(),                                                                      \
+    H_,                                                                              \
+    lduAddr(),                                                                       \
+    matrixCoeffsFunctor<scalar,negateUnaryOperatorFunctor<scalar,scalar> >           \
+    (                                                                                \
+                Upper.data(),                                                        \
+                negateUnaryOperatorFunctor<scalar,scalar>()                          \
+    ),                                                                               \
+    matrixCoeffsFunctor<scalar,negateUnaryOperatorFunctor<scalar,scalar> >           \
+    (                                                                                \
+        Lower.data(),                                                                \
+        negateUnaryOperatorFunctor<scalar,scalar>()                                  \
+    )                                                                                \
+)
 
 Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
 {
@@ -463,32 +552,28 @@ Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
 
     if (lowerPtr_ || upperPtr_)
     {
+        bool fastPath = lduMatrixSolutionCache::favourSpeed;
+
         scalargpuField& H_ = tH1();
 
-        const scalargpuField& Lower = lowerSort();
+        const scalargpuField& Lower = fastPath?lowerSort():lower();
         const scalargpuField& Upper = upper();
         
-        matrixFastOperation
-        (
-            H_.begin(),
-            H_,
-            lduAddr(),
-            matrixCoeffsFunctor<scalar,negateUnaryOperatorFunctor<scalar,scalar> >
-            (
-                Upper.data(),
-                negateUnaryOperatorFunctor<scalar,scalar>()
-            ),
-            matrixCoeffsFunctor<scalar,negateUnaryOperatorFunctor<scalar,scalar> >
-            (
-                Lower.data(),
-                negateUnaryOperatorFunctor<scalar,scalar>()
-            )
-        );
+        if(fastPath)
+        {
+            CALL_H_FUNCTION(matrixFastOperation);
+        }
+        else
+        {
+            CALL_H_FUNCTION(matrixOperation);
+        }
 
     }
 
     return tH1;
 }
+
+#undef CALL_H_FUNCTION
 
 
 // ************************************************************************* //

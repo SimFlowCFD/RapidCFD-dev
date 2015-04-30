@@ -62,6 +62,9 @@ OptimisationSwitches
     nProcsSimpleSum   0;
     gpuDirectTransfer 0;
 
+    // How much additional GPU memory can be sacrificed for speed
+    favourSpeedOverMemory        2;
+
     // Force dumping (at next timestep) upon signal (-1 to disable)
     writeNowSignal              -1; //10;
     // Force dumping (at next timestep) upon signal (-1 to disable) and exit

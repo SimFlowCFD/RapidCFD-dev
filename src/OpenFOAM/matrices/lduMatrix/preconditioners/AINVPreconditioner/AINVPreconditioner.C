@@ -54,15 +54,20 @@ void Foam::AINVPreconditioner::preconditionImpl
     const direction d
 ) const
 {
-    const labelgpuList& l = solver_.matrix().lduAddr().ownerSortAddr();
+    bool fastPath = lduMatrixSolutionCache::favourSpeed;
+
+    const labelgpuList& l = fastPath? 
+                            solver_.matrix().lduAddr().ownerSortAddr():
+                            solver_.matrix().lduAddr().lowerAddr();
     const labelgpuList& u = solver_.matrix().lduAddr().upperAddr();
 
     const labelgpuList& ownStart = solver_.matrix().lduAddr().ownerStartAddr();
     const labelgpuList& losortStart = solver_.matrix().lduAddr().losortStartAddr();
+    const labelgpuList& losort = solver_.matrix().lduAddr().losortAddr();
 
     const scalargpuField& Lower = normalMult?
-                                  solver_.matrix().lowerSort():
-                                  solver_.matrix().upperSort();
+                                  (fastPath?solver_.matrix().lowerSort():solver_.matrix().lower()):
+                                  (fastPath?solver_.matrix().upperSort():solver_.matrix().upper());
 
     const scalargpuField& Upper = normalMult?
                                   solver_.matrix().upper():
@@ -70,23 +75,48 @@ void Foam::AINVPreconditioner::preconditionImpl
 
     textures<scalar> rTex(r);
 
-    thrust::transform
-    (
-        thrust::make_counting_iterator(0),
-        thrust::make_counting_iterator(0)+r.size(),
-        w.begin(),
-        AINVPreconditionerFunctor<3>
+    if(fastPath)
+    {
+        thrust::transform
         (
-            rTex,
-            rDTex,
-            Lower.data(),
-            Upper.data(),
-            l.data(),
-            u.data(),
-            ownStart.data(),
-            losortStart.data()
-        )
-    );
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+r.size(),
+            w.begin(),
+            AINVPreconditionerFunctor<true,3>
+            (
+                rTex,
+                rDTex,
+                Lower.data(),
+                Upper.data(),
+                l.data(),
+                u.data(),
+                ownStart.data(),
+                losortStart.data(),
+                losort.data()
+            )
+        );
+    }
+    else
+    {
+        thrust::transform
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+r.size(),
+            w.begin(),
+            AINVPreconditionerFunctor<false,3>
+            (
+                rTex,
+                rDTex,
+                Lower.data(),
+                Upper.data(),
+                l.data(),
+                u.data(),
+                ownStart.data(),
+                losortStart.data(),
+                losort.data()
+            )
+        );
+    }
 
     rTex.destroy();
 }

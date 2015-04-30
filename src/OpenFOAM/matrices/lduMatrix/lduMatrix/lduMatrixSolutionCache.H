@@ -19,6 +19,8 @@ class lduMatrixSolutionCache
 
 public:
 
+    static label favourSpeed;
+
     static const scalargpuField& first(label size)
     {
         ensureSize(size,first_);

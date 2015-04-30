@@ -89,6 +89,8 @@ class lduMatrix
         mutable scalargpuField *lowerSortPtr_;
         mutable scalargpuField *upperSortPtr_;
 
+        bool coarsestLevel_;
+
         void calcSortCoeffs(scalargpuField& out, const scalargpuField& in) const;
 
 public:
@@ -572,6 +574,16 @@ public:
             label level() const
             {
                 return lduAddr().level();
+            }
+
+            bool coarsestLevel() const
+            {
+                return coarsestLevel_;
+            }
+
+            bool& coarsestLevel()
+            {
+                return coarsestLevel_;
             }
 
 

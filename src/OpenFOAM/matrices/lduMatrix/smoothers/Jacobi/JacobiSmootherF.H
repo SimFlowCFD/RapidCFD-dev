@@ -4,7 +4,8 @@
 
 namespace Foam
 {
-    template<int nUnroll>
+
+    template<bool fast,int nUnroll>
     struct JacobiSmootherFunctor 
     {
         textures<scalar> psi;
@@ -16,6 +17,7 @@ namespace Foam
         const label* nei;
         const label* ownStart;
         const label* losortStart;
+        const label* losort;
         const scalar omega;
 
         JacobiSmootherFunctor
@@ -29,7 +31,8 @@ namespace Foam
             const label* _own,
             const label* _nei,
             const label* _ownStart,
-            const label* _losortStart
+            const label* _losortStart,
+            const label* _losort
         ):
             psi(_psi),
             diag(_diag),
@@ -40,6 +43,7 @@ namespace Foam
             nei(_nei),
             ownStart(_ownStart),
             losortStart(_losortStart),
+            losort(_losort),
             omega(_omega)
         {}
 
@@ -72,6 +76,9 @@ namespace Foam
                 if(i<nSize)
                 {
                      label face = nStart + i;
+                     if( ! fast) 
+                         face = losort[face];
+
                      tmpSum[i+nUnroll] = lower[face]*psi[own[face]]; 
                 }
             }
@@ -90,10 +97,14 @@ namespace Foam
             for(label i = nUnroll; i<nSize; i++)
             {
                  label face = nStart + i;
+                 if( ! fast) 
+                     face = losort[face];
+
                  out += lower[face]*psi[own[face]];
             }
             
             return extra - omega*rD*out;
         }
     };
+
 }

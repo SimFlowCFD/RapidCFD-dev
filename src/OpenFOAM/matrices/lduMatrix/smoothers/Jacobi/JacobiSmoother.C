@@ -47,13 +47,22 @@ void Foam::JacobiSmoother::smooth
     scalargpuField Apsi(lduMatrixSolutionCache::first(psi.size()),psi.size());
     scalargpuField sourceTmp(lduMatrixSolutionCache::second(source.size()),source.size());
 
-    const labelgpuList& l = matrix_.lduAddr().ownerSortAddr();
+    bool fastPath = lduMatrixSolutionCache::favourSpeed >= 2 ||
+                    (lduMatrixSolutionCache::favourSpeed && ( matrix_.coarsestLevel() || ! matrix_.level()));
+
+    const labelgpuList& l = fastPath?
+                            matrix_.lduAddr().ownerSortAddr():
+                            matrix_.lduAddr().lowerAddr();
     const labelgpuList& u = matrix_.lduAddr().upperAddr();
 
     const labelgpuList& ownStart = matrix_.lduAddr().ownerStartAddr();
     const labelgpuList& losortStart = matrix_.lduAddr().losortStartAddr();
+    const labelgpuList& losort = matrix_.lduAddr().losortAddr();
 
-    const scalargpuField& Lower = matrix_.lowerSort();
+    const scalargpuField& Lower = fastPath?
+                                  matrix_.lowerSort():
+                                  matrix_.lower();
+
     const scalargpuField& Upper = matrix_.upper();
     const scalargpuField& Diag = matrix_.diag();
 
@@ -95,25 +104,56 @@ void Foam::JacobiSmoother::smooth
             cmpt
         );
 
-        thrust::transform
-        (
-            thrust::make_counting_iterator(0),
-            thrust::make_counting_iterator(0)+psi.size(),
-            Apsi.begin(),
-            JacobiSmootherFunctor<3>
+        if(fastPath)
+        {
+
+            thrust::transform
             (
-                omega_,
-                psiTex,
-                Diag.data(),
-                sourceTmp.data(),
-                Lower.data(),
-                Upper.data(),
-                l.data(),
-                u.data(),
-                ownStart.data(),
-                losortStart.data()
-            )
-        );
+                thrust::make_counting_iterator(0),
+                thrust::make_counting_iterator(0)+psi.size(),
+                Apsi.begin(),
+                JacobiSmootherFunctor<true,3>
+                (
+                    omega_,
+                    psiTex,
+                    Diag.data(),
+                    sourceTmp.data(),
+                    Lower.data(),
+                    Upper.data(),
+                    l.data(),
+                    u.data(),
+                    ownStart.data(),
+                    losortStart.data(),
+                    losort.data()
+                )
+            );
+
+        }
+        else
+        {
+
+            thrust::transform
+            (
+                thrust::make_counting_iterator(0),
+                thrust::make_counting_iterator(0)+psi.size(),
+                Apsi.begin(),
+                JacobiSmootherFunctor<false,3>
+                (
+                    omega_,
+                    psiTex,
+                    Diag.data(),
+                    sourceTmp.data(),
+                    Lower.data(),
+                    Upper.data(),
+                    l.data(),
+                    u.data(),
+                    ownStart.data(),
+                    losortStart.data(),
+                    losort.data()
+                )
+            );
+
+        }
 
         psi = Apsi;
     }

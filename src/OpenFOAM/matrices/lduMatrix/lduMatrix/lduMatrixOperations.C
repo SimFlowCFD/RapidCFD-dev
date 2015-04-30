@@ -28,6 +28,7 @@ Description
 
 #include "lduMatrix.H"
 #include "FieldM.H"
+#include "lduMatrixSolutionCache.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -83,10 +84,10 @@ void Foam::lduMatrix::sumMagOffDiag
     scalargpuField& sumOff
 ) const
 {
-    const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lowerSort();
+    const scalargpuField& Lower = const_cast<const lduMatrix&>(*this).lower();
     const scalargpuField& Upper = const_cast<const lduMatrix&>(*this).upper();
 
-    matrixFastOperation
+    matrixOperation
     (
         sumOff.begin(),
         sumOff,
@@ -104,6 +105,28 @@ void Foam::lduMatrix::sumMagOffDiag
     ); 
 }
 
+#define H_FUNCTION_CALL(functionName)                                                       \
+functionName                                                                                \
+(                                                                                           \
+    Hpsi.begin(),                                                                           \
+    Hpsi,                                                                                   \
+    lduAddr(),                                                                              \
+    matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >   \
+    (                                                                                       \
+        psi.data(),                                                                         \
+        Upper.data(),                                                                       \
+        u.data(),                                                                           \
+        negateUnaryOperatorFunctor<scalar,scalar>()                                         \
+    ),                                                                                      \
+    matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >   \
+    (                                                                                       \
+        psi.data(),                                                                         \
+        Lower.data(),                                                                       \
+        l.data(),                                                                           \
+        negateUnaryOperatorFunctor<scalar,scalar>()                                         \
+    )                                                                                       \
+);
+
 template<>
 Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField<Foam::scalar>& psi) const
 {
@@ -114,38 +137,30 @@ Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField
 
     if (lowerPtr_ || upperPtr_)
     {
+        bool fastPath = lduMatrixSolutionCache::favourSpeed;
+
         gpuField<scalar> & Hpsi = tHpsi();
 
-        const scalargpuField& Lower = this->lowerSort();
+        const scalargpuField& Lower = fastPath?this->lowerSort():this->lower();
         const scalargpuField& Upper = this->upper();
 
-        const labelgpuList& l = lduAddr().ownerSortAddr();
+        const labelgpuList& l = fastPath?lduAddr().ownerSortAddr():lduAddr().lowerAddr();
         const labelgpuList& u = lduAddr().upperAddr();
         
-        matrixFastOperation
-        (
-            Hpsi.begin(),
-            Hpsi,
-            lduAddr(),
-            matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >
-            (
-                psi.data(),
-                Upper.data(),
-                u.data(),
-                negateUnaryOperatorFunctor<scalar,scalar>()
-            ),
-            matrixCoeffsMultiplyFunctor<scalar,scalar,negateUnaryOperatorFunctor<scalar,scalar> >
-            (
-                psi.data(),
-                Lower.data(),
-                l.data(),
-                negateUnaryOperatorFunctor<scalar,scalar>()
-            )
-        );                                        
+        if(fastPath)
+        {
+            H_FUNCTION_CALL(matrixFastOperation);
+        }
+        else
+        {
+            H_FUNCTION_CALL(matrixOperation);
+        }                              
     }
 
     return tHpsi;
 }
+
+#undef H_FUNCTION_CALL
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

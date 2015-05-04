@@ -222,8 +222,8 @@ void Foam::MRFZone::setMRFFaces()
     {
         const polyPatch& pp = patches[patchi];
         
-        labelList includedFacesTmp(nIncludedFaces[patchi]);
-        labelList excludedFacesTmp(nExcludedFaces[patchi]);
+        labelList includedFacesTmp(includedFaces_[patchi].size());
+        labelList excludedFacesTmp(excludedFaces_[patchi].size());
 
         forAll(pp, patchFacei)
         {

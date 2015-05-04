@@ -62,9 +62,7 @@ Foam::GAMGSolver::GAMGSolver
         solverControls
     ),
 
-    // Default values for all controls
-    // which may be overridden by those in controlDict
-    cacheAgglomeration_(false),
+    cacheAgglomeration_(true),
     nPreSweeps_(0),
     preSweepsLevelMultiplier_(1),
     maxPreSweeps_(4),

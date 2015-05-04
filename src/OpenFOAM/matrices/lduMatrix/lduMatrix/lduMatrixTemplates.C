@@ -50,17 +50,12 @@ struct lduMatrixfaceHFunctor
 }
 
 template<class Type>
-Foam::tmp<Foam::gpuField<Type> > Foam::lduMatrix::H(const gpuField<Type>& psi) const
+void Foam::lduMatrix::H(Foam::gpuField<Type>& Hpsi,const gpuField<Type>& psi) const
 {
-    tmp<gpuField<Type> > tHpsi
-    (
-        new gpuField<Type>(lduAddr().size(), pTraits<Type>::zero)
-    );
+    Hpsi = pTraits<Type>::zero;
 
     if (lowerPtr_ || upperPtr_)
     {
-        gpuField<Type> & Hpsi = tHpsi();
-
         const scalargpuField& Lower = this->lower();
         const scalargpuField& Upper = this->upper();
 
@@ -88,6 +83,17 @@ Foam::tmp<Foam::gpuField<Type> > Foam::lduMatrix::H(const gpuField<Type>& psi) c
             )
         );                                        
     }
+}
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::lduMatrix::H(const gpuField<Type>& psi) const
+{
+    tmp<gpuField<Type> > tHpsi
+    (
+        new gpuField<Type>(lduAddr().size(), pTraits<Type>::zero)
+    );
+
+    H(tHpsi(),psi);
 
     return tHpsi;
 }
@@ -101,10 +107,8 @@ Foam::lduMatrix::H(const tmp<gpuField<Type> >& tpsi) const
     return tHpsi;
 }
 
-
 template<class Type>
-Foam::tmp<Foam::gpuField<Type> >
-Foam::lduMatrix::faceH(const gpuField<Type>& psi) const
+void Foam::lduMatrix::faceH(Foam::gpuField<Type>& faceHpsi,const gpuField<Type>& psi) const
 {
     if (lowerPtr_ || upperPtr_)
     {
@@ -113,9 +117,6 @@ Foam::lduMatrix::faceH(const gpuField<Type>& psi) const
 
         const labelgpuList& l = lduAddr().lowerAddr();
         const labelgpuList& u = lduAddr().upperAddr();
-
-        tmp<gpuField<Type> > tfaceHpsi(new gpuField<Type> (Lower.size()));
-        gpuField<Type> & faceHpsi = tfaceHpsi();
 
         thrust::transform
         ( 
@@ -136,8 +137,6 @@ Foam::lduMatrix::faceH(const gpuField<Type>& psi) const
             faceHpsi.begin(),
             lduMatrixfaceHFunctor<Type>()
         );
-
-        return tfaceHpsi;
     }
     else
     {
@@ -145,9 +144,19 @@ Foam::lduMatrix::faceH(const gpuField<Type>& psi) const
             << "Cannot calculate faceH"
                " the matrix does not have any off-diagonal coefficients."
             << exit(FatalError);
-
-        return tmp<gpuField<Type> >(NULL);
     }
+}
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> >
+Foam::lduMatrix::faceH(const gpuField<Type>& psi) const
+{
+    tmp<gpuField<Type> > tfaceHpsi(new gpuField<Type> (lower().size()));
+    gpuField<Type> & faceHpsi = tfaceHpsi();
+
+    faceH(faceHpsi,psi);
+
+    return tfaceHpsi;
 }
 
 

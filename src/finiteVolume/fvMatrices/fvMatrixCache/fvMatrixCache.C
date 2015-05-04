@@ -2,7 +2,7 @@
 
 namespace Foam
 {
-    PtrList<scalargpuField> fvMatrixCache::diagCache(1);
-    PtrList<scalargpuField> fvMatrixCache::sourceCache(1);
-    PtrList<scalargpuField> fvMatrixCache::psiCache(1);
+    PtrList<scalargpuField> fvMatrixCache::firstCache(1);
+    PtrList<scalargpuField> fvMatrixCache::secondCache(1);
+    PtrList<scalargpuField> fvMatrixCache::thirdCache(1);
 }

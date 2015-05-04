@@ -67,7 +67,7 @@ Foam::fvMatrix<Foam::scalar>::solver
             << endl;
     }
 
-    scalargpuField saveDiag(fvMatrixCache::diag(level(),diag().size()),diag().size());
+    scalargpuField saveDiag(fvMatrixCache::first(level(),diag().size()),diag().size());
     saveDiag = diag();
     addBoundaryDiag(diag(), 0);
 
@@ -106,11 +106,11 @@ Foam::solverPerformance Foam::fvMatrix<Foam::scalar>::fvSolver::solve
 
     label size = fvMat_.diag().size();
 
-    scalargpuField saveDiag(fvMatrixCache::diag(fvMat_.level(),size),size);
+    scalargpuField saveDiag(fvMatrixCache::first(fvMat_.level(),size),size);
     saveDiag = fvMat_.diag();
     fvMat_.addBoundaryDiag(fvMat_.diag(), 0);
 
-    scalargpuField totalSource(fvMatrixCache::source(fvMat_.level(),size));
+    scalargpuField totalSource(fvMatrixCache::second(fvMat_.level(),size));
     totalSource = fvMat_.source();
     fvMat_.addBoundarySource(totalSource, false);
 
@@ -158,11 +158,11 @@ Foam::solverPerformance Foam::fvMatrix<Foam::scalar>::solveSegregated
 
     label size = diag().size();
 
-    scalargpuField saveDiag(fvMatrixCache::diag(level(),size),size);
+    scalargpuField saveDiag(fvMatrixCache::first(level(),size),size);
     saveDiag = diag();
     addBoundaryDiag(diag(), 0);
 
-    scalargpuField totalSource(fvMatrixCache::source(level(),size),size);
+    scalargpuField totalSource(fvMatrixCache::second(level(),size),size);
     totalSource = source_;
     addBoundarySource(totalSource, false);
 
@@ -207,9 +207,9 @@ struct fvScalarMatrixResidualFunctor
 }
 
 template<>
-Foam::tmp<Foam::scalargpuField> Foam::fvMatrix<Foam::scalar>::residual() const
+void Foam::fvMatrix<Foam::scalar>::residual(Foam::scalargpuField& tres) const
 {
-    scalargpuField boundaryDiag(fvMatrixCache::diag(level(),psi_.size()),psi_.size());
+    scalargpuField boundaryDiag(fvMatrixCache::first(level(),psi_.size()),psi_.size());
     boundaryDiag = 0.0;
     addBoundaryDiag(boundaryDiag, 0);
 
@@ -226,19 +226,25 @@ Foam::tmp<Foam::scalargpuField> Foam::fvMatrix<Foam::scalar>::residual() const
         fvScalarMatrixResidualFunctor()
     );
 
-    tmp<scalargpuField> tres
+    lduMatrix::residual
     (
-        lduMatrix::residual
-        (
-            psi_.internalField(),
-            boundaryDiag,
-            boundaryCoeffs_,
-            psi_.boundaryField().scalarInterfaces(),
-            0
-        )
+        tres,
+        psi_.internalField(),
+        boundaryDiag,
+        boundaryCoeffs_,
+        psi_.boundaryField().scalarInterfaces(),
+        0
     );
 
-    addBoundarySource(tres());
+    addBoundarySource(tres);
+}
+
+template<>
+Foam::tmp<Foam::scalargpuField> Foam::fvMatrix<Foam::scalar>::residual() const
+{
+    tmp<scalargpuField> tres(new scalargpuField(psi_.size()));
+
+    residual(tres());
 
     return tres;
 }

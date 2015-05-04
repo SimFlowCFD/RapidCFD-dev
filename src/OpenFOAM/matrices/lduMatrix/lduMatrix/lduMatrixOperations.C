@@ -128,18 +128,13 @@ functionName                                                                    
 );
 
 template<>
-Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField<Foam::scalar>& psi) const
+void Foam::lduMatrix::H(Foam::gpuField<Foam::scalar>& Hpsi,const Foam::gpuField<Foam::scalar>& psi) const
 {
-    tmp<gpuField<scalar> > tHpsi
-    (
-        new gpuField<scalar>(lduAddr().size(), 0)
-    );
+    Hpsi = 0;
 
     if (lowerPtr_ || upperPtr_)
     {
         bool fastPath = lduMatrixSolutionCache::favourSpeed;
-
-        gpuField<scalar> & Hpsi = tHpsi();
 
         const scalargpuField& Lower = fastPath?this->lowerSort():this->lower();
         const scalargpuField& Upper = this->upper();
@@ -156,6 +151,17 @@ Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField
             H_FUNCTION_CALL(matrixOperation);
         }                              
     }
+}
+
+template<>
+Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField<Foam::scalar>& psi) const
+{
+    tmp<gpuField<scalar> > tHpsi
+    (
+        new gpuField<scalar>(lduAddr().size(), 0)
+    );
+
+    H(tHpsi(),psi);
 
     return tHpsi;
 }

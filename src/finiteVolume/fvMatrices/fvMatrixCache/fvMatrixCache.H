@@ -8,25 +8,25 @@ namespace Foam
 
 class fvMatrixCache
 {
-    static PtrList<scalargpuField> diagCache;
-    static PtrList<scalargpuField> sourceCache;
-    static PtrList<scalargpuField> psiCache;
+    static PtrList<scalargpuField> firstCache;
+    static PtrList<scalargpuField> secondCache;
+    static PtrList<scalargpuField> thirdCache;
 
     public:
 
-    static const scalargpuField& diag(label level, label size)
+    static const scalargpuField& first(label level, label size)
     {
-        return cache::retrieve(diagCache,level,size);
+        return cache::retrieve(firstCache,level,size);
     }
 
-    static const scalargpuField& source(label level, label size)
+    static const scalargpuField& second(label level, label size)
     {
-        return cache::retrieve(sourceCache,level,size);
+        return cache::retrieve(secondCache,level,size);
     }
 
-    static const scalargpuField& psi(label level, label size)
+    static const scalargpuField& third(label level, label size)
     {
-        return cache::retrieve(psiCache,level,size);
+        return cache::retrieve(thirdCache,level,size);
     }
 };
 

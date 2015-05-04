@@ -413,25 +413,36 @@ public:
 
             //- Return the matrix residual
             tmp<gpuField<Type> > residual() const;
+            void residual(gpuField<Type> &) const;
 
             //- Return the matrix scalar diagonal
             tmp<scalargpuField> D() const;
+            void D(scalargpuField&) const;
 
             //- Return the matrix Type diagonal
             tmp<gpuField<Type> > DD() const;
+            void DD(gpuField<Type>&) const;
 
             //- Return the central coefficient
             tmp<volScalarField> A() const;
+            void A(volScalarField&) const;
 
             //- Return the H operation source
             tmp<GeometricField<Type, fvPatchField, volMesh> > H() const;
+            void H(GeometricField<Type, fvPatchField, volMesh>&) const;
 
             //- Return H(1)
             tmp<volScalarField> H1() const;
+            void H1(volScalarField&) const;
 
             //- Return the face-flux field from the matrix
             tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >
                 flux() const;
+
+            void flux
+            (
+                GeometricField<Type, fvsPatchField, surfaceMesh>&
+            ) const;
 
 
     // Member operators

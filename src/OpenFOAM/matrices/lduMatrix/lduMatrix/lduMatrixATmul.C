@@ -543,18 +543,13 @@ functionName                                                                    
     )                                                                                \
 )
 
-Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
+void Foam::lduMatrix::H1(scalargpuField& H_) const
 {
-    tmp<scalargpuField > tH1
-    (
-        new scalargpuField(lduAddr().size(), 0.0)
-    );
+    H_ = 0.0;
 
     if (lowerPtr_ || upperPtr_)
     {
         bool fastPath = lduMatrixSolutionCache::favourSpeed;
-
-        scalargpuField& H_ = tH1();
 
         const scalargpuField& Lower = fastPath?lowerSort():lower();
         const scalargpuField& Upper = upper();
@@ -569,6 +564,16 @@ Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
         }
 
     }
+}
+
+Foam::tmp<Foam::scalargpuField > Foam::lduMatrix::H1() const
+{
+    tmp<scalargpuField > tH1
+    (
+        new scalargpuField(lduAddr().size(), 0.0)
+    );
+
+    H1(tH1());
 
     return tH1;
 }

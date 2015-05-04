@@ -722,12 +722,20 @@ public:
             tmp<gpuField<Type> > H(const gpuField<Type>&) const;
 
             template<class Type>
+            void H(gpuField<Type>&, const gpuField<Type>&) const;
+
+            template<class Type>
             tmp<gpuField<Type> > H(const tmp<gpuField<Type> >&) const;
 
             tmp<scalargpuField> H1() const;
 
+            void H1(scalargpuField&) const;
+
             template<class Type>
             tmp<gpuField<Type> > faceH(const gpuField<Type>&) const;
+
+            template<class Type>
+            void faceH(gpuField<Type>&, const gpuField<Type>&) const;
 
             template<class Type>
             tmp<gpuField<Type> > faceH(const tmp<gpuField<Type> >&) const;

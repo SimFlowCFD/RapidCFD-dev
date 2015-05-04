@@ -126,7 +126,7 @@ Foam::solverPerformance Foam::fvMatrix<Type>::solveSegregated
 
    label size = diag().size();
 
-    scalargpuField saveDiag(fvMatrixCache::diag(level(),size),size);
+    scalargpuField saveDiag(fvMatrixCache::first(level(),size),size);
     saveDiag = diag();
 
     gpuField<Type> source(source_);
@@ -151,11 +151,11 @@ Foam::solverPerformance Foam::fvMatrix<Type>::solveSegregated
 
         // copy field and source
 
-        scalargpuField psiCmpt(fvMatrixCache::psi(level(),size),size);
+        scalargpuField psiCmpt(fvMatrixCache::second(level(),size),size);
         component(psiCmpt,psi.internalField(),cmpt);
         addBoundaryDiag(diag(), cmpt);
 
-        scalargpuField sourceCmpt(fvMatrixCache::source(level(),size),size);
+        scalargpuField sourceCmpt(fvMatrixCache::third(level(),size),size);
         component(sourceCmpt,source,cmpt);
 
         FieldField<gpuField, scalar> bouCoeffsCmpt
@@ -336,21 +336,24 @@ Foam::solverPerformance Foam::fvMatrix<Type>::solve()
     );
 }
 
-
 template<class Type>
-Foam::tmp<Foam::gpuField<Type> > Foam::fvMatrix<Type>::residual() const
+void Foam::fvMatrix<Type>::residual(Foam::gpuField<Type>& res) const
 {
-    tmp<gpuField<Type> > tres(new gpuField<Type>(source_));
-    gpuField<Type>& res = tres();
+    res = source_;
 
     addBoundarySource(res);
 
     // Loop over field components
     for (direction cmpt=0; cmpt<Type::nComponents; cmpt++)
     {
-        scalargpuField psiCmpt(psi_.internalField().component(cmpt));
+        label pSize = psi_.size();
 
-        scalargpuField boundaryDiagCmpt(psi_.size(), 0.0);
+        scalargpuField psiCmpt(fvMatrixCache::first(level(),pSize),pSize);
+        component(psiCmpt,psi_.internalField(),cmpt);
+
+        scalargpuField boundaryDiagCmpt(fvMatrixCache::second(level(),pSize),pSize);
+        boundaryDiagCmpt = 0.0;
+
         addBoundaryDiag(boundaryDiagCmpt, cmpt);
 
         FieldField<gpuField, scalar> bouCoeffsCmpt
@@ -371,6 +374,17 @@ Foam::tmp<Foam::gpuField<Type> > Foam::fvMatrix<Type>::residual() const
             )
         );
     }
+
+}
+
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::fvMatrix<Type>::residual() const
+{
+    tmp<gpuField<Type> > tres(new gpuField<Type>(source_));
+    gpuField<Type>& res = tres();
+
+    residual(res);
 
     return tres;
 }

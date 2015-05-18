@@ -77,7 +77,7 @@ SourceFiles
 #ifndef turbulentInletFvPatchField_H
 #define turbulentInletFvPatchField_H
 
-#include <curand_kernel.h>
+#include <thrust/random.h>
 #include "fixedValueFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -85,7 +85,8 @@ SourceFiles
 namespace Foam
 {
 
-typedef curandStatePhilox4_32_10_t stateType;
+typedef thrust::default_random_engine stateType;
+typedef thrust::uniform_real_distribution<scalar> distributionType;
 
 /*---------------------------------------------------------------------------*\
                  Class turbulentInletFvPatchField Declaration

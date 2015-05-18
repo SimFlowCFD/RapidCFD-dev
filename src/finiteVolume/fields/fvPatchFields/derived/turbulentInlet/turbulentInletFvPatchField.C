@@ -32,16 +32,10 @@ namespace Foam
 
 struct turbulentInletSetupFunctor
 {
-    long seed;
-
-    turbulentInletSetupFunctor(long _seed):seed(_seed){};
-
     __device__
     stateType operator()(const int& id)
     {
-        stateType state;
-        curand_init(seed,id,0,&state);
-        return state;
+        return stateType(id);
     }
 };
 
@@ -56,7 +50,8 @@ template<>
 __device__
 scalar turbulentInletRandomiseFunctor<scalar>::operator()(stateType& state)
 {
-    return curand_uniform(&state);
+    distributionType dist(0,1);
+    return dist(state);
 }
 
 template<>
@@ -64,11 +59,13 @@ __device__
 vector turbulentInletRandomiseFunctor<vector>::operator()(stateType& state)
 {
     stateType localState = state;
+    distributionType dist(0,1);
+
     vector out
     (
-        curand_uniform(&localState),
-        curand_uniform(&localState),
-        curand_uniform(&localState)
+        dist(localState),
+        dist(localState),
+        dist(localState)
     );
 
     state = localState;
@@ -80,19 +77,21 @@ __device__
 tensor turbulentInletRandomiseFunctor<tensor>::operator()(stateType& state)
 {
     stateType localState = state;
+    distributionType dist(0,1);
+
     tensor out
     (
-        curand_uniform(&localState),
-        curand_uniform(&localState),
-        curand_uniform(&localState),
+        dist(localState),
+        dist(localState),
+        dist(localState),
 
-        curand_uniform(&localState),
-        curand_uniform(&localState),
-        curand_uniform(&localState),
+        dist(localState),
+        dist(localState),
+        dist(localState),
 
-        curand_uniform(&localState),
-        curand_uniform(&localState),
-        curand_uniform(&localState)
+        dist(localState),
+        dist(localState),
+        dist(localState)
     );
 
     state = localState;
@@ -103,7 +102,8 @@ template<>
 __device__
 sphericalTensor turbulentInletRandomiseFunctor<sphericalTensor>::operator()(stateType& state)
 {
-    return sphericalTensor(curand_uniform(&state));
+    distributionType dist(0,1);
+    return sphericalTensor(dist(state));
 }
 
 template<>
@@ -111,15 +111,16 @@ __device__
 symmTensor turbulentInletRandomiseFunctor<symmTensor>::operator()(stateType& state)
 {
     stateType localState = state;
+    distributionType dist(0,1);
     symmTensor out
     (
-        curand_uniform(&localState),
-        curand_uniform(&localState),
-        curand_uniform(&localState),
+        dist(localState),
+        dist(localState),
+        dist(localState),
 
-        curand_uniform(&localState),
-        curand_uniform(&localState),
-        curand_uniform(&localState)
+        dist(localState),
+        dist(localState),
+        dist(localState)
     );
 
     state = localState;
@@ -238,7 +239,7 @@ void turbulentInletFvPatchField<Type>::updateRandomState()
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(0)+this->size(),
         states_.begin(),
-        turbulentInletSetupFunctor(0)
+        turbulentInletSetupFunctor()
     );
 }
 

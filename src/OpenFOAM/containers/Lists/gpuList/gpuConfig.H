@@ -1,7 +1,7 @@
 #ifndef gpuConfig_H
 #define gpuConfig_H
 
-#if WM_GPU == CUDA
+#if defined(__CUDACC__) || defined(_OPENMP)
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -25,8 +25,10 @@
 #include <thrust/extrema.h>
 #include <thrust/fill.h>
 
-
 namespace gpu_api = thrust;
+
+
+#ifdef __CUDACC__
 
 #define CUDA_CALL(x) do { if((x) != cudaSuccess) {         \
  printf("Error at %s:%d\n",__FILE__,__LINE__);             \
@@ -59,8 +61,22 @@ inline void setGpuDevice(int device)
 
 }
 
+#endif
+
+
+#ifdef _OPENMP
+
+inline void setNumThreads(int n)
+{
+    omp_set_dynamic(0);
+    omp_set_num_threads(n);
+}
+
+#endif
+
+
 #else
-#error "Currently only CUDA is supported."
+#error "Currently only CUDA and OMP is supported."
 #endif
 
 #endif

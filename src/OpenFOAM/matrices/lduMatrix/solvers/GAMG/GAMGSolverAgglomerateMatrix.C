@@ -131,8 +131,6 @@ void Foam::GAMGSolver::agglomerateMatrix
         const boolgpuList& faceFlipMap =
             agglomeration_.faceFlipMap(fineLevelIndex);
 
-        typedef typename thrust::pair<labelgpuList::iterator,scalargpuField::iterator> Pair;
-
         // Check if matrix is asymetric and if so agglomerate both upper
         // and lower coefficients ...
         if (fineMatrix.hasLower())

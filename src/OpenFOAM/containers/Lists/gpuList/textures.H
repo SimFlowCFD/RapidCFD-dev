@@ -9,32 +9,48 @@ template<class T>
 struct textures
 {
 private:
+    #ifdef __CUDACC__
     cudaTextureObject_t tex;
 
     inline void initResourceDesc(cudaResourceDesc& resDesc);
     void init(int n, T* data);
+    #else
+    const __RESTRICT__ T* tex;
+    #endif
 
 public:
-    textures(int n, T* data):
-        tex(0)
-    {
-        init(n,data);
-    }
+
 
     textures(const gpuList<T>& list):
+    #ifdef __CUDACC__
         tex(0)
     {
         init(list.size(),const_cast<T*>(list.data()));
     }
+    #else
+        tex(list.data())
+    {
+    }
+    #endif
 
-    inline __device__ T operator[](const int& i);
+    inline __device__ T operator[](const int& i)
+    #ifdef __CUDACC__
+    ;
+    #else
+    {
+        return tex[i];
+    }
+    #endif
 
     void destroy()
     {
+        #ifdef __CUDACC__
         cudaDestroyTextureObject(tex);
+        #endif
     }
 };
 
+#ifdef __CUDACC__
 template<class T>
 inline void textures<T>::initResourceDesc(cudaResourceDesc& resDesc)
 {
@@ -100,5 +116,6 @@ inline __device__ double textures<double>::operator[](const int& i)
     int2 v = tex1Dfetch<int2>(tex, i);
     return __hiloint2double(v.y, v.x);
 }
+#endif
 
 }

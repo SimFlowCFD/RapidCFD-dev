@@ -204,7 +204,6 @@ struct fvScalarMatrixResidualFunctor
     }
 };
 
-}
 
 template<>
 void Foam::fvMatrix<Foam::scalar>::residual(Foam::scalargpuField& tres) const
@@ -237,6 +236,8 @@ void Foam::fvMatrix<Foam::scalar>::residual(Foam::scalargpuField& tres) const
     );
 
     addBoundarySource(tres);
+}
+
 }
 
 template<>

@@ -69,27 +69,27 @@ inline const Foam::gpuList<Foam::label>& Foam::gpuIndirectList<T>::addressing() 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin()
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin()
 {
-	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
+    return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
 }
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin() const
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin() const
 {
-	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
+    return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
 }
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end()
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end()
 {
-	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
+    return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
 }
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end() const
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end() const
 {
-	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
+    return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
 }
 
 template<class T>
@@ -104,8 +104,16 @@ inline void Foam::gpuIndirectList<T>::operator=(const gpuList<T>& ae)
             << abort(FatalError);
     }
 
-    thrust::copy(ae.begin(),ae.end(),
-    		thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin()));
+    thrust::copy
+    (
+        ae.begin(),
+        ae.end(),
+        thrust::make_permutation_iterator
+        (
+            completeList_.begin(),
+            addressing_.begin()
+        )
+    );
 }
 
 
@@ -121,18 +129,44 @@ inline void Foam::gpuIndirectList<T>::operator=(const gpuIndirectList<T>& ae)
             << abort(FatalError);
     }
 
-    thrust::copy(thrust::make_permutation_iterator(ae.completeList_.begin(),ae.addressing_.begin()),
-    		     thrust::make_permutation_iterator(ae.completeList_.begin(),ae.addressing_.end()),
-        		 thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin()));
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
+        (
+            ae.completeList_.begin(),
+            ae.addressing_.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            ae.completeList_.begin(),
+            ae.addressing_.end()
+        ),
+        thrust::make_permutation_iterator
+        (
+            completeList_.begin(),
+            addressing_.begin()
+        )
+    );
 }
 
 
 template<class T>
 inline void Foam::gpuIndirectList<T>::operator=(const T& t)
 {
-	thrust::fill(thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin()),
-			     thrust::make_permutation_iterator(completeList_.begin(),addressing_.end()),
-			     t);
+    thrust::fill
+    (
+        thrust::make_permutation_iterator
+        (
+            completeList_.begin(),
+            addressing_.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            completeList_.begin(),
+            addressing_.end()
+        ),
+        t
+    );
 }
 
 

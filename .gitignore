@@ -41,6 +41,7 @@ lnInclude
 linux*Clang*/
 linux*Gcc*/
 linux*Nvcc*/
+linux*Omp*/
 linux*Icc*/
 linuxming*/
 SiCortex*Gcc*/

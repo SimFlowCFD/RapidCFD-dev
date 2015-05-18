@@ -63,6 +63,7 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
         scalar* receive;
         const scalar* send;
 
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             // Fast path.
@@ -85,6 +86,12 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
             send = scalarSendBuf_.begin();
             receive = scalarReceiveBuf_.begin();
         }
+        #else
+        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+
+        send = scalargpuSendBuf_.data();
+        receive = scalargpuReceiveBuf_.data();
+        #endif
 
         outstandingRecvRequest_ = UPstream::nRequests();
         UIPstream::read
@@ -148,10 +155,12 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         outstandingSendRequest_ = -1;
         outstandingRecvRequest_ = -1;
 
+        #ifdef __CUDACC__
         if( ! Pstream::gpuDirectTransfer)
         {
             scalargpuReceiveBuf_ = scalarReceiveBuf_;
         }
+        #endif
 
         // Consume straight from scalargpuReceiveBuf_
         matrixPatchOperation

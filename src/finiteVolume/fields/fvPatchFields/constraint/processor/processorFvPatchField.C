@@ -244,6 +244,7 @@ void Foam::processorFvPatchField<Type>::initEvaluate
             const Type* send;
 
             this->setSize(gpuSendBuf_.size());
+            #ifdef __CUDACC__
             if(Pstream::gpuDirectTransfer)
             {
                 // Fast path.
@@ -264,6 +265,10 @@ void Foam::processorFvPatchField<Type>::initEvaluate
                 send = sendBuf_.begin();
                 receive = receiveBuf_.begin();
             }
+            #else
+            send = gpuSendBuf_.data();
+            receive = this->data();
+            #endif
 
             outstandingRecvRequest_ = UPstream::nRequests();
             UIPstream::read
@@ -318,6 +323,7 @@ void Foam::processorFvPatchField<Type>::evaluate
             outstandingSendRequest_ = -1;
             outstandingRecvRequest_ = -1;
 
+            #ifdef __CUDACC__
             if( ! Pstream::gpuDirectTransfer)
             {
                 scalargpuReceiveBuf_ = scalarReceiveBuf_;
@@ -328,6 +334,7 @@ void Foam::processorFvPatchField<Type>::evaluate
                     this->begin()
                 );
             }
+            #endif
         }
         else
         {
@@ -382,6 +389,7 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
         scalar* receive;
         const scalar* send;
 
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             // Fast path.
@@ -404,6 +412,12 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
             send = scalarSendBuf_.begin();
             receive = scalarReceiveBuf_.begin();
         }
+        #else
+        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+
+        send = scalargpuSendBuf_.data();
+        receive = scalargpuReceiveBuf_.data();
+        #endif
 
         outstandingRecvRequest_ = UPstream::nRequests();
         UIPstream::read
@@ -468,10 +482,12 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
 
         // Consume straight from scalarReceiveBuf_
 
+        #ifdef __CUDACC__
         if( ! Pstream::gpuDirectTransfer)
         {
             scalargpuReceiveBuf_ = scalarReceiveBuf_;
         }
+        #endif
 
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
@@ -544,6 +560,7 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
         Type* receive;
         const Type* send;
 
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             // Fast path.
@@ -566,6 +583,12 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
             send = sendBuf_.begin();
             receive = receiveBuf_.begin();
         }
+        #else
+        gpuReceiveBuf_.setSize(gpuSendBuf_.size());
+
+        send = gpuSendBuf_.data();
+        receive = gpuReceiveBuf_.data();
+        #endif
 
         outstandingRecvRequest_ = UPstream::nRequests();
         IPstream::read
@@ -629,10 +652,12 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
 
         // Consume straight from receiveBuf_
 
+        #ifdef __CUDACC__
         if( ! Pstream::gpuDirectTransfer)
         {
             gpuReceiveBuf_ = receiveBuf_;
         }
+        #endif
 
         // Transform according to the transformation tensor
         transformCoupleField(gpuReceiveBuf_);

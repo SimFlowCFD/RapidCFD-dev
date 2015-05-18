@@ -35,18 +35,18 @@ Description
 
 namespace Foam
 {                
-        
+
 #define MAX_NEI_SIZE 3
 
 template<bool fast>
 struct matrixMultiplyFunctor
 {
     textures<scalar> psi;
-    const scalar* lower;
-    const scalar* upper;
-    const label* own;
-    const label* nei;
-    const label* losort;
+    const scalar* __RESTRICT__ lower;
+    const scalar* __RESTRICT__ upper;
+    const label* __RESTRICT__ own;
+    const label* __RESTRICT__ nei;
+    const label* __RESTRICT__ losort;
 
     matrixMultiplyFunctor
     (

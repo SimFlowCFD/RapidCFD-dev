@@ -133,6 +133,7 @@ void Foam::processorLduInterface::send
     if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
     {
         const char* sendData;
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             sendData = reinterpret_cast<const char*>(f.data());
@@ -143,6 +144,9 @@ void Foam::processorLduInterface::send
             CUDA_CALL(cudaMemcpy(sendBuf_.begin(), f.data(), nBytes,cudaMemcpyDeviceToHost));
             sendData = sendBuf_.begin();
         }
+        #else
+        sendData = reinterpret_cast<const char*>(f.data());
+        #endif
 
         OPstream::write
         (
@@ -159,6 +163,7 @@ void Foam::processorLduInterface::send
         char* receive;
         const char* send;
 
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             resizeBuf(gpuReceiveBuf_, nBytes);
@@ -179,6 +184,13 @@ void Foam::processorLduInterface::send
             send = sendBuf_.begin();
             receive = receiveBuf_.begin();
         }
+        #else
+        resizeBuf(gpuReceiveBuf_, nBytes);
+        resizeBuf(gpuSendBuf_, nBytes);
+        memcpy(gpuSendBuf_.data(), f.data(), nBytes);
+        send = gpuSendBuf_.data();
+        receive = gpuReceiveBuf_.data();
+        #endif
 
         IPstream::read
         (
@@ -250,6 +262,8 @@ void Foam::processorLduInterface::receive
     if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
     {
         char * read;
+
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             read = reinterpret_cast<char*>(f.data());
@@ -259,6 +273,9 @@ void Foam::processorLduInterface::receive
             resizeBuf(receiveBuf_, f.byteSize());
             read = receiveBuf_.begin();
         }
+        #else
+        read = reinterpret_cast<char*>(f.data());
+        #endif
 
         IPstream::read
         (
@@ -270,13 +287,16 @@ void Foam::processorLduInterface::receive
             comm()
         );
 
+        #ifdef __CUDACC__
         if( ! Pstream::gpuDirectTransfer)
         {
             CUDA_CALL(cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice));
         }
+        #endif
     }
     else if (commsType == Pstream::nonBlocking)
     {
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             CUDA_CALL(cudaMemcpy(f.data(), gpuReceiveBuf_.data(), f.byteSize(),cudaMemcpyDeviceToDevice));
@@ -285,6 +305,7 @@ void Foam::processorLduInterface::receive
         {
             CUDA_CALL(cudaMemcpy(f.data(), receiveBuf_.data(), f.byteSize(),cudaMemcpyHostToDevice));
         }
+        #endif
     }
     else
     {
@@ -415,11 +436,17 @@ void Foam::processorLduInterface::compressedSend
              )
         );
 
+        #ifdef __CUDACC__
         CUDA_CALL(cudaMemcpy(fArray+nm1, f.data() + (f.size() - 1), sizeof(Type), cudaMemcpyDeviceToDevice));
+        #else
+        memcpy(fArray+nm1, f.data() + (f.size() - 1), sizeof(Type));
+        #endif
 
         if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
         {
             const char* sendData;
+
+            #ifdef __CUDACC__
             if(Pstream::gpuDirectTransfer)
             {
                 sendData = gpuSendBuf_.data();
@@ -430,6 +457,9 @@ void Foam::processorLduInterface::compressedSend
                 CUDA_CALL(cudaMemcpy(sendBuf_.begin(), gpuSendBuf_.data(), nBytes,cudaMemcpyDeviceToHost));
                 sendData = sendBuf_.begin();
             }
+            #else
+            sendData = gpuSendBuf_.data();
+            #endif
 
             OPstream::write
             (
@@ -446,6 +476,7 @@ void Foam::processorLduInterface::compressedSend
             const char* sendData;
             char * readData;
 
+            #ifdef __CUDACC__
             if(Pstream::gpuDirectTransfer)
             {
                 resizeBuf(gpuReceiveBuf_, nBytes);
@@ -462,6 +493,11 @@ void Foam::processorLduInterface::compressedSend
                 sendData = sendBuf_.begin();
                 readData = receiveBuf_.begin();
             }
+            #else
+            resizeBuf(gpuReceiveBuf_, nBytes);
+            readData = gpuReceiveBuf_.data();
+            sendData = gpuSendBuf_.data();
+            #endif
 
             IPstream::read
             (
@@ -568,6 +604,8 @@ void Foam::processorLduInterface::compressedReceive
         if (commsType == Pstream::blocking || commsType == Pstream::scheduled)
         {
             char* readData;
+
+            #ifdef __CUDACC__
             if(Pstream::gpuDirectTransfer)
             {
                 readData = gpuReceiveBuf_.data();
@@ -577,6 +615,9 @@ void Foam::processorLduInterface::compressedReceive
                 resizeBuf(receiveBuf_, nBytes);
                 readData = receiveBuf_.begin();
             }
+            #else
+            readData = gpuReceiveBuf_.data();
+            #endif
 
             IPstream::read
             (
@@ -588,17 +629,21 @@ void Foam::processorLduInterface::compressedReceive
                 comm()
             );
 
+            #ifdef __CUDACC__
             if( ! Pstream::gpuDirectTransfer)
             {
                 CUDA_CALL(cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice));
             }
+            #endif
         }
         else if (commsType == Pstream::nonBlocking)
         {
+            #ifdef __CUDACC__
             if( ! Pstream::gpuDirectTransfer)
             {
                 CUDA_CALL(cudaMemcpy(gpuReceiveBuf_.data(), receiveBuf_.data(), nBytes,cudaMemcpyHostToDevice));
             }
+            #endif
         }
         else
         {
@@ -610,7 +655,11 @@ void Foam::processorLduInterface::compressedReceive
         const float *fArray =
             reinterpret_cast<const float*>(gpuReceiveBuf_.data());
 
+        #ifdef __CUDACC__
         CUDA_CALL(cudaMemcpy(f.data()+(f.size() - 1),fArray+nm1, sizeof(Type), cudaMemcpyDeviceToDevice));
+        #else
+        memcpy(f.data()+(f.size() - 1), fArray+nm1, sizeof(Type));
+        #endif
 
         scalar *sArray = reinterpret_cast<scalar*>(f.data());
         const scalar *slast = &sArray[nm1];

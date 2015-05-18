@@ -6,8 +6,12 @@
 template<class T>
 Foam::gpuList<T>::gpuList(Istream& is)
 :
-    v_(0)
+    size_(0),
+    start_(0),
+    v_(0),
+    delegate_(0)
 {
+    v_ = new gpu_api::device_vector<T>();
     operator>>(is, *this);
 }
 

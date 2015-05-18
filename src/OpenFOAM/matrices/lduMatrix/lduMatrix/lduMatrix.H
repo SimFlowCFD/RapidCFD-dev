@@ -82,14 +82,14 @@ class lduMatrix
         //- LDU mesh reference
         const lduMesh& lduMesh_;
 
+        bool coarsestLevel_;
+
         //- Coefficients (not including interfaces)
         scalargpuField *lowerPtr_, *diagPtr_, *upperPtr_;
 
         //- Coefficients for better memory access
         mutable scalargpuField *lowerSortPtr_;
         mutable scalargpuField *upperSortPtr_;
-
-        bool coarsestLevel_;
 
         void calcSortCoeffs(scalargpuField& out, const scalargpuField& in) const;
 

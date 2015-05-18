@@ -112,6 +112,7 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
         scalar* readData;
         const scalar* sendData;
 
+        #ifdef __CUDACC__
         if(Pstream::gpuDirectTransfer)
         {
             // Fast path.
@@ -134,6 +135,12 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
             sendData = scalarSendBuf_.begin();
             readData = scalarReceiveBuf_.begin();
         }
+        #else
+        scalargpuReceiveBuf_.setSize(scalargpuSendBuf_.size());
+
+        sendData = scalargpuSendBuf_.data();
+        readData = scalargpuReceiveBuf_.data();
+        #endif
 
         outstandingRecvRequest_ = UPstream::nRequests();
         IPstream::read
@@ -202,10 +209,12 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
 
         // Consume straight from scalarReceiveBuf_
 
+        #ifdef __CUDACC__
         if( ! Pstream::gpuDirectTransfer)
         {
             scalargpuReceiveBuf_ = scalarReceiveBuf_;
         }
+        #endif
 
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);

@@ -5,9 +5,9 @@
 template<class T>
 inline Foam::gpuList<T>::gpuList()
 :
-    v_(0),
     size_(0),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     v_ = new gpu_api::device_vector<T>(0);
@@ -16,9 +16,9 @@ inline Foam::gpuList<T>::gpuList()
 template<class T>
 inline Foam::gpuList<T>::gpuList(label size)
 :
-    v_(0),
     size_(0),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     v_ = new gpu_api::device_vector<T>(size);
@@ -27,9 +27,9 @@ inline Foam::gpuList<T>::gpuList(label size)
 template<class T>
 inline Foam::gpuList<T>::gpuList(label size, const T& t)
 :
-    v_(0),
     size_(0),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     v_ = new gpu_api::device_vector<T>(size,t);
@@ -38,9 +38,9 @@ inline Foam::gpuList<T>::gpuList(label size, const T& t)
 template<class T>
 inline Foam::gpuList<T>::gpuList(const gpuList<T>& list)
 :
-    v_(0),
     size_(0),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     v_ = new gpu_api::device_vector<T>(list.size());
@@ -51,9 +51,9 @@ template<class T>
 template<class InputIterator>
 inline Foam::gpuList<T>::gpuList(InputIterator first, InputIterator last)
 :
-    v_(0),
     size_(0),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     v_ = new gpu_api::device_vector<T>(last-first);
@@ -67,9 +67,9 @@ inline Foam::gpuList<T>::gpuList
     const label subSize
 )
 :
-    v_(0),
     size_(subSize),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     delegate_ = const_cast<gpuList<T>*>(&list);
@@ -83,9 +83,9 @@ inline Foam::gpuList<T>::gpuList
     const label startIndex
 )
 :
-    v_(0),
     size_(subSize),
     start_(startIndex),
+    v_(0),
     delegate_(0)
 {
     delegate_ = const_cast<gpuList<T>*>(&list);
@@ -100,9 +100,9 @@ inline Foam::gpuList<T>::gpuList(const Xfer<gpuList<T> >& lst)
 template<class T>
 inline Foam::gpuList<T>::gpuList(const UList<T>& list)
 :
-    v_(new gpu_api::device_vector<T>(list.size())),
     size_(0),
     start_(0),
+    v_(new gpu_api::device_vector<T>(list.size())),
     delegate_(0)
 {
     this->operator=(list);
@@ -112,9 +112,9 @@ inline Foam::gpuList<T>::gpuList(const UList<T>& list)
 template<class T>
 Foam::gpuList<T>::gpuList(gpuList<T>& a, bool reUse)
 :
-    v_(0),
     size_(0),
     start_(0),
+    v_(0),
     delegate_(0)
 {
     if (reUse)
@@ -220,7 +220,7 @@ inline const T* Foam::gpuList<T>::data() const
 }
 
 template<class T>
-inline const Foam::gpuList<T>::iterator Foam::gpuList<T>::begin()
+inline const typename Foam::gpuList<T>::iterator Foam::gpuList<T>::begin()
 {
     if(v_)
     {
@@ -234,7 +234,7 @@ inline const Foam::gpuList<T>::iterator Foam::gpuList<T>::begin()
 }
 
 template<class T>
-inline const Foam::gpuList<T>::iterator Foam::gpuList<T>::end()
+inline const typename Foam::gpuList<T>::iterator Foam::gpuList<T>::end()
 {
     if(v_)
     {
@@ -248,7 +248,7 @@ inline const Foam::gpuList<T>::iterator Foam::gpuList<T>::end()
 }
 
 template<class T>
-inline const Foam::gpuList<T>::const_iterator Foam::gpuList<T>::begin() const
+inline const typename Foam::gpuList<T>::const_iterator Foam::gpuList<T>::begin() const
 {
     if(v_)
     {
@@ -262,7 +262,7 @@ inline const Foam::gpuList<T>::const_iterator Foam::gpuList<T>::begin() const
 }
 
 template<class T>
-inline const Foam::gpuList<T>::const_iterator Foam::gpuList<T>::end() const
+inline const typename Foam::gpuList<T>::const_iterator Foam::gpuList<T>::end() const
 {
     if(v_)
     {
@@ -276,7 +276,7 @@ inline const Foam::gpuList<T>::const_iterator Foam::gpuList<T>::end() const
 }
 
 template<class T>
-inline const Foam::gpuList<T>::reverse_iterator Foam::gpuList<T>::rbegin()
+inline const typename Foam::gpuList<T>::reverse_iterator Foam::gpuList<T>::rbegin()
 {
     if(v_)
     {
@@ -290,7 +290,7 @@ inline const Foam::gpuList<T>::reverse_iterator Foam::gpuList<T>::rbegin()
 }
 
 template<class T>
-inline const Foam::gpuList<T>::reverse_iterator Foam::gpuList<T>::rend()
+inline const typename Foam::gpuList<T>::reverse_iterator Foam::gpuList<T>::rend()
 {
     if(v_)
     {
@@ -304,7 +304,7 @@ inline const Foam::gpuList<T>::reverse_iterator Foam::gpuList<T>::rend()
 }
 
 template<class T>
-inline const Foam::gpuList<T>::const_reverse_iterator Foam::gpuList<T>::rbegin() const
+inline const typename Foam::gpuList<T>::const_reverse_iterator Foam::gpuList<T>::rbegin() const
 {
     if(v_)
     {
@@ -318,7 +318,7 @@ inline const Foam::gpuList<T>::const_reverse_iterator Foam::gpuList<T>::rbegin()
 }
 
 template<class T>
-inline const Foam::gpuList<T>::const_reverse_iterator Foam::gpuList<T>::rend() const
+inline const typename Foam::gpuList<T>::const_reverse_iterator Foam::gpuList<T>::rend() const
 {
     if(v_)
     {

@@ -105,6 +105,9 @@ void Foam::lduMatrix::sumMagOffDiag
     ); 
 }
 
+namespace Foam
+{
+
 #define H_FUNCTION_CALL(functionName)                                                       \
 functionName                                                                                \
 (                                                                                           \
@@ -167,6 +170,8 @@ Foam::tmp<Foam::gpuField<Foam::scalar> > Foam::lduMatrix::H(const Foam::gpuField
 }
 
 #undef H_FUNCTION_CALL
+
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

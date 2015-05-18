@@ -1,0 +1,8 @@
+CPP        = cpp -traditional-cpp $(GFLAGS)
+
+PROJECT_LIBS = -lOpenFOAM -ldl
+
+include $(GENERAL_RULES)/standard
+
+include $(RULES)/c
+include $(RULES)/c++

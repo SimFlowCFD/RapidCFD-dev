@@ -25,8 +25,8 @@ class gpuList
         label size_;
         label start_;
 
-        gpuList<T>* delegate_;
         gpu_api::device_vector<T>* v_;
+        gpuList<T>* delegate_;
 
 public:
 

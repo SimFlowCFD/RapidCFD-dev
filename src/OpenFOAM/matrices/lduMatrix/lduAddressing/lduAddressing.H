@@ -122,11 +122,11 @@ class lduAddressing
         //- Losort addressing
         mutable labelgpuList* losortPtr_;
 
-        //- Owner start addressing
-        mutable labelgpuList* ownerStartPtr_;
-
         //- Owner sort addressing
         mutable labelgpuList* ownerSortAddrPtr_;
+
+        //- Owner start addressing
+        mutable labelgpuList* ownerStartPtr_;
 
         //- Losort start addressing
         mutable labelgpuList* losortStartPtr_;

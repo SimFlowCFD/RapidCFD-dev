@@ -193,8 +193,8 @@ public:
         :
             index_(index),
             coarseInterfaces_(coarseInterfaces),
+            faceCells_(faceCells),
             faceCellsHost_(faceCells),
-            faceCells_(faceCellsHost_),
             faceRestrictAddressingHost_(faceRestrictAddressing)
         {
             updateAddressing();

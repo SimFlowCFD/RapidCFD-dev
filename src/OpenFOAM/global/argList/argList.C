@@ -70,6 +70,7 @@ Foam::argList::initValidTables::initValidTables()
         "do not execute functionObjects"
     );
 
+#if defined(__CUDACC__)
     argList::addOption
     (
         "device",
@@ -80,9 +81,24 @@ Foam::argList::initValidTables::initValidTables()
     argList::addOption
     (
         "devices", "(devID1 .. devIDN)",
-        "assign device to each processor"
+        "assign device to each process"
     );
     validParOptions.set("devices", "(devID1 .. devIDN)");
+#elif defined(_OPENMP)
+    argList::addOption
+    (
+        "threads",
+        "nThreads",
+        "use specified number of threads"
+    );
+
+    argList::addOption
+    (
+        "threadList", "(n1 .. nN)",
+        "assign number of threads to each process"
+    );
+    validParOptions.set("threadList", "(n1 .. nN)");
+#endif
 
     Pstream::addValidParOptions(validParOptions);
 }
@@ -586,7 +602,9 @@ void Foam::argList::parse
     // Case is a single processor run unless it is running parallel
     int nProcs = 1;
 
+    #if defined(__CUDACC__)
     int deviceCount = getGpuDeviceCount();
+    #endif
 
     // Roots if running distributed
     fileNameList roots;
@@ -771,6 +789,7 @@ void Foam::argList::parse
         nProcs = Pstream::nProcs();
         case_ = globalCase_/(word("processor") + name(Pstream::myProcNo()));
 
+        #if defined(__CUDACC__)
         if (options_.found("devices"))
         {
             IStringStream is(options_["devices"]);
@@ -779,7 +798,7 @@ void Foam::argList::parse
             if (devices.size() != Pstream::nProcs())
             {
                 FatalError
-                    <<"Device list size is different than number of processors."
+                    <<"Device list size is different than the number of processors."
                     << endl;
                 FatalError.exit();
             }
@@ -809,6 +828,26 @@ void Foam::argList::parse
 
             setGpuDevice(Pstream::myProcNo());
         }
+        #elif  defined(_OPENMP)
+        if (options_.found("threadList"))
+        {
+            IStringStream is(options_["threadList"]);
+            List<int> threads = readList<int>(is);
+
+            if (threads.size() != Pstream::nProcs())
+            {
+                FatalError
+                    <<"Thread list size is different than the number of processors."
+                    << endl;
+                FatalError.exit();
+            }
+            else
+            {
+                int nt = threads[Pstream::myProcNo()];
+                setNumThreads(nt);
+            }
+        }
+        #endif
     }
     else
     {
@@ -816,6 +855,7 @@ void Foam::argList::parse
         getRootCase();
         case_ = globalCase_;
 
+        #if defined(__CUDACC__)
         if (options_.found("device"))
         {
             int device = optionRead<int>("device");
@@ -828,8 +868,14 @@ void Foam::argList::parse
             }
 
             setGpuDevice(device);
-
         }
+        #elif  defined(_OPENMP)
+        if (options_.found("threads"))
+        {
+            int nt = optionRead<int>("threads");
+            setNumThreads(nt);
+        }
+        #endif
     }
 
 

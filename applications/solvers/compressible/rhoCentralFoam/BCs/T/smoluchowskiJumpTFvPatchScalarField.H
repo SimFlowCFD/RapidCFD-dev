@@ -69,7 +69,7 @@ class smoluchowskiJumpTFvPatchScalarField
         scalar accommodationCoeff_;
 
         //- Wall surface temperature
-        scalarField Twall_;
+        scalargpuField Twall_;
 
         //- Heat capacity ratio (default 1.4)
         scalar gamma_;
@@ -147,7 +147,7 @@ public:
             virtual void rmap
             (
                 const fvPatchField<scalar>&,
-                const labelList&
+                const labelgpuList&
             );
 
 

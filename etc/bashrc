@@ -82,10 +82,6 @@ export WM_COMPILE_OPTION=Opt
 #    WM_MPLIB = OPENMPI | MVAPICH2
 export WM_MPLIB=OPENMPI
 
-#- GPU API
-#    WM_GPU = CUDA | ???
-export WM_GPU=CUDA
-
 #- Operating System:
 #    WM_OSTYPE = POSIX | ???
 export WM_OSTYPE=POSIX

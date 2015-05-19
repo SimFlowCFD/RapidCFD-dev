@@ -108,7 +108,7 @@ void mixedFixedValueSlipFvPatchField<Type>::autoMap
     const fvPatchFieldMapper& m
 )
 {
-    Field<Type>::autoMap(m);
+    gpuField<Type>::autoMap(m);
     refValue_.autoMap(m);
     valueFraction_.autoMap(m);
 }
@@ -119,7 +119,7 @@ template<class Type>
 void mixedFixedValueSlipFvPatchField<Type>::rmap
 (
     const fvPatchField<Type>& ptf,
-    const labelList& addr
+    const labelgpuList& addr
 )
 {
     transformFvPatchField<Type>::rmap(ptf, addr);
@@ -134,10 +134,10 @@ void mixedFixedValueSlipFvPatchField<Type>::rmap
 
 // Return gradient at boundary
 template<class Type>
-tmp<Field<Type> > mixedFixedValueSlipFvPatchField<Type>::snGrad() const
+tmp<gpuField<Type> > mixedFixedValueSlipFvPatchField<Type>::snGrad() const
 {
-    tmp<vectorField> nHat = this->patch().nf();
-    Field<Type> pif(this->patchInternalField());
+    tmp<vectorgpuField> nHat = this->patch().nf();
+    gpuField<Type> pif(this->patchInternalField());
 
     return
     (
@@ -156,9 +156,9 @@ void mixedFixedValueSlipFvPatchField<Type>::evaluate(const Pstream::commsTypes)
         this->updateCoeffs();
     }
 
-    vectorField nHat(this->patch().nf());
+    vectorgpuField nHat(this->patch().nf());
 
-    Field<Type>::operator=
+    gpuField<Type>::operator=
     (
         valueFraction_*refValue_
       +
@@ -172,11 +172,11 @@ void mixedFixedValueSlipFvPatchField<Type>::evaluate(const Pstream::commsTypes)
 
 // Return defining fields
 template<class Type>
-tmp<Field<Type> >
+tmp<gpuField<Type> >
 mixedFixedValueSlipFvPatchField<Type>::snGradTransformDiag() const
 {
-    vectorField nHat(this->patch().nf());
-    vectorField diag(nHat.size());
+    vectorgpuField nHat(this->patch().nf());
+    vectorgpuField diag(nHat.size());
 
     diag.replace(vector::X, mag(nHat.component(vector::X)));
     diag.replace(vector::Y, mag(nHat.component(vector::Y)));

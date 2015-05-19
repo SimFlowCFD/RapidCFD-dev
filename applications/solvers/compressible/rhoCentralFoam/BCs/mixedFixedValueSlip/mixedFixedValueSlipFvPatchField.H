@@ -56,10 +56,10 @@ class mixedFixedValueSlipFvPatchField
     // Private data
 
         //- Value field used for boundary condition
-        Field<Type> refValue_;
+        gpuField<Type> refValue_;
 
         //- Fraction (0-1) of value used for boundary condition
-        scalarField valueFraction_;
+        scalargpuField valueFraction_;
 
 public:
 
@@ -142,27 +142,27 @@ public:
             virtual void rmap
             (
                 const fvPatchField<Type>&,
-                const labelList&
+                const labelgpuList&
             );
 
         // Return defining fields
 
-            virtual Field<Type>& refValue()
+            virtual gpuField<Type>& refValue()
             {
                 return refValue_;
             }
 
-            virtual const Field<Type>& refValue() const
+            virtual const gpuField<Type>& refValue() const
             {
                 return refValue_;
             }
 
-            virtual scalarField& valueFraction()
+            virtual scalargpuField& valueFraction()
             {
                 return valueFraction_;
             }
 
-            virtual const scalarField& valueFraction() const
+            virtual const scalargpuField& valueFraction() const
             {
                 return valueFraction_;
             }
@@ -170,7 +170,7 @@ public:
         // Evaluation functions
 
             //- Return gradient at boundary
-            virtual tmp<Field<Type> > snGrad() const;
+            virtual tmp<gpuField<Type> > snGrad() const;
 
             //- Evaluate the patch field
             virtual void evaluate
@@ -179,7 +179,7 @@ public:
             );
 
             //- Return face-gradient transform diagonal
-            virtual tmp<Field<Type> > snGradTransformDiag() const;
+            virtual tmp<gpuField<Type> > snGradTransformDiag() const;
 
 
         //- Write
@@ -188,6 +188,7 @@ public:
 
     // Member operators
 
+        virtual void operator=(const gpuList<Type>&) {}
         virtual void operator=(const UList<Type>&) {}
 
         virtual void operator=(const fvPatchField<Type>&) {}
@@ -196,11 +197,11 @@ public:
         virtual void operator*=(const fvPatchField<scalar>&) {}
         virtual void operator/=(const fvPatchField<scalar>&) {}
 
-        virtual void operator+=(const Field<Type>&) {}
-        virtual void operator-=(const Field<Type>&) {}
+        virtual void operator+=(const gpuField<Type>&) {}
+        virtual void operator-=(const gpuField<Type>&) {}
 
-        virtual void operator*=(const Field<scalar>&) {}
-        virtual void operator/=(const Field<scalar>&) {}
+        virtual void operator*=(const gpuField<scalar>&) {}
+        virtual void operator/=(const gpuField<scalar>&) {}
 
         virtual void operator=(const Type&) {}
         virtual void operator+=(const Type&) {}

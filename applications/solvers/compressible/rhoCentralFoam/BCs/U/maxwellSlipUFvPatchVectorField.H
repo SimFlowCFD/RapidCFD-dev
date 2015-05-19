@@ -73,7 +73,7 @@ class maxwellSlipUFvPatchVectorField
         scalar accommodationCoeff_;
 
         // Wall velocity
-        vectorField Uwall_;
+        vectorgpuField Uwall_;
 
         // Include thermal creep term (default on)
         Switch thermalCreep_;

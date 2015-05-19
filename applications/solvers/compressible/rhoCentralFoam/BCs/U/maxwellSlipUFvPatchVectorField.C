@@ -114,14 +114,14 @@ Foam::maxwellSlipUFvPatchVectorField::maxwellSlipUFvPatchVectorField
     {
         fvPatchField<vector>::operator=
         (
-            vectorField("value", dict, p.size())
+            vectorgpuField("value", dict, p.size())
         );
 
         if (dict.found("refValue") && dict.found("valueFraction"))
         {
-            this->refValue() = vectorField("refValue", dict, p.size());
+            this->refValue() = vectorgpuField("refValue", dict, p.size());
             this->valueFraction() =
-                scalarField("valueFraction", dict, p.size());
+                scalargpuField("valueFraction", dict, p.size());
         }
         else
         {
@@ -167,13 +167,13 @@ void Foam::maxwellSlipUFvPatchVectorField::updateCoeffs()
     const fvPatchField<scalar>& ppsi =
         patch().lookupPatchField<volScalarField, scalar>(psiName_);
 
-    Field<scalar> C1
+    gpuField<scalar> C1
     (
         sqrt(ppsi*constant::mathematical::piByTwo)
       * (2.0 - accommodationCoeff_)/accommodationCoeff_
     );
 
-    Field<scalar> pnu(pmu/prho);
+    gpuField<scalar> pnu(pmu/prho);
     valueFraction() = (1.0/(1.0 + patch().deltaCoeffs()*C1*pnu));
 
     refValue() = Uwall_;
@@ -184,8 +184,8 @@ void Foam::maxwellSlipUFvPatchVectorField::updateCoeffs()
             this->db().objectRegistry::lookupObject<volScalarField>(TName_);
         label patchi = this->patch().index();
         const fvPatchScalarField& pT = vsfT.boundaryField()[patchi];
-        Field<vector> gradpT(fvc::grad(vsfT)().boundaryField()[patchi]);
-        vectorField n(patch().nf());
+        gpuField<vector> gradpT(fvc::grad(vsfT)().boundaryField()[patchi]);
+        vectorgpuField n(patch().nf());
 
         refValue() -= 3.0*pnu/(4.0*pT)*transform(I - n*n, gradpT);
     }
@@ -194,7 +194,7 @@ void Foam::maxwellSlipUFvPatchVectorField::updateCoeffs()
     {
         const fvPatchTensorField& ptauMC =
             patch().lookupPatchField<volTensorField, tensor>(tauMCName_);
-        vectorField n(patch().nf());
+        vectorgpuField n(patch().nf());
 
         refValue() -= C1/prho*transform(I - n*n, (n & ptauMC));
     }

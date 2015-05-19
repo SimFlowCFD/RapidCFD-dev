@@ -1,7 +1,7 @@
 #ifndef gpuConfig_H
 #define gpuConfig_H
 
-#if WM_GPU == CUDA
+#ifdef __CUDACC__
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>

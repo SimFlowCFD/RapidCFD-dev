@@ -112,7 +112,7 @@ Foam::smoluchowskiJumpTFvPatchScalarField::smoluchowskiJumpTFvPatchScalarField
     {
         fvPatchField<scalar>::operator=
         (
-            scalarField("value", dict, p.size())
+            scalargpuField("value", dict, p.size())
         );
     }
     else
@@ -155,7 +155,7 @@ void Foam::smoluchowskiJumpTFvPatchScalarField::autoMap
 void Foam::smoluchowskiJumpTFvPatchScalarField::rmap
 (
     const fvPatchField<scalar>& ptf,
-    const labelList& addr
+    const labelgpuList& addr
 )
 {
     mixedFvPatchField<scalar>::rmap(ptf, addr);
@@ -191,7 +191,7 @@ void Foam::smoluchowskiJumpTFvPatchScalarField::updateCoeffs()
         .lookup("Pr")
     );
 
-    Field<scalar> C2
+    gpuField<scalar> C2
     (
         pmu/prho
         *sqrt(ppsi*constant::mathematical::piByTwo)
@@ -199,8 +199,8 @@ void Foam::smoluchowskiJumpTFvPatchScalarField::updateCoeffs()
         *(2.0 - accommodationCoeff_)/accommodationCoeff_
     );
 
-    Field<scalar> aCoeff(prho.snGrad() - prho/C2);
-    Field<scalar> KEbyRho(0.5*magSqr(pU));
+    gpuField<scalar> aCoeff(prho.snGrad() - prho/C2);
+    gpuField<scalar> KEbyRho(0.5*magSqr(pU));
 
     valueFraction() = (1.0/(1.0 + patch().deltaCoeffs()*C2));
     refValue() = Twall_;

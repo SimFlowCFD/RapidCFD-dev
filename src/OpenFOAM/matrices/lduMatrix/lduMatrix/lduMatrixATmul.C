@@ -36,7 +36,7 @@ Description
 namespace Foam
 {                
         
-#define MAX_NEI_SIZE 3
+#define MAN_UNROLL 3
 
 template<bool fast>
 struct matrixMultiplyFunctor
@@ -44,41 +44,47 @@ struct matrixMultiplyFunctor
     textures<scalar> psi;
     const scalar* lower;
     const scalar* upper;
-    const label* own;
-    const label* nei;
-    const label* losort;
+    const __restrict__ label* own;
+    const __restrict__ label* nei;
+    const __restrict__ label* ownStart;
+    const __restrict__ label* losortStart;
+    const __restrict__ label* losort;
 
     matrixMultiplyFunctor
     (
         textures<scalar> _psi, 
         const scalar* _lower,
         const scalar* _upper,
-        const label* _own,
-        const label* _nei,
-        const label* _losort
+        const __restrict__ label* _own,
+        const __restrict__ label* _nei,
+        const __restrict__ label* _ownStart,
+        const __restrict__ label* _losortStart,
+        const __restrict__ label* _losort
     ):
         psi(_psi),
         lower(_lower),
         upper(_upper),
         own(_own),
         nei(_nei),
+        ownStart(_ownStart),
+        losortStart(_losortStart),
         losort(_losort)
     {}
 
     __device__
-    scalar operator()(const scalar& d,const thrust::tuple<label,label,label,label>& t)
+    scalar operator()(const scalar& d,const label& id)
     {
         scalar out = d;
-        scalar tmpSum[2*MAX_NEI_SIZE] = {};
+        scalar tmpSum[2*MAN_UNROLL] = {};
         scalar nExtra = 0;
             
-        label oStart = thrust::get<0>(t);
-        label oSize = thrust::get<1>(t) - oStart;
+        label oStart = ownStart[id];
+        label oSize = ownStart[id+1] - oStart;
             
-        label nStart = thrust::get<2>(t);
-        label nSize = thrust::get<3>(t) - nStart;
+        label nStart = losortStart[id];
+        label nSize = losortStart[id+1] - nStart;
 
-        for(label i = 0; i<MAX_NEI_SIZE; i++)
+        for(label i = 0; i<MAN_UNROLL; i++)
         {
             if(i<oSize)
             {
@@ -88,7 +94,7 @@ struct matrixMultiplyFunctor
             }
         }
 
-        for(label i = 0; i<MAX_NEI_SIZE; i++)
+        for(label i = 0; i<MAN_UNROLL; i++)
         {
             if(i<nSize)
             {
@@ -96,24 +102,26 @@ struct matrixMultiplyFunctor
                  if( ! fast)
                      face = losort[face];
                    
-                 tmpSum[i+MAX_NEI_SIZE] = lower[face]*psi[own[face]];
+                 tmpSum[i+MAN_UNROLL] = lower[face]*psi[own[face]];
             }
         }
 
-        for(label i = 0; i<2*MAX_NEI_SIZE; i++)
+        #pragma unroll
+        for(label i = 0; i<2*MAN_UNROLL; i++)
         {
             out+= tmpSum[i]; 
         }
-           
-        for(label i = MAX_NEI_SIZE; i<oSize; i++)
+        
+        #pragma unroll 2   
+        for(label i = MAN_UNROLL; i<oSize; i++)
         {
             label face = oStart + i;
                 
             out += upper[face]*psi[nei[face]];
         }
             
-            
-        for(label i = MAX_NEI_SIZE; i<nSize; i++)
+        #pragma unroll 2    
+        for(label i = MAN_UNROLL; i<nSize; i++)
         {
             label face = nStart + i;
             if( ! fast)
@@ -126,7 +134,7 @@ struct matrixMultiplyFunctor
     }
 };
     
-#undef MAX_NEI_SIZE
+#undef MAN_UNROLL
 
 template<bool fast>
 inline void callMultiply
@@ -168,13 +176,7 @@ inline void callMultiply
             )),
             lduMatrixDiagonalFunctor()
         ),
-        thrust::make_zip_iterator(thrust::make_tuple
-        (
-            ownStart.begin(),
-            ownStart.begin()+1,
-            losortStart.begin(),
-            losortStart.begin()+1
-        )),
+        thrust::make_counting_iterator(label(0)),
         Apsi.begin(),
         matrixMultiplyFunctor<fast>
         (
@@ -183,6 +185,8 @@ inline void callMultiply
             Upper.data(),
             l.data(),
             u.data(),
+            ownStart.data(),
+            losortStart.data(),
             losort.data()
         )
     );

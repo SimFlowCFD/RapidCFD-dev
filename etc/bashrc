@@ -42,10 +42,10 @@ export WM_PROJECT_VERSION=dev
 #
 # Location of the OpenFOAM installation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-foamInstall=$HOME/OpenFOAM
-# foamInstall=~/OpenFOAM
-# foamInstall=/opt/OpenFOAM
-# foamInstall=/usr/local/OpenFOAM
+foamInstall=$HOME/$WM_PROJECT
+# foamInstall=~/$WM_PROJECT
+# foamInstall=/opt/$WM_PROJECT
+# foamInstall=/usr/local/$WM_PROJECT
 #
 # END OF (NORMAL) USER EDITABLE PART
 ################################################################################

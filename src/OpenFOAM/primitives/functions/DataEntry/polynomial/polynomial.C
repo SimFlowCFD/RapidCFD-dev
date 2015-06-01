@@ -26,6 +26,7 @@ License
 #include "polynomial.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
+#include "textures.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -42,6 +43,8 @@ Foam::polynomial::polynomial(const word& entryName, const dictionary& dict)
 :
     scalarDataEntry(entryName),
     coeffs_(),
+    preCoeffs_(coeffs_.size()),
+    expCoeffs_(coeffs_.size()),
     canIntegrate_(true),
     dimensions_(dimless)
 {
@@ -86,6 +89,8 @@ Foam::polynomial::polynomial(const word& entryName, const dictionary& dict)
                 << endl;
         }
     }
+
+    initGpuCoeffs();
 }
 
 
@@ -97,6 +102,8 @@ Foam::polynomial::polynomial
 :
     scalarDataEntry(entryName),
     coeffs_(coeffs),
+    preCoeffs_(coeffs_.size()),
+    expCoeffs_(coeffs_.size()),
     canIntegrate_(true),
     dimensions_(dimless)
 {
@@ -131,6 +138,8 @@ Foam::polynomial::polynomial
                 << endl;
         }
     }
+
+    initGpuCoeffs();
 }
 
 
@@ -138,9 +147,13 @@ Foam::polynomial::polynomial(const polynomial& poly)
 :
     scalarDataEntry(poly),
     coeffs_(poly.coeffs_),
+    preCoeffs_(coeffs_.size()),
+    expCoeffs_(coeffs_.size()),
     canIntegrate_(poly.canIntegrate_),
     dimensions_(poly.dimensions_)
-{}
+{
+    initGpuCoeffs();
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -150,6 +163,22 @@ Foam::polynomial::~polynomial()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void Foam::polynomial::initGpuCoeffs()
+{
+    scalarList pre(coeffs_.size());
+    scalarList exp(coeffs_.size());
+
+    forAll(coeffs_, i)
+    {
+        pre[i] = coeffs_[i].first();
+        exp[i] = coeffs_[i].second();
+    }
+
+    preCoeffs_ = pre;
+    expCoeffs_ = exp;
+}
+
 
 void Foam::polynomial::convertTimeBase(const Time& t)
 {
@@ -215,6 +244,74 @@ Foam::dimensioned<Foam::scalar> Foam::polynomial::dimIntegrate
         dimensions_,
         integrate(x1, x2)
     );
+}
+
+
+namespace Foam
+{
+
+struct polynomialFunctor
+{
+    const label size_;
+    const textures<scalar> pre_;
+    const textures<scalar> exp_;
+
+    polynomialFunctor
+    (
+        const label size,
+        const textures<scalar> preCoeffs,
+        const textures<scalar> expCoeffs
+    ):
+        size_(size),
+        pre_(preCoeffs),
+        exp_(expCoeffs)
+    {}
+
+    __device__
+    scalar operator()(const scalar& x)
+    {
+        scalar y = 0.0;
+
+        for(label i = 0; i < size_; i++)
+        {
+            y += pre_[i]*pow(x, exp_[i]);
+        }
+
+        return y;
+    }
+};
+
+}
+
+
+Foam::tmp<Foam::scalargpuField > Foam::polynomial::value
+(
+    const scalargpuField& x
+) const
+{
+    tmp<scalargpuField> tfld(new scalargpuField(x.size()));
+    scalargpuField& fld = tfld();
+
+    textures<scalar> preCoeffs(preCoeffs_);
+    textures<scalar> expCoeffs(expCoeffs_);
+
+    thrust::transform
+    (
+        x.begin(),
+        x.end(),
+        fld.begin(),
+        polynomialFunctor
+        (
+            coeffs_.size(),
+            preCoeffs,
+            expCoeffs
+        )
+    );
+
+    preCoeffs.destroy();
+    expCoeffs.destroy();
+
+    return tfld;
 }
 
 

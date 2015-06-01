@@ -27,7 +27,7 @@ public:
         init(list.size(),const_cast<T*>(list.data()));
     }
 
-    inline __device__ T operator[](const int& i);
+    inline __device__ T operator[](const int& i) const;
 
     void destroy()
     {
@@ -83,19 +83,19 @@ inline void textures<double>::initResourceDesc(cudaResourceDesc& resDesc)
 }
 
 template<>
-inline __device__ float textures<float>::operator[](const int& i)
+inline __device__ float textures<float>::operator[](const int& i) const
 {
     return tex1Dfetch<float>(tex, i);
 }
 
 template<>
-inline __device__ int textures<int>::operator[](const int& i)
+inline __device__ int textures<int>::operator[](const int& i) const
 {
     return tex1Dfetch<int>(tex, i);
 }
 
 template<>
-inline __device__ double textures<double>::operator[](const int& i)
+inline __device__ double textures<double>::operator[](const int& i) const
 {
     int2 v = tex1Dfetch<int2>(tex, i);
     return __hiloint2double(v.y, v.x);

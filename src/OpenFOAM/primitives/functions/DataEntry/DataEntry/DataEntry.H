@@ -150,6 +150,9 @@ public:
             //- Return value as a function of (scalar) independent variable
             virtual tmp<Field<Type> > value(const scalarField& x) const;
 
+            //- Return value as a function of (scalar) independent variable
+            virtual tmp<gpuField<Type> > value(const scalargpuField& x) const;
+
             //- Integrate between two (scalar) values
             virtual Type integrate(const scalar x1, const scalar x2) const;
 

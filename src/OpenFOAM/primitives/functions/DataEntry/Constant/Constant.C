@@ -103,6 +103,17 @@ Foam::dimensioned<Type> Foam::Constant<Type>::dimIntegrate
     return dimensioned<Type>("dimensionedValue", dimensions_, (x2-x1)*value_);
 }
 
+
+template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::Constant<Type>::value
+(
+    const scalargpuField& x
+) const
+{
+    return tmp<gpuField<Type> >(new gpuField<Type>(x.size(),value_));
+}
+
+
 // * * * * * * * * * * * * * *  IOStream operators * * * * * * * * * * * * * //
 
 #include "ConstantIO.C"

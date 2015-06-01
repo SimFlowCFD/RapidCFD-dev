@@ -93,6 +93,23 @@ Type Foam::DataEntry<Type>::integrate(const scalar x1, const scalar x2) const
 
 
 template<class Type>
+Foam::tmp<Foam::gpuField<Type> > Foam::DataEntry<Type>::value
+(
+    const scalargpuField& x
+) const
+{
+    notImplemented
+    (
+        "Type Foam::DataEntry<Type>::value"
+        "("
+            "scalargpuField& x"
+        ") const"
+    );
+    return tmp<gpuField<Type> >(NULL);
+}
+
+
+template<class Type>
 Foam::tmp<Foam::Field<Type> > Foam::DataEntry<Type>::value
 (
     const scalarField& x

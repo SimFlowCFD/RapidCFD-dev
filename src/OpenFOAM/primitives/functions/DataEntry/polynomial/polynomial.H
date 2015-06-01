@@ -78,6 +78,12 @@ class polynomial
         //- Polynomial coefficients - list of prefactor, exponent
         List<Tuple2<scalar, scalar> > coeffs_;
 
+        //- GPU list of prefactor coefficients
+        scalargpuList preCoeffs_;
+
+        //- GPU list of exponent coefficients
+        scalargpuList expCoeffs_;
+
         //- Flag to indicate whether poly can be integrated
         bool canIntegrate_;
 
@@ -89,6 +95,9 @@ class polynomial
 
         //- Disallow default bitwise assignment
         void operator=(const polynomial&);
+
+        //- Init GPU lists
+        void initGpuCoeffs();
 
 
 public:
@@ -144,6 +153,8 @@ public:
                 const scalar x2
             ) const;
 
+        //- Return value as a function of (scalar) independent variable
+        virtual tmp<scalargpuField> value(const scalargpuField& x) const;
 
     // I/O
 

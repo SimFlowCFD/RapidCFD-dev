@@ -125,6 +125,9 @@ public:
             const scalar x2
         ) const;
 
+        //- Return value as a function of (scalar) independent variable
+        virtual tmp<gpuField<Type> > value(const scalargpuField& x) const;
+
 
     // I/O
 

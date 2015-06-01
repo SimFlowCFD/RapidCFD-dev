@@ -98,6 +98,32 @@ movingWallVelocityFvPatchVectorField
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+namespace Foam
+{
+
+struct movingWallUpdateFunctor
+{
+    const label* faceNodes;
+    const point* nodes;
+
+    movingWallUpdateFunctor
+    (
+        const label* _faceNodes,
+        const point* _nodes
+    ):
+        faceNodes(_faceNodes),
+        nodes(_nodes)
+    {}
+
+    __device__
+    vector operator()(const faceData& face)
+    {
+        return face.centre(faceNodes,nodes);
+    }   
+};
+
+}
+
 void Foam::movingWallVelocityFvPatchVectorField::updateCoeffs()
 {
     if (updated())
@@ -111,18 +137,28 @@ void Foam::movingWallVelocityFvPatchVectorField::updateCoeffs()
     {
         const fvPatch& p = patch();
         const polyPatch& pp = p.patch();
-        const pointField& oldPoints = mesh.oldPoints();
+        const pointgpuField& oldPoints = mesh.getOldPoints();
+
+        const faceDatagpuList& faces = pp.getFaces();
+        const labelgpuList& faceNodes = pp.getFaceNodes();
 
         vectorgpuField oldFc(pp.size());
 
-        forAll(oldFc, i)
-        {
-            oldFc[i] = pp[i].centre(oldPoints);
-        }
+        thrust::transform
+        (
+            faces.begin(),
+            faces.end(),
+            oldFc.begin(),
+            movingWallUpdateFunctor
+            (
+                faceNodes.data(),
+                oldPoints.data()
+            )
+        );
 
         const scalar deltaT = mesh.time().deltaTValue();
 
-        const vectorgpuField Up((pp.faceCentres() - oldFc)/deltaT);
+        const vectorgpuField Up((pp.getFaceCentres() - oldFc)/deltaT);
 
         const volVectorField& U = db().lookupObject<volVectorField>(UName_);
         scalargpuField phip

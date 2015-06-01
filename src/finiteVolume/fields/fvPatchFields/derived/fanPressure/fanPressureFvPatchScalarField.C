@@ -142,7 +142,7 @@ void Foam::fanPressureFvPatchScalarField::updateCoeffs()
     }
     else if (phi.dimensions() == dimVelocity*dimArea*dimDensity)
     {
-        const scalarField& rhop =
+        const scalargpuField& rhop =
             patch().lookupPatchField<volScalarField, scalar>(rhoName());
         volFlowRate = dir*gSum(phip/rhop);
     }

@@ -25,38 +25,75 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+__host__ __device__
+Foam::tetIndices::tetIndices()
+:
+    cellI_(-1),
+    faceI_(-1),
+    faceBasePtI_(-1),
+    facePtAI_(-1),
+    facePtBI_(-1),
+    tetPtI_(-1)
+{}
+
+__host__ __device__
+Foam::tetIndices::tetIndices
+(
+    label cellI,
+    label faceI,
+    label faceBasePtI,
+    label facePtAI,
+    label facePtBI,
+    label tetPtI
+)
+:
+    cellI_(cellI),
+    faceI_(faceI),
+    faceBasePtI_(faceBasePtI),
+    facePtAI_(facePtAI),
+    facePtBI_(facePtBI),
+    tetPtI_(tetPtI)
+{}
+
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+__host__ __device__
 Foam::label Foam::tetIndices::cell() const
 {
     return cellI_;
 }
 
 
+__host__ __device__
 Foam::label Foam::tetIndices::face() const
 {
     return faceI_;
 }
 
 
+__host__ __device__
 Foam::label Foam::tetIndices::faceBasePt() const
 {
     return faceBasePtI_;
 }
 
 
+__host__ __device__
 Foam::label Foam::tetIndices::facePtA() const
 {
     return facePtAI_;
 }
 
 
+__host__ __device__
 Foam::label Foam::tetIndices::facePtB() const
 {
     return facePtBI_;
 }
 
 
+__host__ __device__
 Foam::label Foam::tetIndices::tetPt() const
 {
     return tetPtI_;
@@ -153,36 +190,42 @@ Foam::triPointRef Foam::tetIndices::oldFaceTri(const polyMesh& mesh) const
 }
 
 
+__host__ __device__
 Foam::label& Foam::tetIndices::cell()
 {
     return cellI_;
 }
 
 
+__host__ __device__
 Foam::label& Foam::tetIndices::face()
 {
     return faceI_;
 }
 
 
+__host__ __device__
 Foam::label& Foam::tetIndices::faceBasePt()
 {
     return faceBasePtI_;
 }
 
 
+__host__ __device__
 Foam::label& Foam::tetIndices::facePtA()
 {
     return facePtAI_;
 }
 
 
+__host__ __device__
 Foam::label& Foam::tetIndices::facePtB()
 {
     return facePtBI_;
 }
 
 
+__host__ __device__
 Foam::label& Foam::tetIndices::tetPt()
 {
     return tetPtI_;
@@ -191,6 +234,7 @@ Foam::label& Foam::tetIndices::tetPt()
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
+__host__ __device__
 inline bool Foam::tetIndices::operator==(const Foam::tetIndices& rhs) const
 {
     return
@@ -205,6 +249,7 @@ inline bool Foam::tetIndices::operator==(const Foam::tetIndices& rhs) const
 }
 
 
+__host__ __device__
 inline bool Foam::tetIndices::operator!=(const Foam::tetIndices& rhs) const
 {
     return !(*this == rhs);

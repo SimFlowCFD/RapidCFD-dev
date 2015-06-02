@@ -104,10 +104,12 @@ public:
     // Constructors
 
         //- Construct null
-        tetIndices();
+        __host__ __device__
+        inline tetIndices();
 
         //- Construct from components
-        tetIndices
+        __host__ __device__
+        inline tetIndices
         (
             label cellI,
             label faceI,
@@ -136,21 +138,27 @@ public:
         // Access
 
             //- Return the cell
+            __host__ __device__
             inline label cell() const;
 
             //- Return the face
+            __host__ __device__
             inline label face() const;
 
             //- Return the face base point
+            __host__ __device__
             inline label faceBasePt() const;
 
             //- Return face point A
+            __host__ __device__
             inline label facePtA() const;
 
             //- Return face point B
+            __host__ __device__
             inline label facePtB() const;
 
             //- Return the characterising tetPtI
+            __host__ __device__
             inline label tetPt() const;
 
             //- Return the geometry corresponding to this tet from the
@@ -180,27 +188,35 @@ public:
         // Edit
 
             //- Return non-const access to the cell
+            __host__ __device__
             inline label& cell();
 
             //- Return non-const access to the face
+            __host__ __device__
             inline label& face();
 
             //- Return non-const access to the face base point
+            __host__ __device__
             inline label& faceBasePt();
 
             //- Return non-const access to face point A
+            __host__ __device__
             inline label& facePtA();
 
             //- Return non-const access to face point B
+            __host__ __device__
             inline label& facePtB();
 
             //- Return non-const access to the characterising tetPtI
+            __host__ __device__
             inline label& tetPt();
 
 
     // Member Operators
 
+        __host__ __device__
         inline bool operator==(const tetIndices&) const;
+        __host__ __device__
         inline bool operator!=(const tetIndices&) const;
 
 

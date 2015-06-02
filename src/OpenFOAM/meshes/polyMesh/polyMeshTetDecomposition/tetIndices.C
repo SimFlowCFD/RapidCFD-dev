@@ -27,36 +27,6 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::tetIndices::tetIndices()
-:
-    cellI_(-1),
-    faceI_(-1),
-    faceBasePtI_(-1),
-    facePtAI_(-1),
-    facePtBI_(-1),
-    tetPtI_(-1)
-{}
-
-
-Foam::tetIndices::tetIndices
-(
-    label cellI,
-    label faceI,
-    label faceBasePtI,
-    label facePtAI,
-    label facePtBI,
-    label tetPtI
-)
-:
-    cellI_(cellI),
-    faceI_(faceI),
-    faceBasePtI_(faceBasePtI),
-    facePtAI_(facePtAI),
-    facePtBI_(facePtBI),
-    tetPtI_(tetPtI)
-{}
-
-
 Foam::tetIndices::tetIndices
 (
     label cellI,

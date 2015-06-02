@@ -383,14 +383,18 @@ void Foam::externalCoupledMixedFvPatchField<Type>::readData
     // pre-process the input transfer file
     initialiseRead(is);
 
+    Field<Type> value(this->patch().size());
+    Field<Type> grad(this->patch().size());
+    Field<scalar> fraction(this->patch().size());
+
     // read data from file
     forAll(this->patch(), faceI)
     {
         if (is.good())
         {
-            is  >> this->refValue()[faceI]
-                >> this->refGrad()[faceI]
-                >> this->valueFraction()[faceI];
+            is  >> value[faceI]
+                >> grad[faceI]
+                >> fraction[faceI];
         }
         else
         {
@@ -407,6 +411,10 @@ void Foam::externalCoupledMixedFvPatchField<Type>::readData
                 << exit(FatalError);
         }
     }
+
+    this->refValue() = value;
+    this->refGrad() = grad;
+    this->valueFraction() = fraction;
 
     initialised_ = true;
 
@@ -742,23 +750,35 @@ void Foam::externalCoupledMixedFvPatchField<Type>::transferData
         Info<< type() << ": writing data to " << os.name()  << endl;
     }
 
+    const gpuField<scalar>& magSf(this->patch().magSf());
+    const gpuField<Type>& value(this->refValue());
+    const gpuField<Type> snGrad(this->snGrad());
+
+    Field<scalar> mSf(magSf.size());
+    Field<Type> val(value.size());
+    Field<Type> snG(snGrad.size());
+
+    thrust::copy(magSf.begin(),magSf.end(),mSf.begin());
+    thrust::copy(value.begin(),value.end(),val.begin());
+    thrust::copy(snGrad.begin(),snGrad.end(),snG.begin());
+
     if (Pstream::parRun())
     {
         int tag = Pstream::msgType() + 1;
 
         List<Field<scalar> > magSfs(Pstream::nProcs());
         magSfs[Pstream::myProcNo()].setSize(this->patch().size());
-        magSfs[Pstream::myProcNo()] = this->patch().magSf();
+        magSfs[Pstream::myProcNo()] = mSf;
         Pstream::gatherList(magSfs, tag);
 
         List<Field<Type> > values(Pstream::nProcs());
         values[Pstream::myProcNo()].setSize(this->patch().size());
-        values[Pstream::myProcNo()] = this->refValue();
+        values[Pstream::myProcNo()] = val;
         Pstream::gatherList(values, tag);
 
         List<Field<Type> > snGrads(Pstream::nProcs());
         snGrads[Pstream::myProcNo()].setSize(this->patch().size());
-        snGrads[Pstream::myProcNo()] = this->snGrad();
+        snGrads[Pstream::myProcNo()] = snG;
         Pstream::gatherList(snGrads, tag);
 
         if (Pstream::master())
@@ -782,15 +802,11 @@ void Foam::externalCoupledMixedFvPatchField<Type>::transferData
     }
     else
     {
-        const Field<scalar>& magSf(this->patch().magSf());
-        const Field<Type>& value(this->refValue());
-        const Field<Type> snGrad(this->snGrad());
-
         forAll(magSf, faceI)
         {
-            os  << magSf[faceI] << token::SPACE
-                << value[faceI] << token::SPACE
-                << snGrad[faceI] << nl;
+            os  << mSf[faceI] << token::SPACE
+                << val[faceI] << token::SPACE
+                << snG[faceI] << nl;
         }
 
         os.flush();

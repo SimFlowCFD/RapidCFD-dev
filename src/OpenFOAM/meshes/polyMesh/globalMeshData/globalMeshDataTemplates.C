@@ -206,4 +206,31 @@ void Foam::globalMeshData::syncPointData
 }
 
 
+template<class Type, class CombineOp, class TransformOp>
+void Foam::globalMeshData::syncPointData
+(
+    gpuList<Type>& pointData,
+    const CombineOp& cop,
+    const TransformOp& top
+) const
+{
+    List<Type> tmpData(pointData.size());
+
+    thrust::copy
+    (
+        pointData.begin(),
+        pointData.end(),
+        tmpData.begin()
+    );
+
+    syncPointData
+    (
+        tmpData,
+        cop,
+        top
+    );
+    
+    pointData = tmpData;
+}
+
 // ************************************************************************* //

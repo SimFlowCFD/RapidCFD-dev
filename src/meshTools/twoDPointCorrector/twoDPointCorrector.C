@@ -260,6 +260,12 @@ const Foam::labelList& Foam::twoDPointCorrector::normalEdgeIndices() const
     return *normalEdgeIndicesPtr_;
 }
 
+void Foam::twoDPointCorrector::correctPoints(pointgpuField& p) const
+{
+    if (!required_) return;
+    
+    notImplemented("twoDPointCorrector::correctPoints(pointgpuField& p))");
+}
 
 void Foam::twoDPointCorrector::correctPoints(pointField& p) const
 {
@@ -300,6 +306,21 @@ void Foam::twoDPointCorrector::correctPoints(pointField& p) const
     }
 }
 
+
+void Foam::twoDPointCorrector::correctDisplacement
+(
+    const pointField& p,
+    vectorField& disp
+) const
+{
+    if (!required_) return;
+    
+    notImplemented("Foam::twoDPointCorrector::correctDisplacement
+"("
+"    const pointField& p,"
+"    vectorField& disp"
+")");
+}
 
 void Foam::twoDPointCorrector::correctDisplacement
 (

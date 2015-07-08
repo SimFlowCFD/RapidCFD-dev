@@ -250,13 +250,30 @@ void Foam::activeBaffleVelocityFvPatchVectorField::updateCoeffs()
             forceDiff += p[cyclicFaceCells[facei]]*mag(initCyclicSf_[facei]);
         }
          
-        thrust::transform(thrust::make_permutation_iterator(p.getField().begin(),cyclicFaceCells.begin()),
-                          thrust::make_permutation_iterator(p.getField().begin(),cyclicFaceCells.end()),
-                          initCyclicSf_.begin(),
-                          forceDiffTmp.begin(),
-                          activeBaffleForceDiffFunctor());
+        thrust::transform
+        (
+            thrust::make_permutation_iterator
+            (
+                p.getField().begin(),
+                cyclicFaceCells.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                p.getField().begin(),
+                cyclicFaceCells.end()
+            ),
+            initCyclicSf_.begin(),
+            forceDiffTmp.begin(),
+            activeBaffleForceDiffFunctor()
+        );
                           
-        forceDiff = thrust::reduce(forceDiffTmp.begin(),forceDiffTmp.end(),forceDiff,thrust::plus<scalar>());
+        forceDiff = thrust::reduce
+            (
+                forceDiffTmp.begin(),
+                forceDiffTmp.end(),
+                forceDiff,
+                thrust::plus<scalar>()
+            );
 
         // Remove other side
         forAll(nbrFaceCells, facei)

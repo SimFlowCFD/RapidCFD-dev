@@ -122,6 +122,16 @@ public:
                 const TransformOp& top
             );
 
+            template<class T, class CombineOp, class TransformOp>
+            static void syncPointList
+            (
+                const polyMesh&,
+                gpuList<T>&,
+                const CombineOp& cop,
+                const T& nullValue,
+                const TransformOp& top
+            );
+
             //- Synchronize values on selected mesh points.
             template<class T, class CombineOp, class TransformOp>
             static void syncPointList
@@ -185,6 +195,25 @@ public:
             (
                 const polyMesh& mesh,
                 List<T>& l,
+                const CombineOp& cop,
+                const T& nullValue
+            )
+            {
+                syncPointList
+                (
+                    mesh,
+                    l,
+                    cop,
+                    nullValue,
+                    mapDistribute::transform()
+                );
+            }
+
+            template<class T, class CombineOp>
+            static void syncPointList
+            (
+                const polyMesh& mesh,
+                gpuList<T>& l,
                 const CombineOp& cop,
                 const T& nullValue
             )

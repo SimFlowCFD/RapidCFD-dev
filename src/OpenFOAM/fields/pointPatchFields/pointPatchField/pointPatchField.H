@@ -487,6 +487,7 @@ public:
             {}
 
             virtual void operator==(const Field<Type>&){}
+            virtual void operator==(const gpuField<Type>&){}
             virtual void operator==(const Type&){}
 
 

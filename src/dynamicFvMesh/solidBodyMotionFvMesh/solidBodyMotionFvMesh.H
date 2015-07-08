@@ -64,9 +64,12 @@ class solidBodyMotionFvMesh
 
         //- The reference points which are transformed
         pointIOField undisplacedPoints_;
+        pointgpuField gpuUndisplacedPoints_;
+        
 
         //- Points to move when cell zone is supplied
         labelList pointIDs_;
+        labelgpuList gpuPointIDs_;
 
         //- Flag to indicate whether all cells should move
         bool moveAllCells_;

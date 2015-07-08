@@ -70,10 +70,13 @@ class pointConstraints
 
             //- Mesh points on which to apply special constraints
             labelList patchPatchPointConstraintPoints_;
+            labelgpuList gpuPatchPatchPointConstraintPoints_;
             //- Special constraints (as tensors)
             tensorField patchPatchPointConstraintTensors_;
+            tensorgpuField gpuPatchPatchPointConstraintTensors_;
             //- Special constraints (raw)
             List<pointConstraint> patchPatchPointConstraints_;
+            gpuList<pointConstraint> gpuPatchPatchPointConstraints_;
 
 
     // Private Member Functions

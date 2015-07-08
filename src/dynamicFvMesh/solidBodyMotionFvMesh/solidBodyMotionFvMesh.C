@@ -31,6 +31,7 @@ License
 #include "cellSet.H"
 #include "boolList.H"
 #include "syncTools.H"
+#include "gpuIndirectList.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -75,7 +76,9 @@ Foam::solidBodyMotionFvMesh::solidBodyMotionFvMesh(const IOobject& io)
             false
         )
     ),
+    gpuUndisplacedPoints_(undisplacedPoints_),
     pointIDs_(),
+    gpuPointIDs_(),
     moveAllCells_(false),
     UName_(dynamicMeshCoeffs_.lookupOrDefault<word>("UName", "U"))
 {
@@ -183,6 +186,7 @@ Foam::solidBodyMotionFvMesh::solidBodyMotionFvMesh(const IOobject& io)
         }
 
         pointIDs_.transfer(ptIDs);
+        gpuPointIDs_ = pointIDs_;
     }
 }
 
@@ -206,19 +210,19 @@ bool Foam::solidBodyMotionFvMesh::update()
             transform
             (
                 SBMFPtr_().transformation(),
-                undisplacedPoints_
+                gpuUndisplacedPoints_
             )
         );
     }
     else
     {
-        pointField transformedPts(undisplacedPoints_);
+        pointgpuField transformedPts(gpuUndisplacedPoints_);
 
-        UIndirectList<point>(transformedPts, pointIDs_) =
+        gpuIndirectList<point>(transformedPts, gpuPointIDs_) =
             transform
             (
                 SBMFPtr_().transformation(),
-                pointField(transformedPts, pointIDs_)
+                pointgpuField(transformedPts, gpuPointIDs_)
             );
 
         fvMesh::movePoints(transformedPts);

@@ -539,6 +539,14 @@ public:
                     const TransformOp& top
                 ) const;
 
+                template<class Type, class CombineOp, class TransformOp>
+                void syncPointData
+                (
+                    gpuList<Type>& pointData,
+                    const CombineOp& cop,
+                    const TransformOp& top
+                ) const;
+
             // Coupled edge to coupled edges.
 
                 const globalIndex& globalEdgeNumbering() const;

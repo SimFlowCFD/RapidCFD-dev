@@ -69,6 +69,7 @@ public:
     // Member Functions
 
         //- Interpolate field to the given point in the given cell
+        __device__
         Type interpolate
         (
             const vector& position,

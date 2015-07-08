@@ -46,6 +46,7 @@ interpolationCell<Type>::interpolationCell
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
+__device__
 Type interpolationCell<Type>::interpolate
 (
     const vector&,
@@ -53,7 +54,7 @@ Type interpolationCell<Type>::interpolate
     const label
 ) const
 {
-    return this->psi_[cellI];
+    return this->psiPtr_[cellI];
 }
 
 

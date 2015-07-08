@@ -30,6 +30,7 @@ License
 #include "cellZoneMesh.H"
 #include "boolList.H"
 #include "syncTools.H"
+#include "gpuIndirectList.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -77,7 +78,8 @@ Foam::multiSolidBodyMotionFvMesh::multiSolidBodyMotionFvMesh(const IOobject& io)
             IOobject::NO_WRITE,
             false
         )
-    )
+    ),
+    gpuUndisplacedPoints_(undisplacedPoints_)
 {
     if (undisplacedPoints_.size() != nPoints())
     {
@@ -96,6 +98,7 @@ Foam::multiSolidBodyMotionFvMesh::multiSolidBodyMotionFvMesh(const IOobject& io)
     zoneIDs_.setSize(dynamicMeshCoeffs_.size());
     SBMFs_.setSize(dynamicMeshCoeffs_.size());
     pointIDs_.setSize(dynamicMeshCoeffs_.size());
+    gpuPointIDs_.setSize(pointIDs_.size());
     label zoneI = 0;
 
     forAllConstIter(dictionary, dynamicMeshCoeffs_, iter)
@@ -156,6 +159,7 @@ Foam::multiSolidBodyMotionFvMesh::multiSolidBodyMotionFvMesh(const IOobject& io)
             }
 
             pointIDs_[zoneI].transfer(ptIDs);
+            gpuPointIDs_[zoneI] = pointIDs_[zoneI];
 
             Info<< "Applying solid body motion " << SBMFs_[zoneI].type()
                 << " to " << pointIDs_[zoneI].size() << " points of cellZone "
@@ -182,17 +186,17 @@ bool Foam::multiSolidBodyMotionFvMesh::update()
 {
     static bool hasWarned = false;
 
-    pointField transformedPts(undisplacedPoints_);
+    pointgpuField transformedPts(gpuUndisplacedPoints_);
 
     forAll(zoneIDs_, i)
     {
-        const labelList& zonePoints = pointIDs_[i];
+        const labelgpuList& zonePoints = gpuPointIDs_[i];
 
-        UIndirectList<point>(transformedPts, zonePoints) =
+        gpuIndirectList<point>(transformedPts, zonePoints) =
             transform
             (
                 SBMFs_[i].transformation(),
-                pointField(transformedPts, zonePoints)
+                pointgpuField(transformedPts, zonePoints)
             );
     }
 

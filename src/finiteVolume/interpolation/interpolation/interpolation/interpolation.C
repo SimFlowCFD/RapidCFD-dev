@@ -42,6 +42,7 @@ interpolation<Type>::interpolation
 )
 :
     psi_(psi),
+    psiPtr_(psi.getField().data()),
     pMesh_(psi.mesh()),
     pMeshPoints_(pMesh_.points()),
     pMeshFaces_(pMesh_.faces()),

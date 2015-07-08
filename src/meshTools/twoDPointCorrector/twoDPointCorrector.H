@@ -140,9 +140,11 @@ public:
 
         //- Correct motion points
         void correctPoints(pointField& p) const;
+        void correctPoints(pointgpuField& p) const;
 
         //- Correct motion displacements
         void correctDisplacement(const pointField& p, vectorField& disp) const;
+        void correctDisplacement(const pointgpuField& p, vectorgpuField& disp) const;
 
         //- Update topology
         void updateMesh(const mapPolyMesh&);

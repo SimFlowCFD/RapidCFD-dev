@@ -66,6 +66,7 @@ class dynamicInkJetFvMesh
         scalar refPlaneX_;
 
         pointIOField stationaryPoints_;
+        pointgpuField gpuStationaryPoints_;
 
 
     // Private Member Functions

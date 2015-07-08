@@ -60,6 +60,7 @@ protected:
     // Protected data
 
         const GeometricField<Type, fvPatchField, volMesh>& psi_;
+        const Type* psiPtr_;
 
         const polyMesh& pMesh_;
         const vectorField& pMeshPoints_;
@@ -128,6 +129,7 @@ public:
         }
 
         //- Interpolate field to the given point in the given cell
+        __host__ __device__
         virtual Type interpolate
         (
             const vector& position,
@@ -139,6 +141,7 @@ public:
         //  defined by the given indices.  Calls interpolate function
         //  above here execpt where overridden by derived
         //  interpolation types.
+        __host__ __device__
         virtual Type interpolate
         (
             const vector& position,

@@ -166,6 +166,7 @@ class motionSmootherAlgo
             //- Is edge master (always except if on coupled boundary and on
             //  lower processor)
             PackedBoolList isMasterEdge_;
+            boolgpuList gpuIsMasterEdge_;
 
 
     // Private Member Functions
@@ -212,7 +213,7 @@ class motionSmootherAlgo
         labelHashSet getPoints(const labelHashSet&) const;
 
         //- Calculate per-edge weight
-        tmp<scalarField> calcEdgeWeights(const pointField&) const;
+        tmp<scalargpuField> calcEdgeWeights(const pointgpuField&) const;
 
         //- explicit smoothing and min on all affected internal points
         void minSmooth
@@ -236,39 +237,39 @@ class motionSmootherAlgo
         //- Scale certain (internal) points of a field
         void scaleField
         (
-            const labelHashSet& pointLabels,
+            const labelgpuList& pointLabels,
             const scalar scale,
             pointScalarField&
         ) const;
-
+/*
         //- As above but points have to be in meshPoints as well
         //  (usually to scale patch points)
         void scaleField
         (
-            const labelList& meshPoints,
-            const labelHashSet& pointLabels,
+            const labelgpuList& meshPoints,
+            const labelgpuList& pointLabels,
             const scalar scale,
             pointScalarField&
         ) const;
-
+*/
         //- Lower on internal points
         void subtractField
         (
-            const labelHashSet& pointLabels,
+            const labelgpuList& pointLabels,
             const scalar f,
             pointScalarField&
         ) const;
-
+/*
         //- As above but points have to be in meshPoints as well
         //  (usually to scale patch points)
         void subtractField
         (
-            const labelList& meshPoints,
-            const labelHashSet& pointLabels,
+            const labelgpuList& meshPoints,
+            const labelgpuList& pointLabels,
             const scalar scale,
             pointScalarField&
         ) const;
-
+*/
         //- Helper function. Is point internal?
         bool isInternalPoint(const label pointI) const;
 
@@ -386,7 +387,7 @@ public:
             //  Set to 0 (so revert to old mesh) grows out one cell layer
             //  from error faces.
             scalar setErrorReduction(const scalar);
-
+/*
             //- Move mesh with given scale. Return true if mesh ok or has
             //  less than nAllow errors, false
             //  otherwise and locally update scale. Smoothmesh=false means only
@@ -419,7 +420,7 @@ public:
                 const bool smoothMesh = true,
                 const label nAllow = 0
             );
-
+*/
 
             //- Update for new mesh geometry
             void movePoints();

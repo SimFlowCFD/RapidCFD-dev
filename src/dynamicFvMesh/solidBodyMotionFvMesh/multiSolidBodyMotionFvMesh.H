@@ -64,12 +64,14 @@ class multiSolidBodyMotionFvMesh
 
         //- The reference points which are transformed
         pointIOField undisplacedPoints_;
+        pointgpuField gpuUndisplacedPoints_;
 
         //- Specified cellZones
         labelList zoneIDs_;
 
         //- Points to move per cellZone
         labelListList pointIDs_;
+        labelgpuListList gpuPointIDs_;
 
 
     // Private Member Functions

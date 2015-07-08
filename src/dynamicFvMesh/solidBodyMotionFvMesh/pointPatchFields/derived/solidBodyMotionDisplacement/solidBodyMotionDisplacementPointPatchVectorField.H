@@ -57,7 +57,7 @@ class solidBodyMotionDisplacementPointPatchVectorField
         //- The motion control function
         autoPtr<solidBodyMotionFunction> SBMFPtr_;
 
-        mutable autoPtr<pointField> localPoints0Ptr_;
+        mutable autoPtr<pointgpuField> localPoints0Ptr_;
 
 
 public:
@@ -145,7 +145,7 @@ public:
                 return SBMFPtr_();
             }
 
-            const pointField& localPoints0() const;
+            const pointgpuField& localPoints0() const;
 
         // Evaluation functions
 

@@ -42,29 +42,48 @@ SourceFiles
 
 #include "label.H"
 #include "vector.H"
-#include "Tuple2.H"
 #include "transform.H"
+#include "Tuple2.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
+class pointConstraint;
+
+Istream& operator>>
+(
+    Istream& is,
+    pointConstraint& pc
+);
+
+Ostream& operator<<
+(
+    Ostream& os,
+    const pointConstraint& pc
+);
+
 /*---------------------------------------------------------------------------*\
                            Class pointConstraint Declaration
 \*---------------------------------------------------------------------------*/
 
 class pointConstraint
-:
-    public Tuple2<label, vector>
 {
+    label point_;
+    vector value_;
 
 public:
 
     // Constructors
 
         //- Construct null
+        __host__ __device__
         inline pointConstraint();
+
+        //- Construct from components
+        __host__ __device__
+        inline pointConstraint(const label&, const vector&);
 
         //- Construct from components
         inline pointConstraint(const Tuple2<label, vector>&);
@@ -76,17 +95,61 @@ public:
     // Member Functions
 
         //- Apply and accumulate the effect of the given constraint direction
+        __host__ __device__
         inline void applyConstraint(const vector& cd);
 
         //- Combine constraints
+        __host__ __device__
         inline void combine(const pointConstraint&);
 
         //- Return the accumulated constraint transformation tensor
+        __host__ __device__
         inline tensor constraintTransformation() const;
 
         //- Return the accumulated unconstrained directions. Directions
         //  coded as first n rows of tensor.
+        __host__ __device__
         inline void unconstrainedDirections(label& n, tensor& vecs) const;
+
+        __host__ __device__
+        inline label& first()
+        {
+            return point_;
+        }
+
+        __host__ __device__
+        inline const label& first() const
+        {
+            return point_;
+        }
+
+        __host__ __device__
+        inline vector& second()
+        {
+            return value_;
+        }
+
+        __host__ __device__
+        inline const vector& second() const
+        {
+            return value_;
+        }
+
+    // IOstream operators
+
+        //- Read Tuple2 from Istream, discarding contents of existing Tuple2.
+        friend Istream& operator>>
+        (
+            Istream& is,
+            pointConstraint& pc
+        );
+
+        // Write Tuple2 to Ostream.
+        friend Ostream& operator<<
+        (
+            Ostream& os,
+            const pointConstraint& pc
+        );
 };
 
 
@@ -94,16 +157,41 @@ public:
 class combineConstraintsEqOp
 {
 public:
+    __host__ __device__
     inline void operator()(pointConstraint&, const pointConstraint&) const;
 };
 
 //- transformation function
+__host__ __device__
 inline pointConstraint transform(const tensor& tt, const pointConstraint& v);
 
 //- contiguous
 template<class T> bool contiguous();
 template<>
 inline bool contiguous<pointConstraint>()                {return true;}
+
+
+inline Istream& operator>>(Istream& is, pointConstraint& t2)
+{
+    is.readBegin("Tuple2");
+    is >> t2.point_ >> t2.value_;
+    is.readEnd("Tuple2");
+
+    // Check state of Istream
+    is.check("operator>>(Istream&, pointConstraint&)");
+
+    return is;
+}
+
+
+inline Ostream& operator<<(Ostream& os, const pointConstraint& t2)
+{
+    os  << token::BEGIN_LIST
+        << t2.point_ << token::SPACE << t2.value_
+        << token::END_LIST;
+
+    return os;
+}
 
 
 

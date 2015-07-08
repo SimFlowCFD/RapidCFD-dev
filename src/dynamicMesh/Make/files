@@ -82,7 +82,7 @@ polyMeshAdder/faceCoupleInfo.C
 polyMeshAdder/polyMeshAdder.C
 */
 fvMeshTools/fvMeshTools.C
-
+/*
 motionSmoother/motionSmoother.C
 motionSmoother/motionSmootherAlgo.C
 motionSmoother/motionSmootherAlgoCheck.C
@@ -90,17 +90,17 @@ motionSmoother/motionSmootherData.C
 motionSmoother/polyMeshGeometry/polyMeshGeometry.C
 motionSmoother/badQualityToCell/badQualityToCell.C
 motionSmoother/badQualityToFace/badQualityToFace.C
-
+*/
 motionSolver/motionSolver/motionSolver.C
 motionSolver/displacement/displacementMotionSolver.C
 motionSolver/componentDisplacement/componentDisplacementMotionSolver.C
 motionSolver/velocity/velocityMotionSolver.C
 motionSolver/componentVelocity/componentVelocityMotionSolver.C
-
+/*
 createShellMesh/createShellMesh.C
 
 extrudePatchMesh/extrudePatchMesh.C
-
+*/
 polyMeshFilter/polyMeshFilterSettings.C
 polyMeshFilter/polyMeshFilter.C
 

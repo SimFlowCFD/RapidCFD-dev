@@ -135,6 +135,87 @@ void Foam::motionSmootherAlgo::checkConstraints
     }
 }
 
+namespace Foam
+{
+
+struct motionSmootherAlgoEdgeNode
+{
+    const int index;
+
+    motionSmootherAlgoEdgeNode
+    (
+        const int _index
+    ):
+        index(_index)
+    {}
+
+    __host__ __device__
+    label operator()(const edge& e)
+    {
+        return e[index];
+    }
+};
+
+template<class Type>
+struct motionSmootherAlgoWeightsAvgFunctor
+{
+    const bool first;
+    const __restrict__ Type * fld;
+    const Type zero;
+
+    motionSmootherAlgoWeightsAvgFunctor
+    (
+        const bool _first,
+        const __restrict__ Type * _fld
+    ):
+        first(_first),
+        fld(_fld),
+        zero(pTraits<Type>::zero)
+    {}
+    
+    template<class Tuple>
+    __host__ __device__
+    thrust::tuple<Type,scalar>
+    operator()(const bool& isMaster, const Tuple& t)
+    {
+        if(isMaster)
+        {
+            const edge& e = thrust::get<0>(t);
+            const scalar w = thrust::get<1>(t);
+
+            return thrust::make_tuple
+                   (
+                       w*fld[e[first?1:0]],
+                       w
+                   );
+        }
+        else
+        {
+            return thrust::make_tuple(zero,0.0);
+        }
+    }
+};
+
+template<class Type>
+struct motionSmootherAlgoAvgFunctor
+{
+    template<class Tuple>
+    __host__ __device__
+    Type operator()(const Type& res, const Tuple& t)
+    {
+        if (mag(thrust::get<0>(t)) < VSMALL)
+        {
+            // Unconnected point. Take over original value
+            return thrust::get<1>(t);
+        }
+        else
+        {
+            return res/thrust::get<0>(t);
+        }
+    }
+};
+
+};
 
 // Average of connected points.
 template<class Type>
@@ -173,10 +254,241 @@ Foam::motionSmootherAlgo::avg
     // Note: on coupled edges use only one edge (through isMasterEdge)
     // This is done so coupled edges do not get counted double.
 
-    scalarField sumWeight(mesh.nPoints(), 0.0);
+    scalargpuField sumWeight(mesh.nPoints(), 0.0);
 
-    const edgeList& edges = mesh.edges();
+    const edgegpuList& edges = mesh.getEdges();
 
+    labelgpuList nodeTmp(edges.size());
+    gpuList<Type> resTmp(edges.size());
+    gpuList<scalar> sumWeightTmp(edges.size());
+
+    labelgpuList nodeOut(edges.size());
+    gpuList<Type> resOut(edges.size());
+    scalargpuList sumWeightOut(edges.size());
+
+    // begin edge
+    thrust::transform
+    (
+        gpuIsMasterEdge_.begin(),
+        gpuIsMasterEdge_.end(),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            edges.begin(),
+            edgeWeight.begin()
+        )),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            resTmp.begin(),
+            sumWeightTmp.begin()
+        )),
+        motionSmootherAlgoWeightsAvgFunctor<Type>
+        (
+            true,
+            fld.getField().data()
+        )
+    );
+
+    // reduce res - begin
+    thrust::transform
+    (
+        edges.begin(),
+        edges.end(),
+        nodeTmp.begin(),
+        motionSmootherAlgoEdgeNode(0)
+    );
+
+    thrust::sort_by_key
+    (
+        nodeTmp.begin(),
+        nodeTmp.end(),
+        resTmp.begin()
+    );
+
+    typename thrust::pair
+             <
+                 typename gpuList<label>::iterator,
+                 typename gpuList<Type>::iterator
+             > resEnd = thrust::reduce_by_key
+             (
+                  nodeTmp.begin(),
+                  nodeTmp.end(),
+                  resTmp.begin(),
+                  nodeOut.begin(),
+                  resOut.begin()
+             );
+
+    thrust::copy
+    (
+        resOut.begin(),
+        resEnd.second,
+        thrust::make_permutation_iterator
+        (
+            res.getField().begin(),
+            nodeOut.begin()
+        )
+    );
+
+    // reduce sumWeights - begin
+    thrust::transform
+    (
+        edges.begin(),
+        edges.end(),
+        nodeTmp.begin(),
+        motionSmootherAlgoEdgeNode(0)
+    );
+
+    thrust::sort_by_key
+    (
+        nodeTmp.begin(),
+        nodeTmp.end(),
+        sumWeightTmp.begin()
+    );
+
+    typename thrust::pair
+             <
+                 typename gpuList<label>::iterator,
+                 typename gpuList<scalar>::iterator
+             > sumWeightEnd = thrust::reduce_by_key
+             (
+                  nodeTmp.begin(),
+                  nodeTmp.end(),
+                  sumWeightTmp.begin(),
+                  nodeOut.begin(),
+                  sumWeightOut.begin()
+             );
+
+    thrust::copy
+    (
+        sumWeightOut.begin(),
+        sumWeightEnd.second,
+        thrust::make_permutation_iterator
+        (
+            sumWeight.begin(),
+            nodeOut.begin()
+        )
+    );
+
+    // end edge
+
+    sumWeightTmp = 0.0;
+    sumWeightOut = 0.0;
+    resTmp = pTraits<Type>::zero;
+    resOut = pTraits<Type>::zero;
+     
+    thrust::transform
+    (
+        gpuIsMasterEdge_.begin(),
+        gpuIsMasterEdge_.end(),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            edges.begin(),
+            edgeWeight.begin()
+        )),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            resTmp.begin(),
+            sumWeightTmp.begin()
+        )),
+        motionSmootherAlgoWeightsAvgFunctor<Type>
+        (
+            false,
+            fld.getField().data()
+        )
+    );
+
+    // reduce res - end
+    thrust::transform
+    (
+        edges.begin(),
+        edges.end(),
+        nodeTmp.begin(),
+        motionSmootherAlgoEdgeNode(1)
+    );
+
+    thrust::sort_by_key
+    (
+        nodeTmp.begin(),
+        nodeTmp.end(),
+        resTmp.begin()
+    );
+
+    resEnd = thrust::reduce_by_key
+             (
+                  nodeTmp.begin(),
+                  nodeTmp.end(),
+                  resTmp.begin(),
+                  nodeOut.begin(),
+                  resOut.begin()
+             );
+
+    thrust::transform
+    (
+        thrust::make_permutation_iterator
+        (
+            res.getField().begin(),
+            nodeOut.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            res.getField().begin(),
+            resEnd.first
+        ),
+        resOut.begin(),
+        thrust::make_permutation_iterator
+        (
+            res.getField().begin(),
+            nodeOut.begin()
+        ),
+        thrust::plus<Type>()
+    );
+
+    // reduce sumWeights - begin
+    thrust::transform
+    (
+        edges.begin(),
+        edges.end(),
+        nodeTmp.begin(),
+        motionSmootherAlgoEdgeNode(1)
+    );
+
+    thrust::sort_by_key
+    (
+        nodeTmp.begin(),
+        nodeTmp.end(),
+        sumWeightTmp.begin()
+    );
+
+    sumWeightEnd = thrust::reduce_by_key
+             (
+                  nodeTmp.begin(),
+                  nodeTmp.end(),
+                  sumWeightTmp.begin(),
+                  nodeOut.begin(),
+                  sumWeightOut.begin()
+             );
+
+    thrust::transform
+    (
+        thrust::make_permutation_iterator
+        (
+            sumWeight.begin(),
+            nodeOut.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            sumWeight.begin(),
+            sumWeightEnd.first
+        ),
+        sumWeightOut.begin(),
+        thrust::make_permutation_iterator
+        (
+            sumWeight.begin(),
+            nodeOut.begin()
+        ),
+        thrust::plus<scalar>()
+    );
+
+/*
     forAll(edges, edgeI)
     {
         if (isMasterEdge_.get(edgeI) == 1)
@@ -191,7 +503,7 @@ Foam::motionSmootherAlgo::avg
             sumWeight[e[1]] += w;
         }
     }
-
+*/
 
     // Add coupled contributions
     // ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,7 +527,19 @@ Foam::motionSmootherAlgo::avg
     // Average
     // ~~~~~~~
 
-    forAll(res, pointI)
+    thrust::transform
+    (
+        res.getField().begin(),
+        res.getField().end(),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            sumWeight.begin(),
+            fld.getField().begin()
+        )),
+        res.getField().begin(),
+        motionSmootherAlgoAvgFunctor<Type>()
+    );
+/*    forAll(res, pointI)
     {
         if (mag(sumWeight[pointI]) < VSMALL)
         {
@@ -226,7 +550,7 @@ Foam::motionSmootherAlgo::avg
         {
             res[pointI] /= sumWeight[pointI];
         }
-    }
+    }*/
 
     // Single and multi-patch constraints
     pointConstraints::New(fld.mesh()).constrain(res, false);

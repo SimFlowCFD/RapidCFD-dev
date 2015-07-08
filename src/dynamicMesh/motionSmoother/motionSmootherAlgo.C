@@ -152,21 +152,50 @@ Foam::labelHashSet Foam::motionSmootherAlgo::getPoints
     return usedPoints;
 }
 
+namespace Foam
+{
 
-Foam::tmp<Foam::scalarField> Foam::motionSmootherAlgo::calcEdgeWeights
+struct motionSmootherAlgoCalcEdgeWeights
+{
+    const __restrict__ point* points;
+
+    motionSmootherAlgoCalcEdgeWeights
+    (
+        const __restrict__ point* _points
+    ):
+        points(_points)
+    {}
+
+    __host__ __device__
+    scalar operator()(const edge& e)
+    {
+        return 1.0/(e.mag(points)+SMALL);
+    }
+};
+
+}
+
+Foam::tmp<Foam::scalargpuField> Foam::motionSmootherAlgo::calcEdgeWeights
 (
-    const pointField& points
+    const pointgpuField& points
 ) const
 {
-    const edgeList& edges = mesh_.edges();
+    const edgegpuList& edges = mesh_.getEdges();
 
-    tmp<scalarField> twght(new scalarField(edges.size()));
-    scalarField& wght = twght();
+    tmp<scalargpuField> twght(new scalargpuField(edges.size()));
+    scalargpuField& wght = twght();
 
-    forAll(edges, edgeI)
-    {
-        wght[edgeI] = 1.0/(edges[edgeI].mag(points)+SMALL);
-    }
+    thrust::transform
+    (
+        edges.begin(),
+        edges.end(),
+        wght.begin(),
+        motionSmootherAlgoCalcEdgeWeights
+        (
+            points.data()
+        )
+    );
+
     return twght;
 }
 
@@ -176,7 +205,7 @@ namespace Foam
 struct motionSmootherAlgoMinSmoothFunctor
 {
     template<class Tuple>
-    __HOST____DEVICE__
+    __host__ __device__
     scalar operator()(const bool& isAffected, const Tuple& t)
     {
         const scalar& newFld = thrust::get<0>(t);
@@ -198,7 +227,7 @@ struct motionSmootherAlgoMinSmoothFunctor
     }
 };
 
-struct motionSmootherAndTupleFunctor:public std:unary_function<thrust::tuple<bool,bool>,bool >
+struct motionSmootherAndTupleFunctor: public std::unary_function<thrust::tuple<bool,bool>,bool>
 {
     __HOST____DEVICE__
     bool operator()(const thrust::tuple<bool,bool> t)
@@ -234,25 +263,12 @@ void Foam::motionSmootherAlgo::minSmooth
         (
             newFld.getField().begin(),
             fld.getField().begin(),
-            avgFld.getField().begin(),
+            avgFld.getField().begin()
         )),
         newFld.getField().begin(),
         motionSmootherAlgoMinSmoothFunctor()
     );
-/*
-    forAll(meshPoints, i)
-    {
-        label pointI = meshPoints[i];
-        if (isAffectedPoint.get(pointI) == 1)
-        {
-            newFld[pointI] = min
-            (
-                fld[pointI],
-                0.5*fld[pointI] + 0.5*avgFld[pointI]
-            );
-        }
-    }
-*/
+
     // Single and multi-patch constraints
     pointConstraints::New(pMesh()).constrain(newFld, false);
 }
@@ -298,25 +314,12 @@ void Foam::motionSmootherAlgo::minSmooth
         (
             newFld.getField().begin(),
             fld.getField().begin(),
-            avgFld.getField().begin(),
+            avgFld.getField().begin()
         )),
         newFld.getField().begin(),
         motionSmootherAlgoMinSmoothFunctor()
     );
 
-/*
-    forAll(fld, pointI)
-    {
-        if (isAffectedPoint.get(pointI) == 1 && isInternalPoint(pointI))
-        {
-            newFld[pointI] = min
-            (
-                fld[pointI],
-                0.5*fld[pointI] + 0.5*avgFld[pointI]
-            );
-        }
-    }
-*/
    // Single and multi-patch constraints
     pointConstraints::New(pMesh()).constrain(newFld, false);
 
@@ -326,24 +329,42 @@ void Foam::motionSmootherAlgo::minSmooth
 // Scale on all internal points
 void Foam::motionSmootherAlgo::scaleField
 (
-    const labelHashSet& pointLabels,
+    const labelgpuList& pointLabels,
     const scalar scale,
     pointScalarField& fld
 ) const
 {
-    forAllConstIter(labelHashSet, pointLabels, iter)
-    {
-        if (isInternalPoint(iter.key()))
-        {
-            fld[iter.key()] *= scale;
-        }
-    }
+    thrust::transform_if
+    (
+        thrust::make_permutation_iterator
+        (
+            fld.getField().begin(),
+            pointLabels.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            fld.getField().begin(),
+            pointLabels.end()
+        ),
+        thrust::make_permutation_iterator
+        (
+            gpuIsInternalPoint_.begin(),
+            pointLabels.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            fld.getField().begin(),
+            pointLabels.begin()
+        ),
+        multiplyOperatorSFFunctor<scalar,scalar,scalar>(scale),
+        unityOp<bool>()
+    );
 
     // Single and multi-patch constraints
     pointConstraints::New(pMesh()).constrain(fld, false);
 }
 
-
+/*
 // Scale on selected points (usually patch points)
 void Foam::motionSmootherAlgo::scaleField
 (
@@ -353,6 +374,10 @@ void Foam::motionSmootherAlgo::scaleField
     pointScalarField& fld
 ) const
 {
+    thrust::transform
+    (
+     
+    );
     forAll(meshPoints, i)
     {
         label pointI = meshPoints[i];
@@ -363,29 +388,68 @@ void Foam::motionSmootherAlgo::scaleField
         }
     }
 }
+*/
 
+namespace Foam
+{
+struct motionSmootherAlgoSubtractFieldFunctor
+{
+    const scalar f;
+
+    motionSmootherAlgoSubtractFieldFunctor
+    (
+        const scalar _f
+    ):
+        f(_f)
+    {}
+
+    __host__ __device__
+    scalar operator()(const scalar& fld)
+    {
+        return max(0.0, fld-f);
+    }
+};
+}
 
 // Lower on internal points
 void Foam::motionSmootherAlgo::subtractField
 (
-    const labelHashSet& pointLabels,
+    const labelgpuList& pointLabels,
     const scalar f,
     pointScalarField& fld
 ) const
 {
-    forAllConstIter(labelHashSet, pointLabels, iter)
-    {
-        if (isInternalPoint(iter.key()))
-        {
-            fld[iter.key()] = max(0.0, fld[iter.key()]-f);
-        }
-    }
+    thrust::transform_if
+    (
+        thrust::make_permutation_iterator
+        (
+            fld.getField().begin(),
+            pointLabels.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            fld.getField().begin(),
+            pointLabels.end()
+        ),
+        thrust::make_permutation_iterator
+        (
+            gpuIsInternalPoint_.begin(),
+            pointLabels.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            fld.getField().begin(),
+            pointLabels.begin()
+        ),
+        motionSmootherAlgoSubtractFieldFunctor(f),
+        unityOp<bool>()
+    );
 
     // Single and multi-patch constraints
     pointConstraints::New(pMesh()).constrain(fld);
 }
 
-
+/*
 // Scale on selected points (usually patch points)
 void Foam::motionSmootherAlgo::subtractField
 (
@@ -405,7 +469,7 @@ void Foam::motionSmootherAlgo::subtractField
         }
     }
 }
-
+*/
 
 bool Foam::motionSmootherAlgo::isInternalPoint(const label pointI) const
 {
@@ -835,7 +899,7 @@ Foam::scalar Foam::motionSmootherAlgo::setErrorReduction
     return oldErrorReduction;
 }
 
-
+/*
 bool Foam::motionSmootherAlgo::scaleMesh
 (
     labelList& checkFaces,
@@ -872,7 +936,7 @@ bool Foam::motionSmootherAlgo::scaleMesh
         nAllowableErrors
     );
 }
-
+*/
 
 Foam::tmp<Foam::pointField> Foam::motionSmootherAlgo::curPoints() const
 {
@@ -946,7 +1010,7 @@ Foam::tmp<Foam::pointField> Foam::motionSmootherAlgo::curPoints() const
     return tnewPoints;
 }
 
-
+/*
 bool Foam::motionSmootherAlgo::scaleMesh
 (
     labelList& checkFaces,
@@ -1011,7 +1075,7 @@ bool Foam::motionSmootherAlgo::scaleMesh
     syncTools::syncPointList
     (
         mesh_,
-        displacement_,
+        displacement_.getField(),
         maxMagEqOp(),
         vector::zero    // null value
     );
@@ -1145,7 +1209,7 @@ bool Foam::motionSmootherAlgo::scaleMesh
         syncTools::syncPointList
         (
             mesh_,
-            scale_,
+            scale_.getField(),
             maxEqOp<scalar>(),
             -GREAT              // null value
         );
@@ -1154,15 +1218,15 @@ bool Foam::motionSmootherAlgo::scaleMesh
         if (debug)
         {
             Pout<< "scale_ after smoothing :"
-                << " min:" << Foam::gMin(scale_)
-                << " max:" << Foam::gMax(scale_)
+                << " min:" << Foam::gMin(scale_.getField())
+                << " max:" << Foam::gMax(scale_.getField())
                 << endl;
         }
 
         return false;
     }
 }
-
+*/
 
 void Foam::motionSmootherAlgo::updateMesh()
 {
@@ -1205,7 +1269,7 @@ void Foam::motionSmootherAlgo::updateMesh()
         isInternalPoint_.unset(meshPoints[i]);
     }
 
-    const labelgpuListY gpuMeshPoints = pp_.getMeshPoints();
+    const labelgpuList& gpuMeshPoints = pp_.getMeshPoints();
     thrust::fill
     (
         thrust::make_permutation_iterator
@@ -1223,6 +1287,14 @@ void Foam::motionSmootherAlgo::updateMesh()
 
     // Calculate master edge addressing
     isMasterEdge_ = syncTools::getMasterEdges(mesh_);
+    boolList masterTmp(isMasterEdge_.size());
+
+    forAll(isMasterEdge_,i)
+    {
+        masterTmp[i] = isMasterEdge_[i];
+    }
+
+    gpuIsMasterEdge_ = masterTmp;
 }
 
 

@@ -174,6 +174,8 @@ void Foam::displacementMotionSolver::movePoints(const pointgpuField&)
 
 void Foam::displacementMotionSolver::updateMesh(const mapPolyMesh& mpm)
 {
+    notImplemented("displacementMotionSolver::updateMesh(const mapPolyMesh& mpm)");
+/*
     // pointMesh already updates pointFields
 
     motionSolver::updateMesh(mpm);
@@ -187,7 +189,7 @@ void Foam::displacementMotionSolver::updateMesh(const mapPolyMesh& mpm)
     (
         mpm.hasMotionPoints()
       ? mpm.preMotionPoints()
-      : mesh().points()
+      : mesh().getPoints()
     );
 
     // Note: boundBox does reduce
@@ -241,6 +243,7 @@ void Foam::displacementMotionSolver::updateMesh(const mapPolyMesh& mpm)
     points0_.writeOpt() = IOobject::AUTO_WRITE;
     points0_.instance() = time().timeName();
     points0_.checkIn();
+*/
 }
 
 

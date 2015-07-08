@@ -130,6 +130,15 @@ void pointConstraints::setPatchFields
     }
 }
 
+template<class Type>
+struct pointConstraintsConstrainCornersFunctor
+{
+    __host__ __device__
+    Type operator()(const tensor& t, const Type& pf)
+    {
+        return transform(t,pf);
+    }
+};
 
 template<class Type>
 void pointConstraints::constrainCorners
@@ -137,14 +146,22 @@ void pointConstraints::constrainCorners
     GeometricField<Type, pointPatchField, pointMesh>& pf
 ) const
 {
-    forAll(patchPatchPointConstraintPoints_, pointi)
-    {
-        pf[patchPatchPointConstraintPoints_[pointi]] = transform
+    thrust::transform
+    (
+        gpuPatchPatchPointConstraintTensors_.begin(),
+        gpuPatchPatchPointConstraintTensors_.end(),
+        thrust::make_permutation_iterator
         (
-            patchPatchPointConstraintTensors_[pointi],
-            pf[patchPatchPointConstraintPoints_[pointi]]
-        );
-    }
+            pf.getField().begin(),
+            gpuPatchPatchPointConstraintPoints_.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            pf.getField().begin(),
+            gpuPatchPatchPointConstraintPoints_.begin()
+        ),
+        pointConstraintsConstrainCornersFunctor<Type>()
+    );
 }
 
 

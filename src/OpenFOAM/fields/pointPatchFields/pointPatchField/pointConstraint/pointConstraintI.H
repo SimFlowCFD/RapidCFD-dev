@@ -25,26 +25,38 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
+__host__ __device__
 inline Foam::pointConstraint::pointConstraint()
 :
-    Tuple2<label, vector>(0, vector::zero)
+    point_(0),
+    value_(vector::zero)
+{}
+
+
+__host__ __device__
+inline Foam::pointConstraint::pointConstraint(const label& first, const vector& second)
+:
+    point_(first),
+    value_(second)
 {}
 
 
 inline Foam::pointConstraint::pointConstraint(const Tuple2<label, vector>& pc)
 :
-    Tuple2<label, vector>(pc)
+    point_(pc.first()),
+    value_(pc.second())
 {}
 
 
 inline Foam::pointConstraint::pointConstraint(Istream& is)
-:
-    Tuple2<label, vector>(is)
-{}
+{
+    is >> *this;
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+__host__ __device__
 void Foam::pointConstraint::applyConstraint(const vector& cd)
 {
     if (first() == 0)
@@ -68,12 +80,13 @@ void Foam::pointConstraint::applyConstraint(const vector& cd)
         if (mag(cd & second()) > 1e-3)
         {
             first() = 3;
-            second() = vector::zero;
+            second() = vector(0,0,0);
         }
     }
 }
 
 
+__host__ __device__
 void Foam::pointConstraint::combine(const pointConstraint& pc)
 {
     if (first() == 0)
@@ -103,27 +116,28 @@ void Foam::pointConstraint::combine(const pointConstraint& pc)
             {
                 // Different directions
                 first() = 3;
-                second() = vector::zero;
+                second() = vector(0,0,0);
             }
         }
         else
         {
             first() = 3;
-            second() = vector::zero;
+            second() = vector(0,0,0);
         }
     }
 }
 
 
+__host__ __device__
 Foam::tensor Foam::pointConstraint::constraintTransformation() const
 {
     if (first() == 0)
     {
-        return I;
+        return tensor(1,0,0, 0,1,0, 0,0,1);
     }
     else if (first() == 1)
     {
-        return I - sqr(second());
+        return tensor(1,0,0, 0,1,0, 0,0,1) - sqr(second());
     }
     else if (first() == 2)
     {
@@ -131,11 +145,11 @@ Foam::tensor Foam::pointConstraint::constraintTransformation() const
     }
     else
     {
-        return tensor::zero;
+        return tensor(0,0,0, 0,0,0, 0,0,0);
     }
 }
 
-
+__host__ __device__
 void Foam::pointConstraint::unconstrainedDirections(label& n, tensor& tt)
 const
 {
@@ -172,13 +186,14 @@ const
     // Knock out remaining vectors
     for (direction dir = n; dir < vecs.size(); dir++)
     {
-        vecs[dir] = vector::zero;
+        vecs[dir] = vector(0,0,0);
     }
 
     tt = tensor(vecs[0], vecs[1], vecs[2]);
 }
 
 
+__host__ __device__
 void Foam::combineConstraintsEqOp::operator()
 (
     pointConstraint& x,
@@ -189,6 +204,7 @@ void Foam::combineConstraintsEqOp::operator()
 }
 
 
+__host__ __device__
 Foam::pointConstraint Foam::transform
 (
     const tensor& tt,
@@ -197,7 +213,7 @@ Foam::pointConstraint Foam::transform
 {
     return pointConstraint
     (
-        Tuple2<label, vector>(v.first(), transform(tt, v.second()))
+        v.first(), transform(tt, v.second())
     );
 }
 

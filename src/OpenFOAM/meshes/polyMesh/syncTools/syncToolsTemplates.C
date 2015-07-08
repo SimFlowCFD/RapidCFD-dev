@@ -1012,6 +1012,30 @@ void Foam::syncTools::syncPointList
     mesh.globalData().syncPointData(pointValues, cop, top);
 }
 
+template<class T, class CombineOp, class TransformOp>
+void Foam::syncTools::syncPointList
+(
+    const polyMesh& mesh,
+    gpuList<T>& pointValues,
+    const CombineOp& cop,
+    const T& nullValue,
+    const TransformOp& top
+)
+{
+    if (pointValues.size() != mesh.nPoints())
+    {
+        FatalErrorIn
+        (
+            "syncTools<class T, class CombineOp>::syncPointList"
+            "(const polyMesh&, gpuList<T>&, const CombineOp&, const T&"
+            ", const bool)"
+        )   << "Number of values " << pointValues.size()
+            << " is not equal to the number of points in the mesh "
+            << mesh.nPoints() << abort(FatalError);
+    }
+
+    mesh.globalData().syncPointData(pointValues, cop, top);
+}
 
 //template<class CombineOp>
 //void Foam::syncTools::syncPointPositions

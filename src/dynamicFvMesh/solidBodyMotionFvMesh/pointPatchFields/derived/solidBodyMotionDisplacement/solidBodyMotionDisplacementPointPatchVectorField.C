@@ -125,7 +125,7 @@ solidBodyMotionDisplacementPointPatchVectorField
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const pointField&
+const pointgpuField&
 solidBodyMotionDisplacementPointPatchVectorField::localPoints0() const
 {
     if (!localPoints0Ptr_.valid())
@@ -144,7 +144,7 @@ solidBodyMotionDisplacementPointPatchVectorField::localPoints0() const
             )
         );
 
-        localPoints0Ptr_.reset(new pointField(points0, patch().meshPoints()));
+        localPoints0Ptr_.reset(new pointgpuField(pointField(points0, patch().meshPoints())));
     }
     return localPoints0Ptr_();
 }

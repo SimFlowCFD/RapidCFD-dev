@@ -91,7 +91,8 @@ Foam::autoPtr<Foam::fvMesh> Foam::polyMeshFilter::copyMesh(const fvMesh& mesh)
     meshCopy().updateMesh(map);
     if (map.hasMotionPoints())
     {
-        meshCopy().movePoints(map.preMotionPoints());
+        //TODO update mapPolyMesh
+        meshCopy().movePoints(pointgpuField(map.preMotionPoints()));
     }
 
     copySets(mesh, meshCopy());
@@ -385,7 +386,8 @@ Foam::label Foam::polyMeshFilter::filterFaces
         newMesh.updateMesh(newMap);
         if (newMap.hasMotionPoints())
         {
-            newMesh.movePoints(newMap.preMotionPoints());
+            //TODO update mapPolyMesh
+            newMesh.movePoints(pointgpuField(newMap.preMotionPoints()));
         }
         updateSets(newMap);
 
@@ -502,7 +504,8 @@ Foam::label Foam::polyMeshFilter::filterEdges
     newMesh.updateMesh(newMap);
     if (newMap.hasMotionPoints())
     {
-        newMesh.movePoints(newMap.preMotionPoints());
+        //TODO update mapPolyMesh
+        newMesh.movePoints(pointgpuField(newMap.preMotionPoints()));
     }
     updateSets(newMap);
 

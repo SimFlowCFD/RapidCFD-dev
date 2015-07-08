@@ -25,7 +25,7 @@ License
 
 #include "mappedPatchFieldBase.H"
 #include "mappedPatchBase.H"
-#include "interpolationCell.H"
+//#include "interpolationCell.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -74,7 +74,8 @@ mappedPatchFieldBase<Type>::mappedPatchFieldBase
     ),
     setAverage_(readBool(dict.lookup("setAverage"))),
     average_(pTraits<Type>(dict.lookup("average"))),
-    interpolationScheme_(interpolationCell<Type>::typeName)
+    //interpolationScheme_(interpolationCell<Type>::typeName)
+    interpolationScheme_("cell")
 {
     if (mapper_.mode() == mappedPatchBase::NEARESTCELL)
     {
@@ -95,7 +96,8 @@ mappedPatchFieldBase<Type>::mappedPatchFieldBase
     fieldName_(patchField_.dimensionedInternalField().name()),
     setAverage_(false),
     average_(pTraits<Type>::zero),
-    interpolationScheme_(interpolationCell<Type>::typeName)
+    //interpolationScheme_(interpolationCell<Type>::typeName)
+    interpolationScheme_("cell")
 {}
 
 
@@ -179,8 +181,8 @@ tmp<gpuField<Type> > mappedPatchFieldBase<Type>::mappedField() const
     const fvMesh& nbrMesh = refCast<const fvMesh>(mapper_.sampleMesh());
 
     // Result of obtaining remote values
-    tmp<Field<Type> > tnewValues(new Field<Type>(0));
-    Field<Type>& newValues = tnewValues();
+    tmp<gpuField<Type> > tnewValues(new gpuField<Type>(0));
+    gpuField<Type>& newValues = tnewValues();
 
     switch (mapper_.mode())
     {
@@ -188,6 +190,7 @@ tmp<gpuField<Type> > mappedPatchFieldBase<Type>::mappedField() const
         {
             const mapDistribute& distMap = mapper_.map();
 
+            /*
             if (interpolationScheme_ != interpolationCell<Type>::typeName)
             {
                 // Send back sample points to the processor that holds the cell
@@ -230,8 +233,18 @@ tmp<gpuField<Type> > mappedPatchFieldBase<Type>::mappedField() const
             {
                 newValues = sampleField();
             }
+            */
 
-            distMap.distribute(newValues);
+            List<Type> tmpList(sampleField().size());
+            thrust::copy
+            (
+                sampleField().getField().begin(),
+                sampleField().getField().end(),
+                tmpList.begin()
+            );
+
+            distMap.distribute(tmpList);
+            newValues = tmpList;
 
             break;
         }
@@ -254,8 +267,17 @@ tmp<gpuField<Type> > mappedPatchFieldBase<Type>::mappedField() const
 
             const fieldType& nbrField = sampleField();
 
-            newValues = nbrField.boundaryField()[nbrPatchID];
-            mapper_.distribute(newValues);
+            const fvPatchField<Type>& pf = nbrField.boundaryField()[nbrPatchID];
+            List<Type> tmpList(pf.size());
+            thrust::copy
+            (
+                pf.begin(),
+                pf.end(),
+                tmpList.begin()
+            );
+
+            mapper_.distribute(tmpList);
+            newValues = tmpList;
 
             break;
         }
@@ -271,14 +293,16 @@ tmp<gpuField<Type> > mappedPatchFieldBase<Type>::mappedField() const
                     nbrField.boundaryField()[patchI];
                 label faceStart = pf.patch().start();
 
-                forAll(pf, faceI)
-                {
-                    allValues[faceStart++] = pf[faceI];
-                }
+                thrust::copy
+                (
+                    pf.begin(),
+                    pf.end(),
+                    allValues.begin()+faceStart
+                );
             }
 
             mapper_.distribute(allValues);
-            newValues.transfer(allValues);
+            newValues = allValues;
 
             break;
         }

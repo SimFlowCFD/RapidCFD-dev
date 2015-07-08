@@ -312,6 +312,9 @@ void pointConstraints::makePatchPatchAddressing()
     patchPatchPointConstraintPoints_.setSize(nConstraints);
     patchPatchPointConstraintTensors_.setSize(nConstraints);
 
+    gpuPatchPatchPointConstraints_ = patchPatchPointConstraints_;
+    gpuPatchPatchPointConstraintPoints_ = patchPatchPointConstraintPoints_;
+    gpuPatchPatchPointConstraintTensors_ = patchPatchPointConstraintTensors_;
 
     if (debug)
     {

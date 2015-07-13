@@ -61,7 +61,7 @@ class inverseDistanceDiffusivity
     // Private Member Functions
 
         //- Return patch-cell-centre distance field
-        tmp<scalarField> y() const;
+        tmp<scalargpuField> y() const;
 
         //- Disallow default bitwise copy construct
         inverseDistanceDiffusivity(const inverseDistanceDiffusivity&);

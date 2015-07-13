@@ -43,6 +43,30 @@ defineTypeNameAndDebug(volPointInterpolation, 0);
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
+struct volPointInterpolationCalcPatchPointFunctor
+{
+    const label* faceNodes;
+    bool* isPatchPoint;
+
+    volPointInterpolationCalcPatchPointFunctor
+    (
+        const label* _faceNodes,
+        bool* _isPatchPoint
+    ):
+        faceNodes(_faceNodes),
+        isPatchPoint(_isPatchPoint)
+    {}
+
+    __host__ __device__
+    void operator()(const faceData& face)
+    {
+        for(label i = face.start(); i < face.start()+face.size(); i++)
+        {
+            isPatchPoint[faceNodes[i]] = true;
+        }
+    } 
+};
+
 void volPointInterpolation::calcBoundaryAddressing()
 {
     if (debug)
@@ -79,6 +103,9 @@ void volPointInterpolation::calcBoundaryAddressing()
     // cyclicAMI
     const surfaceScalarField& magSf = mesh().magSf();
 
+    const faceDatagpuList& pFaces = boundary.getFaces();
+    const labelgpuList& faceNodes = boundary.getFaceNodes();
+
     forAll(pbm, patchI)
     {
         const polyPatch& pp = pbm[patchI];
@@ -89,72 +116,84 @@ void volPointInterpolation::calcBoundaryAddressing()
          && !magSf.boundaryField()[patchI].coupled()
         )
         {
-            label bFaceI = pp.start()-mesh().nInternalFaces();
+            label pStart = pp.start()-mesh().nInternalFaces();
+            label pEnd = pStart + pp.size();
+            
+            thrust::fill
+            (
+                boundaryIsPatchFace_.begin()+pStart,
+                boundaryIsPatchFace_.begin()+pEnd,
+                true
+            );
 
-            forAll(pp, i)
-            {
-                boundaryIsPatchFace_[bFaceI] = true;
-
-                const face& f = boundary[bFaceI++];
-
-                forAll(f, fp)
-                {
-                    isPatchPoint_[f[fp]] = true;
-                }
-            }
+            thrust::for_each
+            (
+                pFaces.begin()+pStart,
+                pFaces.begin()+pEnd,
+                volPointInterpolationCalcPatchPointFunctor
+                (
+                    faceNodes.data(),
+                    isPatchPoint_.data()
+                )
+            );
         }
-    }
-
-    // Make sure point status is synchronised so even processor that holds
-    // no face of a certain patch still can have boundary points marked.
-    if (debug)
-    {
-        boolList oldData(isPatchPoint_);
-
-        pointConstraints::syncUntransformedData
-        (
-            mesh(),
-            isPatchPoint_,
-            orEqOp<bool>()
-        );
-
-        forAll(isPatchPoint_, pointI)
-        {
-            if (isPatchPoint_[pointI] != oldData[pointI])
-            {
-                Pout<< "volPointInterpolation::calcBoundaryAddressing():"
-                    << " added dangling mesh point:" << pointI
-                    << " at:" << mesh().points()[pointI]
-                    << endl;
-            }
-        }
-
-        label nPatchFace = 0;
-        forAll(boundaryIsPatchFace_, i)
-        {
-            if (boundaryIsPatchFace_[i])
-            {
-                nPatchFace++;
-            }
-        }
-        label nPatchPoint = 0;
-        forAll(isPatchPoint_, i)
-        {
-            if (isPatchPoint_[i])
-            {
-                nPatchPoint++;
-            }
-        }
-        Pout<< "boundary:" << nl
-            << "    faces :" << boundary.size() << nl
-            << "    of which on proper patch:" << nPatchFace << nl
-            << "    points:" << boundary.nPoints() << nl
-            << "    of which on proper patch:" << nPatchPoint << endl;
     }
 }
 
+struct volPointInterpolationMakeInternalWeightsFunctor
+{
+    const label* pointCellStart;
+    const label* pointCells;
+    const point* points;
+    const vector* cellCentres;
+    const bool* isPatchPoint;
 
-void volPointInterpolation::makeInternalWeights(scalarField& sumWeights)
+    scalar* pointWeights;
+    scalar* sumWeights;
+
+    volPointInterpolationMakeInternalWeightsFunctor
+    (
+        const label* _pointCellStart,
+        const label* _pointCells,
+        const point* _points,
+        const vector* _cellCentres,
+        const bool* _isPatchPoint,
+
+        scalar* _pointWeights,
+        scalar* _sumWeights
+    ):
+        pointCellStart(_pointCellStart),
+        pointCells(_pointCells),
+        points(_points),
+        cellCentres(_cellCentres),
+        isPatchPoint(_isPatchPoint),
+        pointWeights(_pointWeights),
+        sumWeights(_sumWeights)
+    {}
+
+    __host__ __device__
+    void operator()(const label& pointI)
+    {
+        if(!isPatchPoint[pointI])
+        {
+            scalar sum = 0;
+            label start = pointCellStart[pointI];
+            label end = pointCellStart[pointI+1];
+
+            for(label i = start; i < end; i++)
+            {
+                scalar w = 1.0/mag(points[pointI] - cellCentres[pointCells[i]]);
+
+                pointWeights[i] = w;
+                sum += w;
+            }
+
+            sumWeights[pointI] = sum;
+        }
+    }
+};
+
+void volPointInterpolation::makeInternalWeights(scalargpuField& sumWeights)
 {
     if (debug)
     {
@@ -163,38 +202,107 @@ void volPointInterpolation::makeInternalWeights(scalarField& sumWeights)
             << " points." << endl;
     }
 
-    const pointField& points = mesh().points();
-    const labelListList& pointCells = mesh().pointCells();
-    const vectorField& cellCentres = mesh().cellCentres();
+    const pointgpuField& points = mesh().getPoints();
+    const labelgpuList& pointCells = mesh().getPointCells();
+    const labelgpuList& pointCellsStart = mesh().getPointCellsStart();
+    const vectorgpuField& cellCentres = mesh().getCellCentres();
 
     // Allocate storage for weighting factors
-    pointWeights_.clear();
-    pointWeights_.setSize(points.size());
+    pointWeights_.setSize(pointCells.size());
 
     // Calculate inverse distances between cell centres and points
     // and store in weighting factor array
-    forAll(points, pointi)
-    {
-        if (!isPatchPoint_[pointi])
-        {
-            const labelList& pcp = pointCells[pointi];
-
-            scalarList& pw = pointWeights_[pointi];
-            pw.setSize(pcp.size());
-
-            forAll(pcp, pointCelli)
-            {
-                pw[pointCelli] =
-                    1.0/mag(points[pointi] - cellCentres[pcp[pointCelli]]);
-
-                sumWeights[pointi] += pw[pointCelli];
-            }
-        }
-    }
+    thrust::for_each
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(points.size()),
+        volPointInterpolationMakeInternalWeightsFunctor
+        (    
+            pointCellsStart.data(),
+            pointCells.data(),
+            points.data(),
+            cellCentres.data(),
+            isPatchPoint_.data(),
+            pointWeights_.data(),
+            sumWeights.data()
+        )
+    );
 }
 
+struct volPointInterpolationMakeBoundaryWeightsFunctor
+{
+    const label nInternalFaces;
+    const label* boundaryPoints;
+    const label* pointFaceStart;
+    const label* pointFaces;
+    const point* points;
+    const vector* faceCentres;
+    const bool* isPatchPoint;
+    const bool* boundaryIsPatchFace;
 
-void volPointInterpolation::makeBoundaryWeights(scalarField& sumWeights)
+    scalar* pointWeights;
+    scalar* sumWeights;
+
+    volPointInterpolationMakeBoundaryWeightsFunctor
+    (
+        const label _nInternalFaces,
+        const label* _boundaryPoints,
+        const label* _pointFaceStart,
+        const label* _pointFaces,
+        const point* _points,
+        const vector* _faceCentres,
+        const bool* _isPatchPoint,
+        const bool* _boundaryIsPatchFace,
+
+        scalar* _pointWeights,
+        scalar* _sumWeights
+    ):
+        nInternalFaces(_nInternalFaces),
+        boundaryPoints(_boundaryPoints),
+        pointFaceStart(_pointFaceStart),
+        pointFaces(_pointFaces),
+        points(_points),
+        faceCentres(_faceCentres),
+        isPatchPoint(_isPatchPoint),
+        boundaryIsPatchFace(_boundaryIsPatchFace),
+        pointWeights(_pointWeights),
+        sumWeights(_sumWeights)
+    {}
+
+    __host__ __device__
+    void operator()(const label& id)
+    {
+        label pointI = boundaryPoints[id];
+
+        if (isPatchPoint[pointI])
+        {
+            scalar sum = 0;
+            label start = pointFaceStart[id];
+            label end = pointFaceStart[id+1];
+
+            for(label i = start; i < end; i++)
+            {
+                label pFace = pointFaces[i];
+                if (boundaryIsPatchFace[pFace])
+                {
+                    scalar w = 
+                           1.0/mag(points[pointI] - faceCentres[nInternalFaces + pFace]);
+
+                    pointWeights[i] = w;
+                    sum += w;
+                }
+                else
+                {
+                    pointWeights[i] = 0.0;
+                }
+            }
+
+            sumWeights[pointI] = sum;
+        }
+    }
+};
+
+void volPointInterpolation::makeBoundaryWeights(scalargpuField& sumWeights)
 {
     if (debug)
     {
@@ -202,45 +310,67 @@ void volPointInterpolation::makeBoundaryWeights(scalarField& sumWeights)
             << "constructing weighting factors for boundary points." << endl;
     }
 
-    const pointField& points = mesh().points();
-    const pointField& faceCentres = mesh().faceCentres();
+    const pointgpuField& points = mesh().getPoints();
+    const pointgpuField& faceCentres = mesh().getFaceCentres();
 
     const primitivePatch& boundary = boundaryPtr_();
 
-    boundaryPointWeights_.clear();
-    boundaryPointWeights_.setSize(boundary.meshPoints().size());
+    const labelgpuList& boundaryPoints = boundary.getMeshPoints();
+    const labelgpuList& pointFaces = boundary.getPointFaces();
+    const labelgpuList& pointFacesStart = boundary.getPointFacesStart();
 
-    forAll(boundary.meshPoints(), i)
-    {
-        label pointI = boundary.meshPoints()[i];
+    boundaryPointWeights_.setSize(pointFaces.size());
 
-        if (isPatchPoint_[pointI])
-        {
-            const labelList& pFaces = boundary.pointFaces()[i];
-
-            scalarList& pw = boundaryPointWeights_[i];
-            pw.setSize(pFaces.size());
-
-            sumWeights[pointI] = 0.0;
-
-            forAll(pFaces, i)
-            {
-                if (boundaryIsPatchFace_[pFaces[i]])
-                {
-                    label faceI = mesh().nInternalFaces() + pFaces[i];
-
-                    pw[i] = 1.0/mag(points[pointI] - faceCentres[faceI]);
-                    sumWeights[pointI] += pw[i];
-                }
-                else
-                {
-                    pw[i] = 0.0;
-                }
-            }
-        }
-    }
+    thrust::for_each
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(boundaryPoints.size()),
+        volPointInterpolationMakeBoundaryWeightsFunctor
+        (
+            mesh().nInternalFaces(),
+            boundaryPoints.data(),
+            pointFacesStart.data(),
+            pointFaces.data(),
+            points.data(),
+            faceCentres.data(),
+            isPatchPoint_.data(),
+            boundaryIsPatchFace_.data(),
+            boundaryPointWeights_.data(),
+            sumWeights.data()
+        )
+    );
 }
 
+struct volPointInterpolationNormalizeWeights
+{
+    const label* pointDataStart;
+    scalar * weights;
+
+    volPointInterpolationNormalizeWeights
+    (
+        const label* _pointDataStart,
+        scalar * _weights
+    ):
+        pointDataStart(_pointDataStart),
+        weights(_weights)
+    {}
+
+    template<class Tuple>
+    __host__ __device__
+    void operator()(const Tuple& t)
+    {
+        const label& id = thrust::get<0>(t);
+        const scalar sumWeight = thrust::get<1>(t);
+
+        label start = pointDataStart[id];
+        label end = pointDataStart[id+1];
+
+        for(label i = start; i < end; i++)
+        {
+            weights[i] /= sumWeight;
+        }
+    }
+};
 
 void volPointInterpolation::makeWeights()
 {
@@ -268,13 +398,15 @@ void volPointInterpolation::makeWeights()
         dimensionedScalar("zero", dimless, 0)
     );
 
+    scalargpuField& sWeights = sumWeights.getField();
+
 
     // Create internal weights; add to sumWeights
-    makeInternalWeights(sumWeights);
+    makeInternalWeights(sWeights);
 
 
     // Create boundary weights; override sumWeights
-    makeBoundaryWeights(sumWeights);
+    makeBoundaryWeights(sWeights);
 
 
     //forAll(boundary.meshPoints(), i)
@@ -296,7 +428,7 @@ void volPointInterpolation::makeWeights()
     pointConstraints::syncUntransformedData
     (
         mesh(),
-        sumWeights,
+        sWeights,
         plusEqOp<scalar>()
     );
 
@@ -307,35 +439,63 @@ void volPointInterpolation::makeWeights()
     // a coupled point to have its master on a different patch so
     // to make sure just push master data to slaves. Reuse the syncPointData
     // structure.
-    pushUntransformedData(sumWeights);
+    pushUntransformedData(sWeights);
 
 
     // Normalise internal weights
-    forAll(pointWeights_, pointI)
-    {
-        scalarList& pw = pointWeights_[pointI];
-        // Note:pw only sized for !isPatchPoint
-        forAll(pw, i)
-        {
-            pw[i] /= sumWeights[pointI];
-        }
-    }
+
+    const labelgpuList& pointCellsStart = mesh().getPointCellsStart();
+    thrust::for_each
+    (
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            thrust::make_counting_iterator(0),
+            sWeights.begin()
+        )),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            thrust::make_counting_iterator(sumWeights.size()),
+            sWeights.end()
+        )),
+        volPointInterpolationNormalizeWeights
+        (
+            pointCellsStart.data(),
+            pointWeights_.data()
+        )
+    );
 
     // Normalise boundary weights
     const primitivePatch& boundary = boundaryPtr_();
 
-    forAll(boundary.meshPoints(), i)
-    {
-        label pointI = boundary.meshPoints()[i];
+    const labelgpuList& boundaryPoints = boundary.getMeshPoints();
+    const labelgpuList& pointFacesStart = boundary.getPointFacesStart();
 
-        scalarList& pw = boundaryPointWeights_[i];
-        // Note:pw only sized for isPatchPoint
-        forAll(pw, i)
-        {
-            pw[i] /= sumWeights[pointI];
-        }
-    }
-
+    thrust::for_each
+    (
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            thrust::make_counting_iterator(0),
+            thrust::make_permutation_iterator
+            (
+                sWeights.begin(),
+                boundaryPoints.begin()
+            )
+        )),
+        thrust::make_zip_iterator(thrust::make_tuple
+        (
+            thrust::make_counting_iterator(boundaryPoints.size()),
+            thrust::make_permutation_iterator
+            (
+                sWeights.begin(),
+                boundaryPoints.end()
+            )
+        )),
+        volPointInterpolationNormalizeWeights
+        (
+            pointFacesStart.data(),
+            boundaryPointWeights_.data()
+        )
+    );
 
     if (debug)
     {

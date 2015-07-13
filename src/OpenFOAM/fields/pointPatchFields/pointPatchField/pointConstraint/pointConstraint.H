@@ -152,6 +152,23 @@ public:
         );
 };
 
+inline bool operator==
+(
+    const pointConstraint& a,
+    const pointConstraint& b
+)
+{
+    return (a.first() == b.first() && a.second() == b.second());
+}
+
+inline bool operator!=
+(
+    const pointConstraint& a,
+    const pointConstraint& b
+)
+{
+    return !(a == b);
+}
 
 //- reduce operator
 class combineConstraintsEqOp

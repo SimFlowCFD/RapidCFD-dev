@@ -103,7 +103,7 @@ Foam::componentVelocityMotionSolver::~componentVelocityMotionSolver()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::componentVelocityMotionSolver::movePoints(const pointField& p)
+void Foam::componentVelocityMotionSolver::movePoints(const pointgpuField& p)
 {
     // No local data to adapt
 }

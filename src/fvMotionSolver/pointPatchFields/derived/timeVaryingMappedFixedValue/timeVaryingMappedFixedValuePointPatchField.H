@@ -81,7 +81,7 @@ class timeVaryingMappedFixedValuePointPatchField
         label startSampleTime_;
 
         //- Interpolated values from startSampleTime
-        Field<Type> startSampledValues_;
+        gpuField<Type> startSampledValues_;
 
         //- If setAverage: starting average value
         Type startAverage_;
@@ -90,7 +90,7 @@ class timeVaryingMappedFixedValuePointPatchField
         label endSampleTime_;
 
         //- Interpolated values from endSampleTime
-        Field<Type> endSampledValues_;
+        gpuField<Type> endSampledValues_;
 
         //- If setAverage: end average value
         Type endAverage_;
@@ -187,7 +187,7 @@ public:
             virtual void rmap
             (
                 const pointPatchField<Type>&,
-                const labelList&
+                const labelgpuList&
             );
 
 

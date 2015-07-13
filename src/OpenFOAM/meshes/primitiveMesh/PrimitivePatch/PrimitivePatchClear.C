@@ -101,6 +101,9 @@ clearTopology()
     deleteDemandDrivenData(pointFacesPtr_);
     deleteDemandDrivenData(edgeLoopsPtr_);
     deleteDemandDrivenData(localPointOrderPtr_);
+
+    deleteDemandDrivenData(gpuPointFacesPtr_);
+    deleteDemandDrivenData(gpuPointFacesStartPtr_);
 }
 
 

@@ -394,7 +394,7 @@ void pointConstraints::constrainDisplacement
     // corner constraints?)
     twoDPointCorrector::New(mesh()()).correctDisplacement
     (
-        mesh()().points(),
+        mesh()().getPoints(),
         pf.internalField()
     );
 

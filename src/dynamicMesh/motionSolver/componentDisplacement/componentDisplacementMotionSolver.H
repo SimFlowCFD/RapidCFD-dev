@@ -67,7 +67,7 @@ protected:
         direction cmpt_;
 
         //- Reference point field for this component
-        scalarField points0_;
+        scalargpuField points0_;
 
         //- Point motion field
         mutable pointScalarField pointDisplacement_;
@@ -112,22 +112,24 @@ public:
     // Member Functions
 
         //- Return reference to the reference field
-        scalarField& points0()
+        scalargpuField& points0()
         {
             return points0_;
         }
 
         //- Return reference to the reference field
-        const scalarField& points0() const
+        const scalargpuField& points0() const
         {
             return points0_;
         }
 
         //- Update local data for geometry changes
-        virtual void movePoints(const pointField&);
+        virtual void movePoints(const pointgpuField&);
 
+/*
         //-  Update local data for topology changes
         virtual void updateMesh(const mapPolyMesh&);
+*/
 };
 
 

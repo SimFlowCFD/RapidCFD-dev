@@ -102,6 +102,44 @@ void Foam::primitiveMesh::calcPointCells() const
     }
 }
 
+void Foam::primitiveMesh::calcgpuPointCells() const
+{
+    // It is an error to attempt to recalculate pointCells
+    // if the pointer is already set
+    if (pcgpuCellsPtr_ || pcgpuStartPtr_)
+    {
+        FatalErrorIn("primitiveMesh::calcPointCells() const")
+            << "pointCells already calculated"
+            << abort(FatalError);
+    }
+
+    const labelListList& pCells = pointCells();
+    labelList pointStart(pCells.size()+1,0);
+    
+    label sum = 0;
+    forAll(pCells,i)
+    {
+        sum += pCells[i].size();
+        pointStart[i+1];
+    }
+
+    labelList pCellsTmp(sum);
+
+    sum = 0;
+    forAll(pCells,i)
+    {
+        const labelList& pc = pCells[i];
+
+        forAll(pc,j)
+        {
+            pCellsTmp[sum] = pc[j];
+            sum++;
+        }
+    }
+
+    pcgpuCellsPtr_ = new labelgpuList(pCellsTmp);
+    pcgpuStartPtr_ = new labelgpuList(pointStart);
+}
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -115,6 +153,25 @@ const Foam::labelListList& Foam::primitiveMesh::pointCells() const
     return *pcPtr_;
 }
 
+const Foam::labelgpuList& Foam::primitiveMesh::getPointCells() const
+{
+    if (!pcgpuCellsPtr_)
+    {
+        calcgpuPointCells();
+    }
+
+    return *pcgpuCellsPtr_;
+}
+
+const Foam::labelgpuList& Foam::primitiveMesh::getPointCellsStart() const
+{
+    if (!pcgpuStartPtr_)
+    {
+        calcgpuPointCells();
+    }
+
+    return *pcgpuStartPtr_;
+}
 
 const Foam::labelList& Foam::primitiveMesh::pointCells
 (

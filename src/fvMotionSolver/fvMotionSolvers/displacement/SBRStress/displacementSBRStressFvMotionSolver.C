@@ -94,7 +94,7 @@ Foam::displacementSBRStressFvMotionSolver::
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::tmp<Foam::pointField>
+Foam::tmp<Foam::pointgpuField>
 Foam::displacementSBRStressFvMotionSolver::curPoints() const
 {
     volPointInterpolation::New(fvMesh_).interpolate
@@ -103,7 +103,7 @@ Foam::displacementSBRStressFvMotionSolver::curPoints() const
         pointDisplacement_
     );
 
-    tmp<pointField> tcurPoints
+    tmp<pointgpuField> tcurPoints
     (
         points0() + pointDisplacement().internalField()
     );
@@ -118,7 +118,7 @@ void Foam::displacementSBRStressFvMotionSolver::solve()
 {
     // The points have moved so before interpolation update
     // the mtionSolver accordingly
-    movePoints(fvMesh_.points());
+    movePoints(fvMesh_.getPoints());
 
     diffusivityPtr_->correct();
     pointDisplacement_.boundaryField().updateCoeffs();

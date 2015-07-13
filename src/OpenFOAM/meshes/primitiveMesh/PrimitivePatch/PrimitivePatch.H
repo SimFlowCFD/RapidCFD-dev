@@ -151,6 +151,8 @@ private:
 
         //- Point-face addressing
         mutable labelListList* pointFacesPtr_;
+        mutable labelgpuList* gpuPointFacesPtr_;
+        mutable labelgpuList* gpuPointFacesStartPtr_;
 
         //- Faces addressing into local point list
         mutable List<Face>* localFacesPtr_;
@@ -191,6 +193,9 @@ private:
        
         //- Calculate GPU face-node addressing
         void calcgpuFaceAddr() const;
+
+        //- Calculate GPU point-face addressing
+        void calcgpuPointFaces() const;
 
         //- Calculate edges of the patch
         void calcIntBdryEdges() const;
@@ -350,6 +355,8 @@ public:
 
             //- Return point-face addressing
             const labelListList& pointFaces() const;
+            const labelgpuList& getPointFaces() const;
+            const labelgpuList& getPointFacesStart() const;
 
             //- Return patch faces addressing into local point list
             const List<Face>& localFaces() const;

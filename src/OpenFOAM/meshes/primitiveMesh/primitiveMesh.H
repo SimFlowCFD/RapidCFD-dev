@@ -127,6 +127,8 @@ class primitiveMesh
 
             //- Point-cells
             mutable labelListList* pcPtr_;
+            mutable labelgpuList* pcgpuCellsPtr_;
+            mutable labelgpuList* pcgpuStartPtr_;
 
             //- Cell-faces
             mutable cellList* cfPtr_;
@@ -201,6 +203,7 @@ class primitiveMesh
 
             //- Calculate point-cell addressing
             void calcPointCells() const;
+            void calcgpuPointCells() const;
 
             //- Calculate cell-face addressing
             void calcCells() const;
@@ -576,6 +579,8 @@ public:
                 // faceCells given as owner and neighbour
                 const labelListList& edgeCells() const;
                 const labelListList& pointCells() const;
+                const labelgpuList& getPointCells() const;
+                const labelgpuList& getPointCellsStart() const;
 
                 const cellList& cells() const;
                 const cellDatagpuList& getCells() const;

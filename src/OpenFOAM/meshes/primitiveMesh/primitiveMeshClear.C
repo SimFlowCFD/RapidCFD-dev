@@ -162,6 +162,8 @@ void Foam::primitiveMesh::clearAddressing()
     deleteDemandDrivenData(ccPtr_);
     deleteDemandDrivenData(ecPtr_);
     deleteDemandDrivenData(pcPtr_);
+    deleteDemandDrivenData(pcgpuCellsPtr_);
+    deleteDemandDrivenData(pcgpuStartPtr_);
 
     deleteDemandDrivenData(cfPtr_);
     deleteDemandDrivenData(efPtr_);

@@ -112,9 +112,9 @@ void waveDisplacementPointPatchVectorField::updateCoeffs()
     const polyMesh& mesh = this->dimensionedInternalField().mesh()();
     const Time& t = mesh.time();
 
-    const scalarField points( waveNumber_ & patch().localPoints());
+    const scalargpuField points( waveNumber_ & patch().getLocalPoints());
 
-    Field<vector>::operator=
+    gpuField<vector>::operator=
     (
         amplitude_*cos(omega_*t.value() - points)
     );

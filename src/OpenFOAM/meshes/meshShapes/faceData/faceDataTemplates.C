@@ -33,7 +33,8 @@ Type Foam::faceData::average
 (
     const label* labels,
     const point* meshPoints,
-    const Type* fld
+    const Type* fld,
+    Type zero
 ) const
 {
     // Calculate the average by breaking the face into triangles and
@@ -53,8 +54,8 @@ Type Foam::faceData::average
 
     label nPoints = size();
 
-    point centrePoint = point::zero;
-    Type cf = pTraits<Type>::zero;
+    point centrePoint(0,0,0);
+    Type cf = zero;
 
     for (register label pI=0; pI<nPoints; pI++)
     {
@@ -66,7 +67,7 @@ Type Foam::faceData::average
     cf /= nPoints;
 
     scalar sumA = 0;
-    Type sumAf = pTraits<Type>::zero;
+    Type sumAf = zero;
 
     for (register label pI=0; pI<nPoints; pI++)
     {

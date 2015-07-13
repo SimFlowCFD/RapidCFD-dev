@@ -68,20 +68,20 @@ Foam::inverseDistanceDiffusivity::~inverseDistanceDiffusivity()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::tmp<Foam::scalarField> Foam::inverseDistanceDiffusivity::y() const
+Foam::tmp<Foam::scalargpuField> Foam::inverseDistanceDiffusivity::y() const
 {
     labelHashSet patchSet(mesh().boundaryMesh().patchSet(patchNames_));
 
     if (patchSet.size())
     {
-        return tmp<scalarField>
+        return tmp<scalargpuField>
         (
-            new scalarField(patchWave(mesh(), patchSet, false).distance())
+            new scalargpuField(patchWave(mesh(), patchSet, false).distance())
         );
     }
     else
     {
-        return tmp<scalarField>(new scalarField(mesh().nCells(), 1.0));
+        return tmp<scalargpuField>(new scalargpuField(mesh().nCells(), 1.0));
     }
 }
 

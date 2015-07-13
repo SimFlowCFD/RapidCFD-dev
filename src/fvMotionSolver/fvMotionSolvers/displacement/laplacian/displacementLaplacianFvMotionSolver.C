@@ -154,7 +154,7 @@ Foam::displacementLaplacianFvMotionSolver::diffusivity()
 }
 
 
-Foam::tmp<Foam::pointField>
+Foam::tmp<Foam::pointgpuField>
 Foam::displacementLaplacianFvMotionSolver::curPoints() const
 {
     volPointInterpolation::New(fvMesh_).interpolate
@@ -183,20 +183,35 @@ Foam::displacementLaplacianFvMotionSolver::curPoints() const
         if (frozenPointsZone_ != -1)
         {
             const pointZone& pz = fvMesh_.pointZones()[frozenPointsZone_];
+            const labelgpuList& zonePoints = pz.getList();
 
-            forAll(pz, i)
-            {
-                pointLocation_()[pz[i]] = points0()[pz[i]];
-            }
+            thrust::copy
+            (
+                thrust::make_permutation_iterator
+                (
+                    points0().begin(),
+                    zonePoints.begin()
+                ),
+                thrust::make_permutation_iterator
+                (
+                    points0().begin(),
+                    zonePoints.begin()
+                ),
+                thrust::make_permutation_iterator
+                (
+                    pointLocation_().getField().begin(),
+                    zonePoints.begin()
+                )
+            );
         }
 
         twoDCorrectPoints(pointLocation_().internalField());
 
-        return tmp<pointField>(pointLocation_().internalField());
+        return tmp<pointgpuField>(pointLocation_().internalField());
     }
     else
     {
-        tmp<pointField> tcurPoints
+        tmp<pointgpuField> tcurPoints
         (
             points0() + pointDisplacement_.internalField()
         );
@@ -205,11 +220,26 @@ Foam::displacementLaplacianFvMotionSolver::curPoints() const
         if (frozenPointsZone_ != -1)
         {
             const pointZone& pz = fvMesh_.pointZones()[frozenPointsZone_];
+            const labelgpuList& zonePoints = pz.getList();
 
-            forAll(pz, i)
-            {
-                tcurPoints()[pz[i]] = points0()[pz[i]];
-            }
+            thrust::copy
+            (
+                thrust::make_permutation_iterator
+                (
+                    points0().begin(),
+                    zonePoints.begin()
+                ),
+                thrust::make_permutation_iterator
+                (
+                    points0().begin(),
+                    zonePoints.begin()
+                ),
+                thrust::make_permutation_iterator
+                (
+                    tcurPoints().begin(),
+                    zonePoints.begin()
+                )
+            );
         }
 
         twoDCorrectPoints(tcurPoints());
@@ -223,7 +253,7 @@ void Foam::displacementLaplacianFvMotionSolver::solve()
 {
     // The points have moved so before interpolation update
     // the motionSolver accordingly
-    movePoints(fvMesh_.points());
+    movePoints(fvMesh_.getPoints());
 
     diffusivity().correct();
     pointDisplacement_.boundaryField().updateCoeffs();

@@ -52,6 +52,8 @@ PrimitivePatch
     faceEdgesPtr_(NULL),
     pointEdgesPtr_(NULL),
     pointFacesPtr_(NULL),
+    gpuPointFacesPtr_(NULL),
+    gpuPointFacesStartPtr_(NULL),
     localFacesPtr_(NULL),
     meshPointsPtr_(NULL),
     gpuMeshPointsPtr_(NULL),
@@ -94,6 +96,8 @@ PrimitivePatch
     faceEdgesPtr_(NULL),
     pointEdgesPtr_(NULL),
     pointFacesPtr_(NULL),
+    gpuPointFacesPtr_(NULL),
+    gpuPointFacesStartPtr_(NULL),
     localFacesPtr_(NULL),
     meshPointsPtr_(NULL),
     gpuMeshPointsPtr_(NULL),
@@ -137,6 +141,8 @@ PrimitivePatch
     faceEdgesPtr_(NULL),
     pointEdgesPtr_(NULL),
     pointFacesPtr_(NULL),
+    gpuPointFacesPtr_(NULL),
+    gpuPointFacesStartPtr_(NULL),
     localFacesPtr_(NULL),
     meshPointsPtr_(NULL),
     gpuMeshPointsPtr_(NULL),
@@ -179,6 +185,8 @@ PrimitivePatch
     faceEdgesPtr_(NULL),
     pointEdgesPtr_(NULL),
     pointFacesPtr_(NULL),
+    gpuPointFacesPtr_(NULL),
+    gpuPointFacesStartPtr_(NULL),
     localFacesPtr_(NULL),
     meshPointsPtr_(NULL),
     gpuMeshPointsPtr_(NULL),
@@ -417,6 +425,46 @@ pointFaces() const
     }
 
     return *pointFacesPtr_;
+}
+
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+const Foam::labelgpuList&
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+getPointFaces() const
+{
+    if ( ! gpuPointFacesPtr_)
+    {
+        calcgpuPointFaces();
+    }
+
+    return *gpuPointFacesPtr_;
+}
+
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+const Foam::labelgpuList&
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+getPointFacesStart() const
+{
+    if ( ! gpuPointFacesStartPtr_)
+    {
+        calcgpuPointFaces();
+    }
+
+    return *gpuPointFacesStartPtr_;
 }
 
 

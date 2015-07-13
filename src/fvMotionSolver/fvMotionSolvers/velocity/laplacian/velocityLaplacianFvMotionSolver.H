@@ -112,7 +112,7 @@ public:
         }
 
         //- Return point location obtained from the current motion field
-        virtual tmp<pointField> curPoints() const;
+        virtual tmp<pointgpuField> curPoints() const;
 
         //- Solve for motion
         virtual void solve();

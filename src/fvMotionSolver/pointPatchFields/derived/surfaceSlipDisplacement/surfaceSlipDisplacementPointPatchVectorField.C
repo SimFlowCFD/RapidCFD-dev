@@ -59,8 +59,8 @@ void surfaceSlipDisplacementPointPatchVectorField::calcProjection
 ) const
 {
     const polyMesh& mesh = patch().boundaryMesh().mesh()();
-    const pointField& localPoints = patch().localPoints();
-    const labelList& meshPoints = patch().meshPoints();
+    const pointgpuField& localPoints = patch().getLocalPoints();
+    const labelgpuList& meshPoints = patch().getMeshPoints();
 
     //const scalar deltaT = mesh.time().deltaTValue();
 
@@ -94,13 +94,13 @@ void surfaceSlipDisplacementPointPatchVectorField::calcProjection
     }
 
     // Get the starting locations from the motionSolver
-    const pointField& points0 = mesh.lookupObject<displacementMotionSolver>
+    const pointgpuField& points0 = mesh.lookupObject<displacementMotionSolver>
     (
         "dynamicMeshDict"
     ).points0();
 
 
-    pointField start(meshPoints.size());
+    pointgpuField start(meshPoints.size());
     forAll(start, i)
     {
         start[i] = points0[meshPoints[i]] + displacement[i];
@@ -413,13 +413,13 @@ void surfaceSlipDisplacementPointPatchVectorField::evaluate
     const Pstream::commsTypes commsType
 )
 {
-    vectorField displacement(this->patchInternalField());
+    vectorgpuField displacement(this->patchInternalField());
 
     // Calculate displacement to project points onto surface
     calcProjection(displacement);
 
     // Get internal field to insert values into
-    Field<vector>& iF = const_cast<Field<vector>&>(this->internalField());
+    gpuField<vector>& iF = const_cast<gpuField<vector>&>(this->internalField());
 
     //setInInternalField(iF, motionU);
     setInInternalField(iF, displacement);

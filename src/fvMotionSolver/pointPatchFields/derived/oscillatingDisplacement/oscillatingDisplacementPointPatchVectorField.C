@@ -108,7 +108,7 @@ void oscillatingDisplacementPointPatchVectorField::updateCoeffs()
     const polyMesh& mesh = this->dimensionedInternalField().mesh()();
     const Time& t = mesh.time();
 
-    Field<vector>::operator=(amplitude_*sin(omega_*t.value()));
+    gpuField<vector>::operator=(amplitude_*sin(omega_*t.value()));
 
     fixedValuePointPatchField<vector>::updateCoeffs();
 }

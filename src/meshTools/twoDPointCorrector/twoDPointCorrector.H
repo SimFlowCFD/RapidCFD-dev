@@ -73,6 +73,7 @@ class twoDPointCorrector
 
         //- Indices of edges normal to plane
         mutable labelList* normalEdgeIndicesPtr_;
+        mutable labelgpuList* normalEdgeIndicesGPUPtr_;
 
         //- Flag to indicate a wedge geometry
         mutable bool isWedge_;
@@ -134,6 +135,7 @@ public:
 
         //- Return indices of normal edges.
         const labelList& normalEdgeIndices() const;
+        const labelgpuList& getNormalEdgeIndices() const;
 
         //- Return direction normal to plane
         direction normalDir() const;

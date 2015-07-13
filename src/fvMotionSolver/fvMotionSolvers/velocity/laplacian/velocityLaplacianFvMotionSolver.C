@@ -88,7 +88,7 @@ Foam::velocityLaplacianFvMotionSolver::~velocityLaplacianFvMotionSolver()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::tmp<Foam::pointField>
+Foam::tmp<Foam::pointgpuField>
 Foam::velocityLaplacianFvMotionSolver::curPoints() const
 {
     volPointInterpolation::New(fvMesh_).interpolate
@@ -97,9 +97,9 @@ Foam::velocityLaplacianFvMotionSolver::curPoints() const
         pointMotionU_
     );
 
-    tmp<pointField> tcurPoints
+    tmp<pointgpuField> tcurPoints
     (
-        fvMesh_.points()
+        fvMesh_.getPoints()
       + fvMesh_.time().deltaTValue()*pointMotionU_.internalField()
     );
 
@@ -113,7 +113,7 @@ void Foam::velocityLaplacianFvMotionSolver::solve()
 {
     // The points have moved so before interpolation update
     // the fvMotionSolver accordingly
-    movePoints(fvMesh_.points());
+    movePoints(fvMesh_.getPoints());
 
     diffusivityPtr_->correct();
     pointMotionU_.boundaryField().updateCoeffs();

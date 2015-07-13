@@ -112,7 +112,7 @@ public:
         }
 
         //- Update local data for geometry changes
-        virtual void movePoints(const pointField&);
+        virtual void movePoints(const pointgpuField&);
 
         //-  Update local data for topology changes
         virtual void updateMesh(const mapPolyMesh&);

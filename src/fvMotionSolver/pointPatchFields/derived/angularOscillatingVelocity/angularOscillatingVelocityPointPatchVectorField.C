@@ -79,7 +79,7 @@ angularOscillatingVelocityPointPatchVectorField
     }
     else
     {
-        p0_ = p.localPoints();
+        p0_ = p.getLocalPoints();
     }
 }
 
@@ -136,7 +136,7 @@ void angularOscillatingVelocityPointPatchVectorField::autoMap
 void angularOscillatingVelocityPointPatchVectorField::rmap
 (
     const pointPatchField<vector>& ptf,
-    const labelList& addr
+    const labelgpuList& addr
 )
 {
     const angularOscillatingVelocityPointPatchVectorField& aOVptf =
@@ -161,16 +161,16 @@ void angularOscillatingVelocityPointPatchVectorField::updateCoeffs()
 
     scalar angle = angle0_ + amplitude_*sin(omega_*t.value());
     vector axisHat = axis_/mag(axis_);
-    vectorField p0Rel(p0_ - origin_);
+    vectorgpuField p0Rel(p0_ - origin_);
 
-    vectorField::operator=
+    vectorgpuField::operator=
     (
         (
             p0_
           + p0Rel*(cos(angle) - 1)
           + (axisHat ^ p0Rel*sin(angle))
           + (axisHat & p0Rel)*(1 - cos(angle))*axisHat
-          - p.localPoints()
+          - p.getLocalPoints()
         )/t.deltaTValue()
     );
 

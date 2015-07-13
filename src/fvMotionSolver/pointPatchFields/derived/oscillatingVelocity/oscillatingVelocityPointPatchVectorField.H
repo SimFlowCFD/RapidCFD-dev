@@ -55,7 +55,7 @@ class oscillatingVelocityPointPatchVectorField
         vector amplitude_;
         scalar omega_;
 
-        pointField p0_;
+        pointgpuField p0_;
 
 
 public:
@@ -140,7 +140,7 @@ public:
             virtual void rmap
             (
                 const pointPatchField<vector>&,
-                const labelList&
+                const labelgpuList&
             );
 
 

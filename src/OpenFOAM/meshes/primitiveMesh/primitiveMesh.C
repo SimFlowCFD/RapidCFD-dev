@@ -54,6 +54,8 @@ Foam::primitiveMesh::primitiveMesh()
     ccPtr_(NULL),
     ecPtr_(NULL),
     pcPtr_(NULL),
+    pcgpuCellsPtr_(NULL),
+    pcgpuStartPtr_(NULL),
 
     cfPtr_(NULL),
     efPtr_(NULL),
@@ -105,6 +107,8 @@ Foam::primitiveMesh::primitiveMesh
     ccPtr_(NULL),
     ecPtr_(NULL),
     pcPtr_(NULL),
+    pcgpuCellsPtr_(NULL),
+    pcgpuStartPtr_(NULL),
 
     cfPtr_(NULL),
     efPtr_(NULL),

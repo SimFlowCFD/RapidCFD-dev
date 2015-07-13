@@ -29,7 +29,7 @@ __host__ __device__
 inline Foam::pointConstraint::pointConstraint()
 :
     point_(0),
-    value_(vector::zero)
+    value_(0,0,0)
 {}
 
 

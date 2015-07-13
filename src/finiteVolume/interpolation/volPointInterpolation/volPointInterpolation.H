@@ -61,7 +61,7 @@ class volPointInterpolation
     // Private data
 
         //- Interpolation scheme weighting factor array.
-        scalarListList pointWeights_;
+        scalargpuList pointWeights_;
 
 
         // Boundary handling
@@ -70,14 +70,14 @@ class volPointInterpolation
             autoPtr<primitivePatch> boundaryPtr_;
 
             //- Per boundary face whether is on non-coupled patch
-            boolList boundaryIsPatchFace_;
+            boolgpuList boundaryIsPatchFace_;
 
             //- Per mesh(!) point whether is on non-coupled patch (on any
             //  processor)
-            boolList isPatchPoint_;
+            boolgpuList isPatchPoint_;
 
             //- Per boundary point the weights per pointFaces.
-            scalarListList boundaryPointWeights_;
+            scalargpuList boundaryPointWeights_;
 
 
     // Private Member Functions
@@ -86,22 +86,22 @@ class volPointInterpolation
         void calcBoundaryAddressing();
 
         //- Make weights for internal and coupled-only boundarypoints
-        void makeInternalWeights(scalarField& sumWeights);
+        void makeInternalWeights(scalargpuField& sumWeights);
 
         //- Make weights for points on uncoupled patches
-        void makeBoundaryWeights(scalarField& sumWeights);
+        void makeBoundaryWeights(scalargpuField& sumWeights);
 
         //- Construct all point weighting factors
         void makeWeights();
 
         //- Helper: push master point data to collocated points
         template<class Type>
-        void pushUntransformedData(List<Type>&) const;
+        void pushUntransformedData(gpuList<Type>&) const;
 
         //- Get boundary field in same order as boundary faces. Field is
         //  zero on all coupled and empty patches
         template<class Type>
-        tmp<Field<Type> > flatBoundaryField
+        tmp<gpuField<Type> > flatBoundaryField
         (
             const GeometricField<Type, fvPatchField, volMesh>& vf
         ) const;

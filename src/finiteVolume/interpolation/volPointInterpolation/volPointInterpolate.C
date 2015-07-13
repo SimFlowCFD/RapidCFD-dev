@@ -40,22 +40,41 @@ namespace Foam
 template<class Type>
 void volPointInterpolation::pushUntransformedData
 (
-    List<Type>& pointData
+    gpuList<Type>& pointData
 ) const
 {
     // Transfer onto coupled patch
     const globalMeshData& gmd = mesh().globalData();
     const indirectPrimitivePatch& cpp = gmd.coupledPatch();
-    const labelList& meshPoints = cpp.meshPoints();
+    const labelgpuList& meshPoints = cpp.getMeshPoints();
 
     const mapDistribute& slavesMap = gmd.globalCoPointSlavesMap();
     const labelListList& slaves = gmd.globalCoPointSlaves();
 
     List<Type> elems(slavesMap.constructSize());
-    forAll(meshPoints, i)
-    {
-        elems[i] = pointData[meshPoints[i]];
-    }
+    gpuList<Type> elemsGpu(elems.size());
+
+    thrust::copy
+    (
+        thrust::make_permutation_iterator
+        (
+            pointData.begin(),
+            meshPoints.begin()
+        ),
+        thrust::make_permutation_iterator
+        (
+            pointData.begin(),
+            meshPoints.end()
+        ),
+        elemsGpu.begin()
+    );
+
+    thrust::copy
+    (
+        elemsGpu.begin(),
+        elemsGpu.end(),
+        elems.begin()
+    );
 
     // Combine master data with slave data
     forAll(slaves, i)
@@ -73,10 +92,17 @@ void volPointInterpolation::pushUntransformedData
     slavesMap.reverseDistribute(elems.size(), elems, false);
 
     // Extract back onto mesh
-    forAll(meshPoints, i)
-    {
-        pointData[meshPoints[i]] = elems[i];
-    }
+    elemsGpu = elems;
+    thrust::copy
+    (
+        elemsGpu.begin(),
+        elemsGpu.end(),
+        thrust::make_permutation_iterator
+        (
+            pointData.begin(),
+            meshPoints.begin()
+        )
+    );
 }
 
 
@@ -121,6 +147,54 @@ void volPointInterpolation::addSeparated
     }
 }
 
+template<class Type>
+struct volInterpolationInterpolationInternalFieldFunctor
+{
+    const label* pointCellsStart;
+    const label* pointCells;
+    const scalar* weight;
+    const bool* isPatchPoint;
+    const Type* vf;
+    Type* pf;
+    const Type zero;
+
+    volInterpolationInterpolationInternalFieldFunctor
+    (
+        const label* _pointCellsStart,
+        const label* _pointCells,
+        const scalar* _weight,
+        const bool* _isPatchPoint,
+        const Type* _vf,
+        Type* _pf
+    ):
+        pointCellsStart(_pointCellsStart),
+        pointCells(_pointCells),
+        weight(_weight),
+        isPatchPoint(_isPatchPoint),
+        vf(_vf),
+        pf(_pf),
+        zero(pTraits<Type>::zero)
+    {}
+
+    __host__ __device__
+    void operator()(const label& pointI)
+    {
+        if(!isPatchPoint[pointI])
+        {
+            const label start = pointCellsStart[pointI];
+            const label end = pointCellsStart[pointI+1];
+
+            Type out = zero;
+
+            for(label i = start; i < end; i++)
+            {
+                out += weight[i]*vf[pointCells[i]];
+            }
+ 
+            pf[pointI] = out;
+        }
+    }
+};
 
 template<class Type>
 void volPointInterpolation::interpolateInternalField
@@ -138,29 +212,29 @@ void volPointInterpolation::interpolateInternalField
             << endl;
     }
 
-    const labelListList& pointCells = vf.mesh().pointCells();
+    const labelgpuList& pointCells = vf.mesh().getPointCells();
+    const labelgpuList& pointCellsStart = vf.mesh().getPointCellsStart();
 
     // Multiply volField by weighting factor matrix to create pointField
-    forAll(pointCells, pointi)
-    {
-        if (!isPatchPoint_[pointi])
-        {
-            const scalarList& pw = pointWeights_[pointi];
-            const labelList& ppc = pointCells[pointi];
-
-            pf[pointi] = pTraits<Type>::zero;
-
-            forAll(ppc, pointCelli)
-            {
-                pf[pointi] += pw[pointCelli]*vf[ppc[pointCelli]];
-            }
-        }
-    }
+    thrust::for_each
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(pf.size()),
+        volInterpolationInterpolationInternalFieldFunctor<Type>
+        (
+            pointCellsStart.data(),
+            pointCells.data(),
+            pointWeights_.data(),
+            isPatchPoint_.data(),
+            vf.getField().data(),
+            pf.getField().data()
+        )
+    );
 }
 
 
 template<class Type>
-tmp<Field<Type> > volPointInterpolation::flatBoundaryField
+tmp<gpuField<Type> > volPointInterpolation::flatBoundaryField
 (
     const GeometricField<Type, fvPatchField, volMesh>& vf
 ) const
@@ -168,43 +242,105 @@ tmp<Field<Type> > volPointInterpolation::flatBoundaryField
     const fvMesh& mesh = vf.mesh();
     const fvBoundaryMesh& bm = mesh.boundary();
 
-    tmp<Field<Type> > tboundaryVals
+    tmp<gpuField<Type> > tboundaryVals
     (
-        new Field<Type>(mesh.nFaces()-mesh.nInternalFaces())
+        new gpuField<Type>(mesh.nFaces()-mesh.nInternalFaces())
     );
-    Field<Type>& boundaryVals = tboundaryVals();
+    gpuField<Type>& boundaryVals = tboundaryVals();
 
     forAll(vf.boundaryField(), patchI)
     {
-        label bFaceI = bm[patchI].patch().start() - mesh.nInternalFaces();
+        const polyPatch& pp = bm[patchI].patch();
+        label bFaceI = pp.start() - mesh.nInternalFaces();
 
         if
         (
-           !isA<emptyFvPatch>(bm[patchI])
+           !isA<emptyFvPatch>(pp)
         && !vf.boundaryField()[patchI].coupled()
         )
         {
-            SubList<Type>
+            gpuList<Type>
             (
                 boundaryVals,
                 vf.boundaryField()[patchI].size(),
                 bFaceI
-            ).assign(vf.boundaryField()[patchI]);
+            ) = vf.boundaryField()[patchI];
         }
         else
         {
-            const polyPatch& pp = bm[patchI].patch();
-
-            forAll(pp, i)
-            {
-                boundaryVals[bFaceI++] = pTraits<Type>::zero;
-            }
+            thrust::fill
+            (
+                boundaryVals.begin()+bFaceI,
+                boundaryVals.begin()+bFaceI+pp.size(),
+                pTraits<Type>::zero
+            );
         }
     }
 
     return tboundaryVals;
 }
 
+template<class Type>
+struct volPointInterpolationInterpolateBoundaryFieldFunctor
+{
+    const label* points;
+    const label* pointFacesStart;
+    const label* pointFaces;
+    const bool* isPatchPoint;
+    const bool* boundaryIsPatchFace;
+    const scalar* weight;
+    const Type* bf;
+    Type* pf;
+    const Type zero;
+    
+    volPointInterpolationInterpolateBoundaryFieldFunctor
+    (
+        const label* _points,
+        const label* _pointFacesStart,
+        const label* _pointFaces,
+        const bool* _isPatchPoint,
+        const bool* _boundaryIsPatchFace,
+        const scalar* _weight,
+        const Type* _bf,
+        Type* _pf
+    ):
+        points(_points),
+        pointFacesStart(_pointFacesStart),
+        pointFaces(_pointFaces),
+        isPatchPoint(_isPatchPoint),
+        boundaryIsPatchFace(_boundaryIsPatchFace),
+        weight(_weight),
+        bf(_bf),
+        pf(_pf),
+        zero(pTraits<Type>::zero)
+    {}
+
+    __host__ __device__
+    void operator()(const label& id)
+    {
+        const label pointI = points[id];
+
+        if (isPatchPoint[pointI])
+        {
+            const label start = pointFacesStart[id];
+            const label end = pointFacesStart[id+1];
+
+            Type out = zero;
+
+            for(label i = start; i < end; i++)
+            {
+                label faceI = pointFaces[i];
+
+                if (boundaryIsPatchFace[faceI])
+                {
+                   out += weight[i]*bf[faceI];
+                }
+            }
+
+            pf[pointI] = out;
+        }
+    }
+};
 
 template<class Type>
 void volPointInterpolation::interpolateBoundaryField
@@ -215,37 +351,35 @@ void volPointInterpolation::interpolateBoundaryField
 {
     const primitivePatch& boundary = boundaryPtr_();
 
-    Field<Type>& pfi = pf.internalField();
+    gpuField<Type>& pfi = pf.internalField();
 
     // Get face data in flat list
-    tmp<Field<Type> > tboundaryVals(flatBoundaryField(vf));
-    const Field<Type>& boundaryVals = tboundaryVals();
+    tmp<gpuField<Type> > tboundaryVals(flatBoundaryField(vf));
+    const gpuField<Type>& boundaryVals = tboundaryVals();
 
+    const labelgpuList& boundaryPoints = boundary.getMeshPoints();
+    const labelgpuList& pointFaces = boundary.getPointFaces();
+    const labelgpuList& pointFacesStart = boundary.getPointFacesStart();
 
     // Do points on 'normal' patches from the surrounding patch faces
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    forAll(boundary.meshPoints(), i)
-    {
-        label pointI = boundary.meshPoints()[i];
-
-        if (isPatchPoint_[pointI])
-        {
-            const labelList& pFaces = boundary.pointFaces()[i];
-            const scalarList& pWeights = boundaryPointWeights_[i];
-
-            Type& val = pfi[pointI];
-
-            val = pTraits<Type>::zero;
-            forAll(pFaces, j)
-            {
-                if (boundaryIsPatchFace_[pFaces[j]])
-                {
-                    val += pWeights[j]*boundaryVals[pFaces[j]];
-                }
-            }
-        }
-    }
+    thrust::for_each
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(boundaryPoints.size()),
+        volPointInterpolationInterpolateBoundaryFieldFunctor<Type>
+        (
+            boundaryPoints.data(),
+            pointFacesStart.data(),
+            pointFaces.data(),
+            isPatchPoint_.data(),
+            boundaryIsPatchFace_.data(),
+            boundaryPointWeights_.data(),
+            boundaryVals.data(),
+            pfi.data()
+        )
+    );
 
     // Sum collocated contributions
     pointConstraints::syncUntransformedData(mesh(), pfi, plusEqOp<Type>());

@@ -217,11 +217,11 @@ $(interpolation)/interpolationCellPointWallModified/cellPointWeightWallModified/
 $(interpolation)/interpolationCellPointWallModified/makeInterpolationCellPointWallModified.C
 $(interpolation)/interpolationPointMVC/pointMVCWeight.C
 $(interpolation)/interpolationPointMVC/makeInterpolationPointMVC.C
-
+*/
 volPointInterpolation = interpolation/volPointInterpolation
 $(volPointInterpolation)/volPointInterpolation.C
 $(volPointInterpolation)/pointConstraints.C
-*/
+
 surfaceInterpolation = interpolation/surfaceInterpolation
 $(surfaceInterpolation)/surfaceInterpolation/surfaceInterpolation.C
 $(surfaceInterpolation)/surfaceInterpolationScheme/surfaceInterpolationSchemes.C

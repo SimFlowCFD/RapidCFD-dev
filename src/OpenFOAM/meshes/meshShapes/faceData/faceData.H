@@ -125,7 +125,7 @@ public:
         //- Calculate average value at centroid of face
         template<class Type>
         __HOST____DEVICE__
-        Type average(const label*,const point*, const Type*) const;
+        Type average(const label*,const point*, const Type*,Type) const;
 
         //- Magnitude of face area
         __HOST____DEVICE__

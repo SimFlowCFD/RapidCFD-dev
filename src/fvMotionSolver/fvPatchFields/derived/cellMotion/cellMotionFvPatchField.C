@@ -92,6 +92,36 @@ Foam::cellMotionFvPatchField<Type>::cellMotionFvPatchField
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+namespace Foam
+{
+template<class Type>
+struct cellMotionFvPatchFieldUpdateCoeffsFunctor
+{
+    const label* facePoints;
+    const point* points;
+    const Type* field;
+    const Type zero;
+
+    cellMotionFvPatchFieldUpdateCoeffsFunctor
+    (
+        const label* _facePoints,
+        const point* _points,
+        const Type* _field
+    ):
+        facePoints(_facePoints),
+        points(_points), 
+        field(_field),
+        zero(pTraits<Type>::zero)
+    {}
+
+    __host__ __device__
+    Type operator()(const faceData& face)
+    {
+        return face.average(facePoints,points,field,zero);
+    }
+};
+}
+
 template<class Type>
 void Foam::cellMotionFvPatchField<Type>::updateCoeffs()
 {
@@ -103,7 +133,10 @@ void Foam::cellMotionFvPatchField<Type>::updateCoeffs()
     const fvPatch& p = this->patch();
     const polyPatch& pp = p.patch();
     const fvMesh& mesh = this->dimensionedInternalField().mesh();
-    const pointField& points = mesh.points();
+    const pointgpuField& points = mesh.getPoints();
+
+    const faceDatagpuList& faces = pp.getFaces();
+    const labelgpuList& facePoints = pp.getFaceNodes();
 
     word pfName = this->dimensionedInternalField().name();
     pfName.replace("cell", "point");
@@ -113,10 +146,18 @@ void Foam::cellMotionFvPatchField<Type>::updateCoeffs()
             lookupObject<GeometricField<Type, pointPatchField, pointMesh> >
             (pfName);
 
-    forAll(p, i)
-    {
-        this->operator[](i) = pp[i].average(points, pointMotion);
-    }
+    thrust::transform
+    (
+        faces.begin(),
+        faces.end(),
+        this->begin(),
+        cellMotionFvPatchFieldUpdateCoeffsFunctor<Type>
+        (
+            facePoints.data(),
+            points.data(),
+            pointMotion.getField().data()
+        )
+    );
 
     fixedValueFvPatchField<Type>::updateCoeffs();
 }

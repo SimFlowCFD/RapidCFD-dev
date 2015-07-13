@@ -79,7 +79,7 @@ angularOscillatingDisplacementPointPatchVectorField
     }
     else
     {
-        p0_ = p.localPoints();
+        p0_ = p.getLocalPoints();
     }
 }
 
@@ -136,7 +136,7 @@ void angularOscillatingDisplacementPointPatchVectorField::autoMap
 void angularOscillatingDisplacementPointPatchVectorField::rmap
 (
     const pointPatchField<vector>& ptf,
-    const labelList& addr
+    const labelgpuList& addr
 )
 {
     const angularOscillatingDisplacementPointPatchVectorField& aODptf =
@@ -160,9 +160,9 @@ void angularOscillatingDisplacementPointPatchVectorField::updateCoeffs()
 
     scalar angle = angle0_ + amplitude_*sin(omega_*t.value());
     vector axisHat = axis_/mag(axis_);
-    vectorField p0Rel(p0_ - origin_);
+    vectorgpuField p0Rel(p0_ - origin_);
 
-    vectorField::operator=
+    vectorgpuField::operator=
     (
         p0Rel*(cos(angle) - 1)
       + (axisHat ^ p0Rel*sin(angle))

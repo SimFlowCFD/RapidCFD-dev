@@ -147,5 +147,56 @@ calcPointFaces() const
     }
 }
 
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+void
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+calcgpuPointFaces() const
+{
+    if (gpuPointFacesPtr_ || gpuPointFacesStartPtr_)
+    {
+        // it is considered an error to attempt to recalculate
+        // if already allocated
+        FatalErrorIn
+        (
+            "PrimitivePatch<Face, FaceList, PointField, PointType>::"
+            "calcgpuPointFaces()"
+        )   << "pointFaces already calculated"
+            << abort(FatalError);
+    }
+
+    const labelListList& pFaces = pointFaces();
+    labelList startTmp(pFaces.size()+1,0);
+
+    label sum = 0;
+    forAll(pFaces,i)
+    {
+        sum += pFaces[i].size();
+        startTmp[i+1]=sum;
+    }
+
+    labelList pFacesTmp(sum);
+
+    sum = 0;
+    forAll(pFaces,i)
+    {
+        const labelList& p = pFaces[i];
+        
+        forAll(p,j)
+        {
+            pFacesTmp[sum] = p[j];
+            sum++;
+        }
+    }
+    
+    gpuPointFacesPtr_ = new labelgpuList(pFacesTmp);
+    gpuPointFacesStartPtr_ = new labelgpuList(startTmp);
+}
+
 
 // ************************************************************************* //

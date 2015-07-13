@@ -169,6 +169,7 @@ void Foam::twoDPointCorrector::clearAddressing() const
 {
     deleteDemandDrivenData(planeNormalPtr_);
     deleteDemandDrivenData(normalEdgeIndicesPtr_);
+    deleteDemandDrivenData(normalEdgeIndicesGPUPtr_);
 }
 
 
@@ -194,6 +195,7 @@ Foam::twoDPointCorrector::twoDPointCorrector(const polyMesh& mesh)
     required_(mesh_.nGeometricD() == 2),
     planeNormalPtr_(NULL),
     normalEdgeIndicesPtr_(NULL),
+    normalEdgeIndicesGPUPtr_(NULL),
     isWedge_(false),
     wedgeAxis_(vector::zero),
     wedgeAngle_(0.0)
@@ -260,12 +262,17 @@ const Foam::labelList& Foam::twoDPointCorrector::normalEdgeIndices() const
     return *normalEdgeIndicesPtr_;
 }
 
-void Foam::twoDPointCorrector::correctPoints(pointgpuField& p) const
+
+const Foam::labelgpuList& Foam::twoDPointCorrector::getNormalEdgeIndices() const
 {
-    if (!required_) return;
-    
-    notImplemented("twoDPointCorrector::correctPoints(pointgpuField& p))");
+    if (!normalEdgeIndicesGPUPtr_)
+    {
+        normalEdgeIndicesGPUPtr_ = new labelgpuList(normalEdgeIndices());
+    }
+
+    return *normalEdgeIndicesGPUPtr_;
 }
+
 
 void Foam::twoDPointCorrector::correctPoints(pointField& p) const
 {
@@ -307,19 +314,181 @@ void Foam::twoDPointCorrector::correctPoints(pointField& p) const
 }
 
 
+namespace Foam
+{
+
+struct twoDPointCorrectorCorrectPointsSwapToWedgeFunctor
+{
+    const scalar wedgeAngle;
+    const vector wedgeAxis;
+    const vector planeNormal;
+
+    twoDPointCorrectorCorrectPointsSwapToWedgeFunctor
+    (
+        const scalar _wedgeAngle,
+        const vector _wedgeAxis,
+        const vector _planeNormal
+    ):
+        wedgeAngle(_wedgeAngle),
+        wedgeAxis(_wedgeAxis),
+        planeNormal(_planeNormal)
+    {}
+
+    __host__ __device__
+    void operator()(const vector& n, const point& A, point& p) const
+    {
+        scalar ADash = mag(A - wedgeAxis*(wedgeAxis & A));
+        vector pDash = ADash*tan(wedgeAngle)*planeNormal;
+
+        p = A + sign(n & p)*pDash;
+    }
+};
+
+struct twoDPointCorrectorCorrectPointsSwapToPlaneFunctor
+{
+    __host__ __device__
+    void operator()(const vector& n, const point& A, point& p) const
+    {
+        p = A + n*(n & (p - A));
+    }
+};
+
+template<class Fun>
+struct twoDPointCorrectorCorrectPointsFunctor
+{
+    const Fun f;
+    point* p;
+    const vector planeNormal;
+    const Vector<label> dirs;
+    const point min;
+    const point max;
+
+    twoDPointCorrectorCorrectPointsFunctor
+    (
+        const polyMesh& mesh,
+        point* _p,
+        vector _planeNormal,
+        Fun _f
+    ):
+        f(_f),
+        p(_p),
+        planeNormal(_planeNormal),
+        dirs(mesh.geometricD()),
+        min(mesh.bounds().min()),
+        max(mesh.bounds().max())
+    {}
+
+    __host__ __device__
+    void operator()(const edge& e)
+    {
+        point& pStart = p[e.start()];
+
+        point& pEnd = p[e.end()];
+
+        point A = 0.5*(pStart + pEnd);
+        constrainToMeshCentre(A);
+
+        f(planeNormal,A,pStart);
+        f(planeNormal,A,pEnd);
+    }   
+
+    __host__ __device__
+    void constrainToMeshCentre(point& p)
+    {
+        for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+        {
+            if (dirs[cmpt] == -1)
+            {
+                p[cmpt] = 0.5*(min[cmpt] + max[cmpt]);
+            }
+        }
+    } 
+};
+
+}
+
+void Foam::twoDPointCorrector::correctPoints(pointgpuField& p) const
+{
+    if (!required_) return;
+
+    const edgegpuList&  meshEdges = mesh_.getEdges();
+
+    const labelgpuList& neIndices = getNormalEdgeIndices();
+    const vector& pn = planeNormal();
+
+    if(isWedge_)
+    {
+        thrust::for_each
+        (
+            thrust::make_permutation_iterator
+            (
+                meshEdges.begin(),
+                neIndices.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                meshEdges.begin(),
+                neIndices.begin()
+            ),
+            twoDPointCorrectorCorrectPointsFunctor
+            <
+                twoDPointCorrectorCorrectPointsSwapToWedgeFunctor
+            >
+            (
+                mesh_,
+                p.data(),
+                pn,
+                twoDPointCorrectorCorrectPointsSwapToWedgeFunctor
+                (
+                    wedgeAngle_,
+                    wedgeAxis_,
+                    pn
+                )
+            )
+        );
+    }
+    else
+    {
+
+        thrust::for_each
+        (
+            thrust::make_permutation_iterator
+            (
+                meshEdges.begin(),
+                neIndices.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                meshEdges.begin(),
+                neIndices.begin()
+            ),
+            twoDPointCorrectorCorrectPointsFunctor
+            <
+                twoDPointCorrectorCorrectPointsSwapToPlaneFunctor
+            >
+            (
+                mesh_,
+                p.data(),
+                pn,
+                twoDPointCorrectorCorrectPointsSwapToPlaneFunctor()
+            )
+        );
+    }
+}
+
+
 void Foam::twoDPointCorrector::correctDisplacement
 (
-    const pointField& p,
-    vectorField& disp
+    const pointgpuField& p,
+    vectorgpuField& disp
 ) const
 {
     if (!required_) return;
     
-    notImplemented("Foam::twoDPointCorrector::correctDisplacement
-"("
-"    const pointField& p,"
-"    vectorField& disp"
-")");
+    notImplemented
+    (
+       "Foam::twoDPointCorrector::correctDisplacement(const pointField&,vectorField&)"
+    );
 }
 
 void Foam::twoDPointCorrector::correctDisplacement

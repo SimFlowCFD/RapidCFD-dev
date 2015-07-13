@@ -130,7 +130,7 @@ timeVaryingMappedFixedValuePointPatchField
     {
         fixedValuePointPatchField<Type>::operator==
         (
-            Field<Type>("value", dict, p.size())
+            gpuField<Type>("value", dict, p.size())
         );
     }
     else

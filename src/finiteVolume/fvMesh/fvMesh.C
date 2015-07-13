@@ -725,11 +725,6 @@ Foam::tmp<Foam::scalargpuField> Foam::fvMesh::movePoints(const pointgpuField& p)
         storeOldVol(V().getField());
     }
 
-//TODO implement
-    return tmp<scalargpuField>(new scalargpuField(nFaces()));
-
-
-/*
     if (!phiPtr_)
     {
         // Create mesh motion flux
@@ -765,15 +760,18 @@ Foam::tmp<Foam::scalargpuField> Foam::fvMesh::movePoints(const pointgpuField& p)
 
     tmp<scalargpuField> tsweptVols = polyMesh::movePoints(p);
     scalargpuField& sweptVols = tsweptVols();
+    const scalargpuField& constSweptVols = sweptVols;
 
-    phi.internalField() = scalarField::subField(sweptVols, nInternalFaces());
+    phi.internalField() = scalargpuField(constSweptVols, nInternalFaces());
     phi.internalField() *= rDeltaT;
 
     const fvPatchList& patches = boundary();
 
     forAll(patches, patchI)
     {
-        phi.boundaryField()[patchI] = patches[patchI].patchSlice(sweptVols);
+        const fvPatch& p = patches[patchI];
+
+        phi.boundaryField()[patchI] = scalargpuList(constSweptVols,p.size(),p.start());
         phi.boundaryField()[patchI] *= rDeltaT;
     }
 
@@ -794,7 +792,6 @@ Foam::tmp<Foam::scalargpuField> Foam::fvMesh::movePoints(const pointgpuField& p)
     meshObject::movePoints<lduMesh>(*this);
 
     return tsweptVols;
-*/
 }
 
 

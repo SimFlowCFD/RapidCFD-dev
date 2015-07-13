@@ -146,12 +146,12 @@ Foam::componentDisplacementMotionSolver::~componentDisplacementMotionSolver()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::componentDisplacementMotionSolver::movePoints(const pointField& p)
+void Foam::componentDisplacementMotionSolver::movePoints(const pointgpuField& p)
 {
     // No local data to update
 }
 
-
+/*
 void Foam::componentDisplacementMotionSolver::updateMesh(const mapPolyMesh& mpm)
 {
     // pointMesh already updates pointFields.
@@ -210,6 +210,6 @@ void Foam::componentDisplacementMotionSolver::updateMesh(const mapPolyMesh& mpm)
     }
     points0_.transfer(newPoints0);
 }
-
+*/
 
 // ************************************************************************* //

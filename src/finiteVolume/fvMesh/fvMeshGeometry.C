@@ -387,9 +387,11 @@ const surfaceVectorField& fvMesh::Cf() const
     return *CfPtr_;
 }
 
-struct calcFaceDeltaFunctor : public thrust::unary_function<thrust::tuple<vector,vector>,vector>{
+struct calcFaceDeltaFunctor : public thrust::unary_function<thrust::tuple<vector,vector>,vector>
+{
     __HOST____DEVICE__
-    vector operator()(const thrust::tuple<vector,vector>& c){
+    vector operator()(const thrust::tuple<vector,vector>& c)
+    {
         return thrust::get<0>(c) - thrust::get<1>(c);
     }
 };
@@ -427,33 +429,29 @@ tmp<surfaceVectorField> fvMesh::delta() const
     const volVectorField& C = this->C();
     const labelgpuList& owner = this->owner();
     const labelgpuList& neighbour = this->neighbour();
-/*
-    forAll(owner, facei)
-    {
-        delta[facei] = C[neighbour[facei]] - C[owner[facei]];
-    }
-*/
-    thrust::copy(
-                 thrust::make_transform_iterator( 
-                                                 thrust::make_zip_iterator(
-                                                                           thrust::make_tuple( 
-                                                                                              thrust::make_permutation_iterator( C.getField().begin(),neighbour.begin() ),
-                                                                                              thrust::make_permutation_iterator( C.getField().begin(),owner.begin() )
-                                                                                             )
-                                                                          ),
-                                                 calcFaceDeltaFunctor()
-                                               ),
-                 thrust::make_transform_iterator(
-                                                 thrust::make_zip_iterator(
-                                                                           thrust::make_tuple( 
-                                                                                              thrust::make_permutation_iterator( C.getField().begin(),neighbour.begin()+owner.size() ),
-                                                                                              thrust::make_permutation_iterator( C.getField().begin(),owner.end() )
-                                                                                             )
-                                                                          ),
-                                                 calcFaceDeltaFunctor()
-                                               ),
-                 delta.getField().begin()
-                );
+
+    thrust::copy
+    (
+        thrust::make_transform_iterator
+        ( 
+            thrust::make_zip_iterator(thrust::make_tuple
+            ( 
+                thrust::make_permutation_iterator( C.getField().begin(),neighbour.begin() ),
+                thrust::make_permutation_iterator( C.getField().begin(),owner.begin() )
+            )),
+            calcFaceDeltaFunctor()
+        ),
+        thrust::make_transform_iterator
+        (
+            thrust::make_zip_iterator(thrust::make_tuple
+            ( 
+                thrust::make_permutation_iterator( C.getField().begin(),neighbour.begin()+owner.size() ),
+                thrust::make_permutation_iterator( C.getField().begin(),owner.end() )
+            )),
+            calcFaceDeltaFunctor()
+        ),
+        delta.getField().begin()
+    );
 
     for (label patchi=0; patchi<delta.boundaryField().size(); patchi++)
     {

@@ -5,6 +5,6 @@ set -x
 wmake
 wmake rhoPimplecFoam
 #wmake rhoLTSPimpleFoam
-#wmake rhoPimpleDyMFoam
+wmake rhoPimpleDyMFoam
 
 # ----------------------------------------------------------------- end-of-file

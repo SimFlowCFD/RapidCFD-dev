@@ -25,6 +25,7 @@ License
 
 #include "primitiveMesh.H"
 #include "demandDrivenData.H"
+#include "faceFunctors.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -324,35 +325,6 @@ void Foam::primitiveMesh::reset
 }
 
 
-namespace Foam
-{
-
-struct primitiveMeshMovePointsFunctor
-{
-    const point* oldPoints;
-    const point* newPoints;
-    const label* faceNodes;
-
-    primitiveMeshMovePointsFunctor
-    (
-        const point* _oldPoints,
-        const point* _newPoints,
-        const label* _faceNodes
-    ):
-        oldPoints(_oldPoints),
-        newPoints(_newPoints),
-        faceNodes(_faceNodes)
-    {}
-
-    __HOST____DEVICE__
-    scalar operator()(const faceData& face)
-    {
-        return face.sweptVol(faceNodes,oldPoints,newPoints);
-    }
-};
-
-}
-
 Foam::tmp<Foam::scalargpuField> Foam::primitiveMesh::movePoints
 (
     const pointgpuField& newPoints,
@@ -382,11 +354,11 @@ Foam::tmp<Foam::scalargpuField> Foam::primitiveMesh::movePoints
          f.begin(),
          f.end(),
          sweptVols.begin(),
-         primitiveMeshMovePointsFunctor
+         faceSweptVolFunctor
          (
+             nodes.data(),
              oldPoints.data(),
-             newPoints.data(),
-             nodes.data()
+             newPoints.data()
          )          
     );
 

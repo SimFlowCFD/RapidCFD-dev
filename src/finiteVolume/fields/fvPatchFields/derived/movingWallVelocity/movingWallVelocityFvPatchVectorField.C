@@ -28,6 +28,7 @@ License
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "fvcMeshPhi.H"
+#include "faceFunctors.H"
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -98,32 +99,6 @@ movingWallVelocityFvPatchVectorField
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-struct movingWallUpdateFunctor
-{
-    const label* faceNodes;
-    const point* nodes;
-
-    movingWallUpdateFunctor
-    (
-        const label* _faceNodes,
-        const point* _nodes
-    ):
-        faceNodes(_faceNodes),
-        nodes(_nodes)
-    {}
-
-    __device__
-    vector operator()(const faceData& face)
-    {
-        return face.centre(faceNodes,nodes);
-    }   
-};
-
-}
-
 void Foam::movingWallVelocityFvPatchVectorField::updateCoeffs()
 {
     if (updated())
@@ -149,7 +124,7 @@ void Foam::movingWallVelocityFvPatchVectorField::updateCoeffs()
             faces.begin(),
             faces.end(),
             oldFc.begin(),
-            movingWallUpdateFunctor
+            faceCentreFunctor
             (
                 faceNodes.data(),
                 oldPoints.data()

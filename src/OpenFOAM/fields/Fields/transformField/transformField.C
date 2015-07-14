@@ -137,8 +137,13 @@ void Foam::transform
 )
 {
     tensor t = q.R();
-    thrust::transform(tf.begin(),tf.end(),rtf.begin(),
-                transformBinaryFunctionSFFunctor<tensor,vector,vector>(t));
+    thrust::transform
+    (
+        tf.begin(),
+        tf.end(),
+        rtf.begin(),
+        transformBinaryFunctionSFFunctor<tensor,vector,vector>(t)
+    );
 }
 
 
@@ -190,8 +195,13 @@ void Foam::transform
     {
         if (mag(T) > VSMALL)
         {
-            thrust::transform(tf.begin(),tf.end(),rtf.begin(),
-                    addOperatorSFFunctor<vector,vector,vector>(T));
+            thrust::transform
+            (
+                tf.begin(),
+                tf.end(),
+                rtf.begin(),
+                addOperatorSFFunctor<vector,vector,vector>(T)
+            );
         }
         else
         {

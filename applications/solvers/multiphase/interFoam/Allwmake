@@ -3,7 +3,7 @@ cd ${0%/*} || exit 1    # run from this directory
 set -x
 
 wmake
-#wmake interDyMFoam
+wmake interDyMFoam
 wmake porousInterFoam
 #wmake LTSInterFoam
 #wmake interMixingFoam

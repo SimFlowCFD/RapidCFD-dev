@@ -40,7 +40,7 @@ __HOST____DEVICE__
 inline Foam::septernion::septernion(const vector& t)
 :
     t_(t),
-    r_(0, vector(0, 0, 0))
+    r_(1, vector(0, 0, 0))
 {}
 
 __HOST____DEVICE__

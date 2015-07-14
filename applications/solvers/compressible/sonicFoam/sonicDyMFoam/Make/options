@@ -23,6 +23,5 @@ EXE_LIBS = \
     -lsampling \
     -lfvOptions \
     -ldynamicFvMesh \
-    -ltopoChangerFvMesh \
     -ldynamicMesh \
     -lmeshTools

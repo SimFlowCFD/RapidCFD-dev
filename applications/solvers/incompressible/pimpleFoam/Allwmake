@@ -4,6 +4,6 @@ set -x
 
 wmake
 wmake SRFPimpleFoam
-#wmake pimpleDyMFoam
+wmake pimpleDyMFoam
 
 # ----------------------------------------------------------------- end-of-file

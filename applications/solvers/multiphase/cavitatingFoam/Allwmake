@@ -3,6 +3,6 @@ cd ${0%/*} || exit 1    # run from this directory
 set -x
 
 wmake
-#wmake cavitatingDyMFoam
+wmake cavitatingDyMFoam
 
 # ----------------------------------------------------------------- end-of-file

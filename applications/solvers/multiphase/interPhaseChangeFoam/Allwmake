@@ -4,6 +4,6 @@ set -x
 
 wmake libso phaseChangeTwoPhaseMixtures
 wmake
-#wmake interPhaseChangeDyMFoam
+wmake interPhaseChangeDyMFoam
 
 # ----------------------------------------------------------------- end-of-file

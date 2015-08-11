@@ -39,8 +39,8 @@ wmake $makeType genericPatchFields
 
 wmake $makeType sampling
 
-#wmake $makeType dynamicMesh
-#wmake $makeType dynamicFvMesh
+wmake $makeType dynamicMesh
+wmake $makeType dynamicFvMesh
 
 thermophysicalModels/Allwmake $*
 transportModels/Allwmake $*
@@ -48,7 +48,7 @@ turbulenceModels/Allwmake $*
 TurbulenceModels/Allwmake $*
 #regionModels/Allwmake $*
 
-#wmake $makeType fvMotionSolver
+wmake $makeType fvMotionSolver
 
 wmake $makeType fvOptions
 
@@ -56,6 +56,6 @@ wmake $makeType fvOptions
 
 postProcessing/Allwmake $*
 
-#wmake $makeType sixDoFRigidBodyMotion
+wmake $makeType sixDoFRigidBodyMotion
 
 # ----------------------------------------------------------------- end-of-file

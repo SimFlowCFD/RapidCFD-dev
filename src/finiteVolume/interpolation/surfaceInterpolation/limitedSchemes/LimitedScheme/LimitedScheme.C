@@ -31,24 +31,29 @@ License
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 namespace Foam
 {
-	template<class Limiter,class phiType, class gradPhiType>
-	struct LimitedSchemeCalcLimiterFunctor{
-		const Limiter limiter;
-		LimitedSchemeCalcLimiterFunctor(const Limiter& _limiter):limiter(_limiter){}
-		__HOST____DEVICE__
-		scalar operator()(const scalar& w, const thrust::tuple<scalar,phiType,phiType,gradPhiType,gradPhiType,vector,vector>& t){
-			return limiter.limiter
-			(
-				w,
-				thrust::get<0>(t),
-				thrust::get<1>(t),
-				thrust::get<2>(t),
-				thrust::get<3>(t),
-				thrust::get<4>(t),
-				thrust::get<5>(t) - thrust::get<6>(t)
-			);
-		}
-	};
+    template<class Limiter,class phiType, class gradPhiType>
+    struct LimitedSchemeCalcLimiterFunctor
+    {
+        const Limiter limiter;
+
+        LimitedSchemeCalcLimiterFunctor(const Limiter& _limiter):limiter(_limiter){}
+
+        template<class Tuple>
+        __HOST____DEVICE__
+        scalar operator()(const scalar& w, const Tuple& t)
+	{
+            return limiter.limiter
+            (
+                w,
+                thrust::get<0>(t),
+                thrust::get<1>(t),
+                thrust::get<2>(t),
+                thrust::get<3>(t),
+                thrust::get<4>(t),
+                thrust::get<5>(t) - thrust::get<6>(t)
+            );
+        }
+    };
 }
 
 template<class Type, class Limiter, template<class> class LimitFunc>
@@ -80,38 +85,56 @@ void Foam::LimitedScheme<Type, Limiter, LimitFunc>::calcLimiter
 
     scalargpuField& pLim = limiterField.internalField();
     
-    thrust::transform(CDweights.getField().begin(),
-                      CDweights.getField().end(),
-                      thrust::make_zip_iterator(thrust::make_tuple(this->faceFlux_.getField().begin(),
-                                                                   thrust::make_permutation_iterator(lPhi.getField().begin(),owner.begin()),
-                                                                   thrust::make_permutation_iterator(lPhi.getField().begin(),neighbour.begin()),
-                                                                   thrust::make_permutation_iterator(gradc.getField().begin(),owner.begin()),
-                                                                   thrust::make_permutation_iterator(gradc.getField().begin(),neighbour.begin()),
-                                                                   thrust::make_permutation_iterator(C.begin(),neighbour.begin()),
-                                                                   thrust::make_permutation_iterator(C.begin(),owner.begin())
-                                                                   )),
-                      pLim.begin(),
-                      LimitedSchemeCalcLimiterFunctor<Limiter,
-                                                      typename Limiter::phiType,
-                                                      typename Limiter::gradPhiType>(static_cast<const Limiter&>(*this)));
-/*
-    forAll(pLim, face)
-    {
-        label own = owner[face];
-        label nei = neighbour[face];
-
-        pLim[face] = Limiter::limiter
+    thrust::transform
+    (
+        CDweights.getField().begin(),
+        CDweights.getField().end(),
+        thrust::make_zip_iterator(thrust::make_tuple
         (
-            CDweights[face],
-            this->faceFlux_[face],
-            lPhi[own],
-            lPhi[nei],
-            gradc[own],
-            gradc[nei],
-            C[nei] - C[own]
-        );
-    }
-*/
+            this->faceFlux_.getField().begin(),
+            thrust::make_permutation_iterator
+            (
+                lPhi.getField().begin(),
+                owner.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                lPhi.getField().begin(),
+                neighbour.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                gradc.getField().begin(),
+                owner.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                gradc.getField().begin(),
+                neighbour.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                C.begin(),
+                neighbour.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                C.begin(),
+                owner.begin()
+            )
+        )),
+        pLim.begin(),
+        LimitedSchemeCalcLimiterFunctor
+        <
+            Limiter,
+            typename Limiter::phiType,
+            typename Limiter::gradPhiType
+        >
+        (
+            static_cast<const Limiter&>(*this)
+        )
+    );
+
     surfaceScalarField::GeometricBoundaryField& bLim =
         limiterField.boundaryField();
 
@@ -144,35 +167,32 @@ void Foam::LimitedScheme<Type, Limiter, LimitFunc>::calcLimiter
 
             // Build the d-vectors
             vectorgpuField pd(CDweights.boundaryField()[patchi].patch().delta());
-/*
-            forAll(pLim, face)
-            {
-                pLim[face] = Limiter::limiter
+
+            thrust::transform
+            (
+                pCDweights.begin(),
+                pCDweights.end(),
+                thrust::make_zip_iterator(thrust::make_tuple
                 (
-                    pCDweights[face],
-                    pFaceFlux[face],
-                    plPhiP[face],
-                    plPhiN[face],
-                    pGradcP[face],
-                    pGradcN[face],
-                    pd[face]
-                );
-            }
-*/
-            thrust::transform(pCDweights.begin(),
-                      pCDweights.end(),
-                      thrust::make_zip_iterator(thrust::make_tuple(pFaceFlux.begin(),
-                                                                   plPhiP.begin(),
-                                                                   plPhiN.begin(),
-                                                                   pGradcP.begin(),
-                                                                   pGradcN.begin(),
-                                                                   pd.begin(),
-                                                                   thrust::make_constant_iterator(vector(0,0,0))
-                                                                   )),
-                      pLim.begin(),
-                      LimitedSchemeCalcLimiterFunctor<Limiter,
-                                                      typename Limiter::phiType,
-                                                      typename Limiter::gradPhiType>(static_cast<const Limiter&>(*this)));
+                    pFaceFlux.begin(),
+                    plPhiP.begin(),
+                    plPhiN.begin(),
+                    pGradcP.begin(),
+                    pGradcN.begin(),
+                    pd.begin(),
+                    thrust::make_constant_iterator(vector(0,0,0))
+                )),
+                pLim.begin(),
+                LimitedSchemeCalcLimiterFunctor
+                <
+                    Limiter,
+                    typename Limiter::phiType,
+                    typename Limiter::gradPhiType
+                >
+                (
+                    static_cast<const Limiter&>(*this)
+                )
+            );
         }
         else
         {

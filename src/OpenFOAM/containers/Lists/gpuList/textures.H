@@ -9,9 +9,12 @@ template<class T>
 struct textures
 {
 private:
-    cudaTextureObject_t tex;
-
+#if __CUDA_ARCH__ >= 300
+	cudaTextureObject_t tex;
     inline void initResourceDesc(cudaResourceDesc& resDesc);
+#else
+    T *tex;
+#endif
     void init(int n, T* data);
 
 public:
@@ -31,18 +34,25 @@ public:
 
     void destroy()
     {
+#if __CUDA_ARCH__ >= 300
         cudaDestroyTextureObject(tex);
+#else
+        delete tex;
+#endif
     }
 };
 
+#if __CUDA_ARCH__ >= 300
 template<class T>
 inline void textures<T>::initResourceDesc(cudaResourceDesc& resDesc)
 {
 }
+#endif
 
 template<class T>
 inline void textures<T>::init(int n, T* data)
 {
+#if __CUDA_ARCH__ >= 300
     cudaResourceDesc resDesc;
     memset(&resDesc, 0, sizeof(cudaResourceDesc));
    
@@ -57,15 +67,18 @@ inline void textures<T>::init(int n, T* data)
     texDesc.readMode = cudaReadModeElementType;
 
     cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
+#else
+    tex = data;
+#endif
 }
 
+#if __CUDA_ARCH__ >= 300
 template<>
 inline void textures<float>::initResourceDesc(cudaResourceDesc& resDesc)
 {
     resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
     resDesc.res.linear.desc.x = 32; 
 }
-
 
 template<>
 inline void textures<int>::initResourceDesc(cudaResourceDesc& resDesc)
@@ -81,24 +94,37 @@ inline void textures<double>::initResourceDesc(cudaResourceDesc& resDesc)
     resDesc.res.linear.desc.x = 32; 
     resDesc.res.linear.desc.y = 32; 
 }
+#endif
 
 template<>
 inline __device__ float textures<float>::operator[](const int& i) const
 {
+#if __CUDA_ARCH__ >= 300
     return tex1Dfetch<float>(tex, i);
+#else
+    return tex[i];
+#endif
 }
 
 template<>
 inline __device__ int textures<int>::operator[](const int& i) const
 {
+#if __CUDA_ARCH__ >= 300
     return tex1Dfetch<int>(tex, i);
+#else
+    return tex[i];
+#endif
 }
 
 template<>
 inline __device__ double textures<double>::operator[](const int& i) const
 {
+#if __CUDA_ARCH__ >= 300
     int2 v = tex1Dfetch<int2>(tex, i);
     return __hiloint2double(v.y, v.x);
+#else
+    return tex[i];
+#endif
 }
 
 }

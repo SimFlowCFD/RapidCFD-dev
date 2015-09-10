@@ -10,7 +10,7 @@ struct textures
 {
 private:
 #if __CUDA_ARCH__ >= 300
-	cudaTextureObject_t tex;
+    cudaTextureObject_t tex;
     inline void initResourceDesc(cudaResourceDesc& resDesc);
 #else
     T *tex;
@@ -36,8 +36,6 @@ public:
     {
 #if __CUDA_ARCH__ >= 300
         cudaDestroyTextureObject(tex);
-#else
-        delete tex;
 #endif
     }
 };
@@ -47,6 +45,53 @@ template<class T>
 inline void textures<T>::initResourceDesc(cudaResourceDesc& resDesc)
 {
 }
+
+template<>
+inline void textures<float>::initResourceDesc(cudaResourceDesc& resDesc)
+{
+	resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
+	resDesc.res.linear.desc.x = 32;
+}
+
+template<>
+inline void textures<int>::initResourceDesc(cudaResourceDesc& resDesc)
+{
+	resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
+	resDesc.res.linear.desc.x = 32;
+}
+
+template<>
+inline void textures<double>::initResourceDesc(cudaResourceDesc& resDesc)
+{
+	resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
+	resDesc.res.linear.desc.x = 32;
+	resDesc.res.linear.desc.y = 32;
+}
+
+template<>
+inline __device__ float textures<float>::operator[](const int& i) const
+{
+	return tex1Dfetch<float>(tex, i);
+}
+
+template<>
+inline __device__ int textures<int>::operator[](const int& i) const
+{
+	return tex1Dfetch<int>(tex, i);
+}
+
+template<>
+inline __device__ double textures<double>::operator[](const int& i) const
+{
+	int2 v = tex1Dfetch<int2>(tex, i);
+	return __hiloint2double(v.y, v.x);
+}
+#else
+template<class T>
+inline __device__ T textures<T>::operator[](const int& i) const
+{
+	return tex[i];
+}
 #endif
 
 template<class T>
@@ -55,12 +100,12 @@ inline void textures<T>::init(int n, T* data)
 #if __CUDA_ARCH__ >= 300
     cudaResourceDesc resDesc;
     memset(&resDesc, 0, sizeof(cudaResourceDesc));
-   
+
     resDesc.resType = cudaResourceTypeLinear;
     resDesc.res.linear.devPtr = data;
     resDesc.res.linear.sizeInBytes = n*sizeof(T);
 
-    initResourceDesc(resDesc); 
+    initResourceDesc(resDesc);
 
     cudaTextureDesc texDesc;
     memset(&texDesc, 0, sizeof(cudaTextureDesc));
@@ -69,61 +114,6 @@ inline void textures<T>::init(int n, T* data)
     cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
 #else
     tex = data;
-#endif
-}
-
-#if __CUDA_ARCH__ >= 300
-template<>
-inline void textures<float>::initResourceDesc(cudaResourceDesc& resDesc)
-{
-    resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
-    resDesc.res.linear.desc.x = 32; 
-}
-
-template<>
-inline void textures<int>::initResourceDesc(cudaResourceDesc& resDesc)
-{
-    resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
-    resDesc.res.linear.desc.x = 32; 
-}
-
-template<>
-inline void textures<double>::initResourceDesc(cudaResourceDesc& resDesc)
-{
-    resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
-    resDesc.res.linear.desc.x = 32; 
-    resDesc.res.linear.desc.y = 32; 
-}
-#endif
-
-template<>
-inline __device__ float textures<float>::operator[](const int& i) const
-{
-#if __CUDA_ARCH__ >= 300
-    return tex1Dfetch<float>(tex, i);
-#else
-    return tex[i];
-#endif
-}
-
-template<>
-inline __device__ int textures<int>::operator[](const int& i) const
-{
-#if __CUDA_ARCH__ >= 300
-    return tex1Dfetch<int>(tex, i);
-#else
-    return tex[i];
-#endif
-}
-
-template<>
-inline __device__ double textures<double>::operator[](const int& i) const
-{
-#if __CUDA_ARCH__ >= 300
-    int2 v = tex1Dfetch<int2>(tex, i);
-    return __hiloint2double(v.y, v.x);
-#else
-    return tex[i];
 #endif
 }
 

@@ -24,6 +24,45 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "directAMI.H"
+#include "primitiveFieldsFwd.H"
+#include "pointFieldFwd.H"
+#include "faceData.H"
+
+namespace Foam {
+    struct ShootRayFunctor : public std::binary_function<label, label, void> {
+        const pointField *tgtPoints;
+        const pointField *srcPoints;
+        const vectorField *srcCf;
+        const faceData *tgtFaces;
+        const faceData *srcFaces;
+
+        ShootRayFunctor
+        (
+        const pointField *_tgtPoints,
+        const pointField *_srcPoints,
+        const vectorField *_srcCf,
+        const faceData *_tgtFaces,
+        const faceData *_srcFaces
+        ) :
+        tgtPoints(_tgtPoints),
+        srcPoints(_srcPoints),
+        srcCf(_srcCf),
+        tgtFaces(_tgtFaces),
+        srcFaces(_srcFaces)
+        {}
+
+        __HOST____DEVICE__
+        void operator()(const label& tgtI, const label& srcI) {
+            pointHit ray = tgtFaces[tgtI].ray(srcCf[srcI], srcFaces[srcI].normal(srcPoints), tgtPoints);
+            if (ray.hit()) {
+                // found an intersection !
+                // Doesn't work currently since the "ray" method is
+                // commented out in faceData.H
+                // We should update the addressing here.
+            }
+        }
+    };
+}
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -323,5 +362,76 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
     }
 }
 
+template<class SourcePatch, class TargetPatch>
+void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
+(
+    labelListList& srcAddress,
+    scalarListList& srcWeights,
+    labelListList& tgtAddress,
+    scalarListList& tgtWeights
+)
+{
+    this->checkPatches();
 
+    // set initial sizes for weights and addressing
+    srcAddress.setSize(this->srcPatch_.size());
+    srcWeights.setSize(this->srcPatch_.size());
+    tgtAddress.setSize(this->tgtPatch_.size());
+    tgtWeights.setSize(this->tgtPatch_.size());
+
+    // check that patch sizes are valid
+    if (!this->srcPatch_.size())
+    {
+        return;
+    }
+    else if (!this->tgtPatch_.size())
+    {
+        WarningIn
+            (
+                "void Foam::AMIMethod<SourcePatch, TargetPatch>::initialise"
+                    "("
+                    "labelListList&, "
+                    "scalarListList&, "
+                    "labelListList&, "
+                    "scalarListList&, "
+                    "label&, "
+                    "label&"
+                    ")"
+            )
+        << this->srcPatch_.size() << " source faces but no target faces" << endl;
+
+        return;
+    }
+
+    const vectorgpuField& srcCf = this->srcPatch_.getFaceCentres();
+
+    // Is this correct? How do we get the list of points?
+    const pointgpuField& tgtPoints = this->tgtPatch_.getLocalPoints();
+    const pointgpuField& srcPoints = this->srcPatch_.getLocalPoints();
+
+    // Is this correct? How do we get the list of "face"s correctly?
+    const faceDatagpuList& tgtFaces = this->tgtPatch_.getFaces();
+    const faceDatagpuList& srcFaces = this->srcPatch_.getFaces();
+
+    for(int i = 0; i < srcFaces.size(); ++i)
+    {
+        thrust::counting_iterator<unsigned> tgtStart(0);
+        thrust::counting_iterator<unsigned> tgtEnd = tgtStart + tgtFaces.size();
+        thrust::constant_iterator<unsigned> srcStart(i);
+        thrust::transform
+        (
+            tgtStart,
+            tgtEnd,
+            srcStart,
+            ShootRayFunctor
+            (
+                tgtPoints.data(),
+                srcPoints.data(),
+                srcCf.data(),
+                tgtFaces.data(),
+                srcFaces.data()
+            )
+        );
+    }
+}
 // ************************************************************************* //

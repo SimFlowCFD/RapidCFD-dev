@@ -179,6 +179,7 @@ private:
 
         //- Face centres
         mutable Field<PointType>* faceCentresPtr_;
+        mutable gpuField<PointType> gpuFaceCentresPtr_;
 
         //- Face unit normals
         mutable Field<PointType>* faceNormalsPtr_;
@@ -361,7 +362,6 @@ public:
             //- Return patch faces addressing into local point list
             const List<Face>& localFaces() const;
 
-
         // Addressing into mesh
 
             //- Return face-node addressing on GPU
@@ -414,6 +414,7 @@ public:
 
             //- Return face centres for patch
             const Field<PointType>& faceCentres() const;
+            const gpuField<PointType>& getFaceCentres() const;
 
             //- Return face normals for patch
             const Field<PointType>& faceNormals() const;

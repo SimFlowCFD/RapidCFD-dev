@@ -63,7 +63,6 @@ PrimitivePatch
     gpuLocalPointsPtr_(NULL),
     localPointOrderPtr_(NULL),
     faceCentresPtr_(NULL),
-    gpuFaceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
     gpuFacesPtr_(NULL),
@@ -108,7 +107,6 @@ PrimitivePatch
     gpuLocalPointsPtr_(NULL),
     localPointOrderPtr_(NULL),
     faceCentresPtr_(NULL),
-    gpuFaceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
     gpuFacesPtr_(NULL),
@@ -154,7 +152,6 @@ PrimitivePatch
     gpuLocalPointsPtr_(NULL),
     localPointOrderPtr_(NULL),
     faceCentresPtr_(NULL),
-    gpuFaceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
     gpuFacesPtr_(NULL),
@@ -199,7 +196,6 @@ PrimitivePatch
     gpuLocalPointsPtr_(NULL),
     localPointOrderPtr_(NULL),
     faceCentresPtr_(NULL),
-    gpuFaceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
     gpuFacesPtr_(NULL),
@@ -656,24 +652,6 @@ faceCentres() const
     return *faceCentresPtr_;
 }
 
-template
-<
-    class Face,
-    template<class> class FaceList,
-    class PointField,
-    class PointType
->
-const Foam::gpuField<PointType>&
-Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
-getFaceCentres() const
-{
-    if (!gpuFaceCentresPtr_)
-    {
-        gpuFaceCentresPtr_ = new gpuField<PointType>(calcFaceCentres());
-    }
-
-    return *gpuFaceCentresPtr_;
-}
 
 template
 <

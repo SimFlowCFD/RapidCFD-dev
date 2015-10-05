@@ -179,7 +179,6 @@ private:
 
         //- Face centres
         mutable Field<PointType>* faceCentresPtr_;
-        mutable gpuField<PointType> gpuFaceCentresPtr_;
 
         //- Face unit normals
         mutable Field<PointType>* faceNormalsPtr_;

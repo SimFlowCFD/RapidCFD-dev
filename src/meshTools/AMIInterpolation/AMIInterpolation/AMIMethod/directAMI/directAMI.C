@@ -30,17 +30,17 @@ License
 
 namespace Foam {
     struct ShootRayFunctor : public std::binary_function<label, label, void> {
-        const pointField *tgtPoints;
-        const pointField *srcPoints;
-        const vectorField *srcCf;
+        const point *tgtPoints;
+        const point *srcPoints;
+        const vector *srcCf;
         const faceData *tgtFaces;
         const faceData *srcFaces;
 
         ShootRayFunctor
         (
-        const pointField *_tgtPoints,
-        const pointField *_srcPoints,
-        const vectorField *_srcCf,
+        const point *_tgtPoints,
+        const point *_srcPoints,
+        const vector *_srcCf,
         const faceData *_tgtFaces,
         const faceData *_srcFaces
         ) :

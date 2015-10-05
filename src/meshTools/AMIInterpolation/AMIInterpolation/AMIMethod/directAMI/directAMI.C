@@ -405,9 +405,8 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
 
     const vectorgpuField& srcCf = this->srcPatch_.getFaceCentres();
 
-    // Is this correct? How do we get the list of points?
-    const pointgpuField& tgtPoints = this->tgtPatch_.getLocalPoints();
-    const pointgpuField& srcPoints = this->srcPatch_.getLocalPoints();
+    const pointgpuField& tgtPoints = this->tgtPatch_.getPoints();
+    const pointgpuField& srcPoints = this->srcPatch_.getPoints();
 
     // Is this correct? How do we get the list of "face"s correctly?
     const faceDatagpuList& tgtFaces = this->tgtPatch_.getFaces();

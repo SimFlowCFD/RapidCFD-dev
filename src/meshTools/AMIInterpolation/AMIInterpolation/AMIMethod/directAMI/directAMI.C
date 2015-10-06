@@ -27,6 +27,8 @@ License
 #include "primitiveFieldsFwd.H"
 #include "pointFieldFwd.H"
 #include "faceData.H"
+#include "primitiveFieldsFwd.H"
+#include "faceFunctors.H"
 
 namespace Foam {
     struct ShootRayFunctor : public std::binary_function<label, label, void> {
@@ -53,7 +55,7 @@ namespace Foam {
 
         __HOST____DEVICE__
         void operator()(const label& tgtI, const label& srcI) {
-            pointHit ray = tgtFaces[tgtI].ray(srcCf[srcI], srcFaces[srcI].normal(srcPoints), tgtPoints);
+            pointHit ray; //= tgtFaces[tgtI].ray(srcCf[srcI], srcFaces[srcI].normal(srcPoints), tgtPoints);
             if (ray.hit()) {
                 // found an intersection !
                 // Doesn't work currently since the "ray" method is
@@ -403,14 +405,27 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
         return;
     }
 
-    const vectorgpuField& srcCf = this->srcPatch_.getFaceCentres();
-
     const pointgpuField& tgtPoints = this->tgtPatch_.getPoints();
     const pointgpuField& srcPoints = this->srcPatch_.getPoints();
 
-    // Is this correct? How do we get the list of "face"s correctly?
     const faceDatagpuList& tgtFaces = this->tgtPatch_.getFaces();
     const faceDatagpuList& srcFaces = this->srcPatch_.getFaces();
+
+    //const vectorField& srcCf = this->srcPatch_.FaceCentres();
+    vectorgpuField srcCf(srcFaces.size());
+
+    thrust::transform
+    (
+        srcFaces.begin(),
+        srcFaces.end(),
+        srcCf.begin(),
+        faceCentreFunctor
+        (
+            this->srcPatch_.getFaceNodes().data(),
+            srcPoints.data()
+        )
+    );
+
 
     for(int i = 0; i < srcFaces.size(); ++i)
     {

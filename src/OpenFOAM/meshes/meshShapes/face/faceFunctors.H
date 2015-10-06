@@ -1,4 +1,5 @@
 #include "vector.H"
+#include "intersection.H"
 
 namespace Foam
 {
@@ -155,6 +156,126 @@ struct faceSweptVolFunctor
         );
 
         return sv;
+    }
+};
+
+struct faceRayFunctor
+{
+    const point* meshPoints;
+    const intersection::algorithm alg;
+    const intersection::direction dir;
+
+    faceRayFunctor
+    (
+        const point* _meshPoints,
+        const intersection::algorithm _alg,
+        const intersection::direction _dir
+    ):
+        meshPoints(_meshPoints),
+        alg(_alg),
+        dir(_dir)
+    {}
+
+    __host__ __device__
+    pointHit operator(const faceData& tgtFace, const point& p, const vector& n)
+    {
+        const label start = tgtFace.start();
+        const label nPoints = tgtFace.size();
+
+        // If the face is a triangle, do a direct calculation
+        if (nPoints == 3)
+        {
+            // TODO: Port this function to GPU
+            return triPointRef
+            (
+                meshPoints[start],
+                meshPoints[start + 1],
+                meshPoints[start + 2]
+            ).ray(p, n, alg, dir);
+        }
+
+        // Store the points belonging to the tgtFace
+        pointField facePoints(tgtFace.size());
+        // Copy the points belonging to tgtFace into facePoints
+        tgtFace.points(meshPoints, facePoints);
+
+        // I guess this is different from the return value of faceData::centre()
+        // Otherwise, we could just use faceData::centre() here
+        point ctr = Foam::average(facePoints);
+
+        scalar nearestHitDist = GREAT;
+
+        scalar nearestMissDist = GREAT;
+        bool eligible = false;
+
+        // Initialize to miss, distance = GREAT
+        pointHit nearest(p);
+
+        point nextPoint = ctr;
+
+        for (label pI = 0; pI < nPoints; pI++)
+        {
+            // Replace the original line : nextPoint = meshPoints[f[fcIndex(pI)]];
+            // with the following line.
+            nextPoint = meshPoints[start + (pI + 1) % nPoints];
+
+            // Note: for best accuracy, centre point always comes last
+            //
+            pointHit curHit = triPointRef
+            (
+                // Replaced the original line : meshPoints[f[pI]],
+                // with the following
+                meshPoints[start + pI],
+                nextPoint,
+                ctr
+            ).ray(p, n, alg, dir);
+
+            if (curHit.hit())
+            {
+                if (Foam::mag(curHit.distance()) < Foam::mag(nearestHitDist))
+                {
+                    nearestHitDist = curHit.distance();
+                    nearest.setHit();
+                    nearest.setPoint(curHit.hitPoint());
+                }
+            }
+            else if (!nearest.hit())
+            {
+                // Miss and no hit yet. Update miss statistics.
+                if (curHit.eligibleMiss())
+                {
+                    eligible = true;
+
+                    // Miss distance is the distance between the plane intersection
+                    // point and the nearest point of the triangle
+                    scalar missDist =
+                    Foam::mag
+                    (
+                    p + curHit.distance()*n
+                    - curHit.missPoint()
+                    );
+
+                    if (missDist < nearestMissDist)
+                    {
+                        nearestMissDist = missDist;
+                        nearest.setDistance(curHit.distance());
+                        nearest.setPoint(curHit.missPoint());
+                    }
+                }
+            }
+        }
+
+        if (nearest.hit())
+        {
+            nearest.setDistance(nearestHitDist);
+        }
+        else
+        {
+            // Haven't hit a single face triangle
+            nearest.setMiss(eligible);
+        }
+
+        return nearest;
     }
 };
 

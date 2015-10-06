@@ -40,17 +40,17 @@ namespace Foam {
 
         ShootRayFunctor
         (
-        const point *_tgtPoints,
-        const point *_srcPoints,
-        const vector *_srcCf,
-        const faceData *_tgtFaces,
-        const faceData *_srcFaces
+            const point *_tgtPoints,
+            const point *_srcPoints,
+            const vector *_srcCf,
+            const faceData *_tgtFaces,
+            const faceData *_srcFaces
         ) :
-        tgtPoints(_tgtPoints),
-        srcPoints(_srcPoints),
-        srcCf(_srcCf),
-        tgtFaces(_tgtFaces),
-        srcFaces(_srcFaces)
+            tgtPoints(_tgtPoints),
+            srcPoints(_srcPoints),
+            srcCf(_srcCf),
+            tgtFaces(_tgtFaces),
+            srcFaces(_srcFaces)
         {}
 
         __HOST____DEVICE__

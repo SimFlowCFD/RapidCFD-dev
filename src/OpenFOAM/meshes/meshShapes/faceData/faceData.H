@@ -118,6 +118,9 @@ public:
              return start_;
         }
 
+        //- Return the points corresponding to this face
+        inline void points(const point* meshPoints, point* facePoints) const;
+
         //- Centre point of face
         __HOST____DEVICE__
         point centre(const label*, const point*) const;

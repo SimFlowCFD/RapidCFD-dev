@@ -185,7 +185,6 @@ struct faceRayFunctor
         // If the face is a triangle, do a direct calculation
         if (nPoints == 3)
         {
-            // TODO: Port this function to GPU
             return triPointRef
             (
                 meshPoints[start],

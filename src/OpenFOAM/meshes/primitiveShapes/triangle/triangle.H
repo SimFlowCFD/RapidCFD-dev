@@ -194,6 +194,7 @@ public:
             //  In case of miss pointHit is set to nearest point
             //  on triangle and its distance to the distance between
             //  the original point and the plane intersection point
+            __HOST____DEVICE__
             inline pointHit ray
             (
                 const point& p,
@@ -207,6 +208,7 @@ public:
             //  intersection=p+t*q. Only defined for VISIBLE, FULL_RAY or
             //  HALF_RAY. tol increases the virtual size of the triangle
             // by a relative factor.
+            __HOST____DEVICE__
             inline pointHit intersection
             (
                 const point& p,

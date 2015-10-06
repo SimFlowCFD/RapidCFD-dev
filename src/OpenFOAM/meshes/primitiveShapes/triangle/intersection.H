@@ -77,12 +77,15 @@ public:
     // Static Member Functions
 
         //- Direction names
+        __HOST____DEVICE__
         static const NamedEnum<direction, 2> directionNames_;
 
         //- Projection algorithm names
+        __HOST____DEVICE__
         static const NamedEnum<algorithm, 3> algorithmNames_;
 
         //- Return planar tolerance
+        __HOST____DEVICE__
         static scalar planarTol()
         {
             return planarTol_;

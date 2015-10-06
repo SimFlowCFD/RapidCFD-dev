@@ -320,6 +320,7 @@ Foam::scalar Foam::triangle<Point, PointRef>::barycentric
 
 
 template<class Point, class PointRef>
+__HOST____DEVICE__
 inline Foam::pointHit Foam::triangle<Point, PointRef>::ray
 (
     const point& p,
@@ -436,6 +437,7 @@ inline Foam::pointHit Foam::triangle<Point, PointRef>::ray
 // From "Fast, Minimum Storage Ray/Triangle Intersection"
 // Moeller/Trumbore.
 template<class Point, class PointRef>
+__HOST____DEVICE__
 inline Foam::pointHit Foam::triangle<Point, PointRef>::intersection
 (
     const point& orig,

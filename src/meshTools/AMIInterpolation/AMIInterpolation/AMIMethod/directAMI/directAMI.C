@@ -37,6 +37,7 @@ namespace Foam {
         const vector *srcCf;
         const faceData *tgtFaces;
         const faceData *srcFaces;
+        faceRayFunctor ray;
 
         ShootRayFunctor
         (
@@ -50,13 +51,13 @@ namespace Foam {
             srcPoints(_srcPoints),
             srcCf(_srcCf),
             tgtFaces(_tgtFaces),
-            srcFaces(_srcFaces)
+            srcFaces(_srcFaces),
+            ray(_tgtPoints)
         {}
 
         __HOST____DEVICE__
         void operator()(const label& tgtI, const label& srcI) {
-            pointHit ray; //= tgtFaces[tgtI].ray(srcCf[srcI], srcFaces[srcI].normal(srcPoints), tgtPoints);
-            if (ray.hit()) {
+            if (ray(tgtFaces[tgtI], srcCf[srcI], srcFaces[srcI].normal(srcPoints)).hit()) {
                 // found an intersection !
                 // Doesn't work currently since the "ray" method is
                 // commented out in faceData.H

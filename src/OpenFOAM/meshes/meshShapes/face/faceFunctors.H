@@ -177,7 +177,7 @@ struct faceRayFunctor
     {}
 
     __host__ __device__
-    pointHit operator(const faceData& tgtFace, const point& p, const vector& n)
+    pointHit operator()(const faceData& tgtFace, const point& p, const vector& n)
     {
         const label start = tgtFace.start();
         const label nPoints = tgtFace.size();
@@ -197,7 +197,7 @@ struct faceRayFunctor
         // Store the points belonging to the tgtFace
         pointField facePoints(tgtFace.size());
         // Copy the points belonging to tgtFace into facePoints
-        tgtFace.points(meshPoints, facePoints);
+        tgtFace.points(meshPoints, facePoints.data());
 
         // I guess this is different from the return value of faceData::centre()
         // Otherwise, we could just use faceData::centre() here

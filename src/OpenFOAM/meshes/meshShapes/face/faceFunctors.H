@@ -194,13 +194,11 @@ struct faceRayFunctor
         }
 
         point ctr(0, 0, 0);
-
         for (unsigned i = 0; i < tgtFace.size(); i++)
         {
             ctr += meshPoints[start + i];
         }
-
-        ctr = ctr/((double) tgtFace.size());
+        ctr /= tgtFace.size();
 
         scalar nearestHitDist = GREAT;
 
@@ -244,11 +242,11 @@ struct faceRayFunctor
                     // Miss distance is the distance between the plane intersection
                     // point and the nearest point of the triangle
                     scalar missDist =
-                    Foam::mag
-                    (
-                    p + curHit.distance()*n
-                    - curHit.missPoint()
-                    );
+                        Foam::mag
+                        (
+                            p + curHit.distance()*n
+                            - curHit.missPoint()
+                        );
 
                     if (missDist < nearestMissDist)
                     {
@@ -274,4 +272,59 @@ struct faceRayFunctor
     }
 };
 
+struct faceNormalFunctor
+{
+    const point* meshPoints;
+
+    faceNormalFunctor
+    (
+        const point* _meshPoints
+    ):
+        meshPoints(_meshPoints)
+    {}
+
+    __host__ __device__
+    vector operator()(const faceData& face)
+    {
+        const label start = face.start();
+        const label nPoints = face.size();
+
+        if (nPoints == 3)
+        {
+            return triPointRef
+            (
+                meshPoints[start],
+                meshPoints[start + 1],
+                meshPoints[start + 2]
+            ).normal();
+        }
+
+        label pI;
+
+        point centrePoint(0,0,0);
+        for (pI = 0; pI < nPoints; ++pI)
+        {
+            centrePoint += meshPoints[start + pI];
+        }
+        centrePoint /= nPoints;
+
+        vector n(0,0,0);
+
+        point nextPoint = centrePoint;
+
+        for (pI = 0; pI < nPoints; ++pI)
+        {
+            nextPoint = meshPoints[start + (pI + 1) % nPoints];
+
+            n += triPointRef
+            (
+                meshPoints[start + pI],
+                nextPoint,
+                centrePoint
+            ).normal();
+        }
+
+        return n;
+    }
+};
 }

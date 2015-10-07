@@ -37,7 +37,8 @@ namespace Foam {
         const vector *srcCf;
         const faceData *tgtFaces;
         const faceData *srcFaces;
-        faceRayFunctor ray;
+        faceRayFunctor rayFunctor;
+        faceNormalFunctor normalFunctor;
 
         ShootRayFunctor
         (
@@ -52,15 +53,14 @@ namespace Foam {
             srcCf(_srcCf),
             tgtFaces(_tgtFaces),
             srcFaces(_srcFaces),
-            ray(_tgtPoints, intersection::FULL_RAY, intersection::VECTOR)
+            rayFunctor(_tgtPoints, intersection::FULL_RAY, intersection::VECTOR),
+            normalFunctor(_srcPoints)
         {}
 
         __HOST____DEVICE__
         void operator()(const label& tgtI, const label& srcI) {
-            if (ray(tgtFaces[tgtI], srcCf[srcI], srcFaces[srcI].normal(srcPoints)).hit()) {
+            if (rayFunctor(tgtFaces[tgtI], srcCf[srcI], normalFunctor(srcFaces[srcI])).hit()) {
                 // found an intersection !
-                // Doesn't work currently since the "ray" method is
-                // commented out in faceData.H
                 // We should update the addressing here.
             }
         }
@@ -412,7 +412,6 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
     const faceDatagpuList& tgtFaces = this->tgtPatch_.getFaces();
     const faceDatagpuList& srcFaces = this->srcPatch_.getFaces();
 
-    //const vectorField& srcCf = this->srcPatch_.FaceCentres();
     vectorgpuField srcCf(srcFaces.size());
 
     thrust::transform

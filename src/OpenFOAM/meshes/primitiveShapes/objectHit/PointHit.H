@@ -86,7 +86,7 @@ public:
         PointHit()
         :
             hit_(false),
-            hitPoint_(vector::zero),
+            hitPoint_(vector(0, 0, 0)),
             distance_(GREAT),
             eligibleMiss_(false)
         {}

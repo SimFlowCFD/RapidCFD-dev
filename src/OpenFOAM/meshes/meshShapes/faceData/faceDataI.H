@@ -79,15 +79,6 @@ inline bool Foam::operator!=(const faceData& a, const faceData& b)
 }
 
 __HOST____DEVICE__
-inline void Foam::faceData::points(const point* meshPoints, point* facePoints) const
-{
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        facePoints[i] = meshPoints[start() + i];
-    }
-}
-
-__HOST____DEVICE__
 inline Foam::point Foam::faceData::centre(const label* labels, const point* points) const
 {
     // Calculate the centre by breaking the faceData into triangles and

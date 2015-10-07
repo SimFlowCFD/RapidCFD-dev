@@ -52,7 +52,7 @@ namespace Foam {
             srcCf(_srcCf),
             tgtFaces(_tgtFaces),
             srcFaces(_srcFaces),
-            ray(_tgtPoints)
+            ray(_tgtPoints, intersection::FULL_RAY, intersection::VECTOR)
         {}
 
         __HOST____DEVICE__

@@ -399,7 +399,12 @@ inline Foam::pointHit Foam::triangle<Point, PointRef>::ray
                 Foam::mag(E1)
             ),
             Foam::mag(c_ - b_)
-        )*intersection::planarTol();
+        )*
+        #ifndef __CUDA_ARCH__
+            intersection::planarTol();
+        #else
+            0.2;
+        #endif
 
     bool eligible =
         alg == intersection::FULL_RAY
@@ -456,7 +461,7 @@ inline Foam::pointHit Foam::triangle<Point, PointRef>::intersection
     const scalar det = edge1 & pVec;
 
     // Initialise to miss
-    pointHit intersection(false, vector::zero, GREAT, false);
+    pointHit intersection(false, vector(0,0,0), GREAT, false);
 
     if (alg == intersection::VISIBLE)
     {

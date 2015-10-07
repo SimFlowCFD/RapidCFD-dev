@@ -26,6 +26,7 @@ License
 #include "intersection.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
 Foam::scalar Foam::intersection::planarTol_ = 0.2;
 
 namespace Foam

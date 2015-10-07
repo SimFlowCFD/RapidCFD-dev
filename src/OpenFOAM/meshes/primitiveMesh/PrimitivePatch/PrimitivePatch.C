@@ -487,6 +487,7 @@ localFaces() const
     return *localFacesPtr_;
 }
 
+
 template
 <
     class Face,

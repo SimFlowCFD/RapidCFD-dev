@@ -193,14 +193,14 @@ struct faceRayFunctor
             ).ray(p, n, alg, dir);
         }
 
-        // Store the points belonging to the tgtFace
-        pointField facePoints(tgtFace.size());
-        // Copy the points belonging to tgtFace into facePoints
-        tgtFace.points(meshPoints, facePoints.data());
+        point ctr(0, 0, 0);
 
-        // I guess this is different from the return value of faceData::centre()
-        // Otherwise, we could just use faceData::centre() here
-        point ctr = Foam::average(facePoints);
+        for (unsigned i = 0; i < tgtFace.size(); i++)
+        {
+            ctr += meshPoints[start + i];
+        }
+
+        ctr = ctr/((double) tgtFace.size());
 
         scalar nearestHitDist = GREAT;
 
@@ -214,16 +214,12 @@ struct faceRayFunctor
 
         for (label pI = 0; pI < nPoints; pI++)
         {
-            // Replace the original line : nextPoint = meshPoints[f[fcIndex(pI)]];
-            // with the following line.
             nextPoint = meshPoints[start + (pI + 1) % nPoints];
 
             // Note: for best accuracy, centre point always comes last
             //
             pointHit curHit = triPointRef
             (
-                // Replaced the original line : meshPoints[f[pI]],
-                // with the following
                 meshPoints[start + pI],
                 nextPoint,
                 ctr

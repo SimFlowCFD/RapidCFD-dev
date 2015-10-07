@@ -83,7 +83,6 @@ public:
         static const NamedEnum<algorithm, 3> algorithmNames_;
 
         //- Return planar tolerance
-        __HOST____DEVICE__
         static scalar planarTol()
         {
             return planarTol_;

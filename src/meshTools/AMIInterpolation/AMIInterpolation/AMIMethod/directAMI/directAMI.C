@@ -29,6 +29,8 @@ License
 #include "faceData.H"
 #include "primitiveFieldsFwd.H"
 #include "faceFunctors.H"
+#include "gpuList.H"
+#include "scalarList.H"
 
 namespace Foam {
     struct ShootRayFunctor : public std::binary_function<label, label, void> {
@@ -37,6 +39,15 @@ namespace Foam {
         const vector *srcCf;
         const faceData *tgtFaces;
         const faceData *srcFaces;
+
+        // Arrays used for addressing
+        labelList* srcAddr;
+        labelList* tgtAddr;
+
+        // Arrays used to hold the actual count
+        label* srcCount;
+        label* tgtCount;
+
         faceRayFunctor rayFunctor;
         faceNormalFunctor normalFunctor;
 
@@ -46,7 +57,11 @@ namespace Foam {
             const point *_srcPoints,
             const vector *_srcCf,
             const faceData *_tgtFaces,
-            const faceData *_srcFaces
+            const faceData *_srcFaces,
+            label* _srcCount,
+            label* _tgtCount,
+            labelList* _srcAddr,
+            labelList* _tgtAddr
         ) :
             tgtPoints(_tgtPoints),
             srcPoints(_srcPoints),
@@ -54,14 +69,26 @@ namespace Foam {
             tgtFaces(_tgtFaces),
             srcFaces(_srcFaces),
             rayFunctor(_tgtPoints, intersection::FULL_RAY, intersection::VECTOR),
-            normalFunctor(_srcPoints)
+            normalFunctor(_srcPoints),
+            srcCount(_srcCount),
+            tgtCount(_tgtCount),
+            srcAddr(_srcAddr),
+            tgtAddr(_tgtAddr)
         {}
 
         __HOST____DEVICE__
         void operator()(const label& tgtI, const label& srcI) {
             if (rayFunctor(tgtFaces[tgtI], srcCf[srcI], normalFunctor(srcFaces[srcI])).hit()) {
-                // found an intersection !
-                // We should update the addressing here.
+                if (srcCount[srcI] < 15)
+                {
+                    srcAddr[srcI][srcCount[srcI]] = tgtI;
+                    srcCount[srcI]++;
+                }
+                if (tgtCount[tgtI] < 15)
+                {
+                    tgtAddr[tgtI][tgtCount[tgtI]] = srcI;
+                    tgtCount[tgtI]++;
+                }
             }
         }
     };
@@ -263,6 +290,108 @@ Foam::directAMI<SourcePatch, TargetPatch>::~directAMI()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+//template<class SourcePatch, class TargetPatch>
+//void Foam::directAMI<SourcePatch, TargetPatch>::calculate
+//(
+//    labelListList& srcAddress,
+//    scalarListList& srcWeights,
+//    labelListList& tgtAddress,
+//    scalarListList& tgtWeights,
+//    label srcFaceI,
+//    label tgtFaceI
+//)
+//{
+//    bool ok =
+//        this->initialise
+//        (
+//            srcAddress,
+//            srcWeights,
+//            tgtAddress,
+//            tgtWeights,
+//            srcFaceI,
+//            tgtFaceI
+//        );
+//
+//    if (!ok)
+//    {
+//        return;
+//    }
+//
+//
+//    // temporary storage for addressing and weights
+//    List<DynamicList<label> > srcAddr(this->srcPatch_.size());
+//    List<DynamicList<label> > tgtAddr(this->tgtPatch_.size());
+//
+//
+//    // construct weights and addressing
+//    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    // list of faces currently visited for srcFaceI to avoid multiple hits
+//    DynamicList<label> srcSeeds(10);
+//
+//    // list to keep track of tgt faces used to seed src faces
+//    labelList srcTgtSeed(srcAddr.size(), -1);
+//    srcTgtSeed[srcFaceI] = tgtFaceI;
+//
+//    // list to keep track of whether src face can be mapped
+//    // 1 = mapped, 0 = untested, -1 = cannot map
+//    labelList mapFlag(srcAddr.size(), 0);
+//
+//    label nTested = 0;
+//    DynamicList<label> nonOverlapFaces;
+//    do
+//    {
+//        srcAddr[srcFaceI].append(tgtFaceI);
+//        tgtAddr[tgtFaceI].append(srcFaceI);
+//
+//        mapFlag[srcFaceI] = 1;
+//
+//        nTested++;
+//
+//        // Do advancing front starting from srcFaceI, tgtFaceI
+//        appendToDirectSeeds
+//        (
+//            mapFlag,
+//            srcTgtSeed,
+//            srcSeeds,
+//            nonOverlapFaces,
+//            srcFaceI,
+//            tgtFaceI
+//        );
+//
+//        if (srcFaceI < 0 && nTested < this->srcPatch_.size())
+//        {
+//            restartAdvancingFront(mapFlag, nonOverlapFaces, srcFaceI, tgtFaceI);
+//        }
+//
+//    } while (srcFaceI >= 0);
+//
+//    if (nonOverlapFaces.size() != 0)
+//    {
+//        Pout<< "    AMI: " << nonOverlapFaces.size()
+//            << " non-overlap faces identified"
+//            << endl;
+//
+//        this->srcNonOverlap_.transfer(nonOverlapFaces);
+//    }
+//
+//    // transfer data to persistent storage
+//    forAll(srcAddr, i)
+//    {
+//        scalar magSf = this->srcMagSf_[i];
+////        srcWeights[i] = scalarList(srcAddr[i].size(), magSf);
+//        srcWeights[i] = scalarList(1, magSf);
+//        srcAddress[i].transfer(srcAddr[i]);
+//    }
+//    forAll(tgtAddr, i)
+//    {
+//        scalar magSf = this->tgtMagSf_[i];
+////        tgtWeights[i] = scalarList(tgtAddr[i].size(), magSf);
+//        tgtWeights[i] = scalarList(1, magSf);
+//        tgtAddress[i].transfer(tgtAddr[i]);
+//    }
+//}
+
 template<class SourcePatch, class TargetPatch>
 void Foam::directAMI<SourcePatch, TargetPatch>::calculate
 (
@@ -272,106 +401,6 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
     scalarListList& tgtWeights,
     label srcFaceI,
     label tgtFaceI
-)
-{
-    bool ok =
-        this->initialise
-        (
-            srcAddress,
-            srcWeights,
-            tgtAddress,
-            tgtWeights,
-            srcFaceI,
-            tgtFaceI
-        );
-
-    if (!ok)
-    {
-        return;
-    }
-
-
-    // temporary storage for addressing and weights
-    List<DynamicList<label> > srcAddr(this->srcPatch_.size());
-    List<DynamicList<label> > tgtAddr(this->tgtPatch_.size());
-
-
-    // construct weights and addressing
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    // list of faces currently visited for srcFaceI to avoid multiple hits
-    DynamicList<label> srcSeeds(10);
-
-    // list to keep track of tgt faces used to seed src faces
-    labelList srcTgtSeed(srcAddr.size(), -1);
-    srcTgtSeed[srcFaceI] = tgtFaceI;
-
-    // list to keep track of whether src face can be mapped
-    // 1 = mapped, 0 = untested, -1 = cannot map
-    labelList mapFlag(srcAddr.size(), 0);
-
-    label nTested = 0;
-    DynamicList<label> nonOverlapFaces;
-    do
-    {
-        srcAddr[srcFaceI].append(tgtFaceI);
-        tgtAddr[tgtFaceI].append(srcFaceI);
-
-        mapFlag[srcFaceI] = 1;
-
-        nTested++;
-
-        // Do advancing front starting from srcFaceI, tgtFaceI
-        appendToDirectSeeds
-        (
-            mapFlag,
-            srcTgtSeed,
-            srcSeeds,
-            nonOverlapFaces,
-            srcFaceI,
-            tgtFaceI
-        );
-
-        if (srcFaceI < 0 && nTested < this->srcPatch_.size())
-        {
-            restartAdvancingFront(mapFlag, nonOverlapFaces, srcFaceI, tgtFaceI);
-        }
-
-    } while (srcFaceI >= 0);
-
-    if (nonOverlapFaces.size() != 0)
-    {
-        Pout<< "    AMI: " << nonOverlapFaces.size()
-            << " non-overlap faces identified"
-            << endl;
-
-        this->srcNonOverlap_.transfer(nonOverlapFaces);
-    }
-
-    // transfer data to persistent storage
-    forAll(srcAddr, i)
-    {
-        scalar magSf = this->srcMagSf_[i];
-//        srcWeights[i] = scalarList(srcAddr[i].size(), magSf);
-        srcWeights[i] = scalarList(1, magSf);
-        srcAddress[i].transfer(srcAddr[i]);
-    }
-    forAll(tgtAddr, i)
-    {
-        scalar magSf = this->tgtMagSf_[i];
-//        tgtWeights[i] = scalarList(tgtAddr[i].size(), magSf);
-        tgtWeights[i] = scalarList(1, magSf);
-        tgtAddress[i].transfer(tgtAddr[i]);
-    }
-}
-
-template<class SourcePatch, class TargetPatch>
-void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
-(
-    labelListList& srcAddress,
-    scalarListList& srcWeights,
-    labelListList& tgtAddress,
-    scalarListList& tgtWeights
 )
 {
     this->checkPatches();
@@ -426,8 +455,13 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
         )
     );
 
+    labelgpuList srcCount(this->srcPatch_.size(), 0);
+    labelgpuList tgtCount(this->tgtPatch_.size(), 0);
 
-    for(int i = 0; i < srcFaces.size(); ++i)
+    gpuList<labelList> srcAddr(this->srcPatch_.size(), labelList(15, -1));
+    gpuList<labelList> tgtAddr(this->tgtPatch_.size(), labelList(15, -1));
+
+    for (int i = 0; i < srcFaces.size(); ++i)
     {
         thrust::counting_iterator<unsigned> tgtStart(0);
         thrust::counting_iterator<unsigned> tgtEnd = tgtStart + tgtFaces.size();
@@ -443,9 +477,33 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculateGpu
                 srcPoints.data(),
                 srcCf.data(),
                 tgtFaces.data(),
-                srcFaces.data()
+                srcFaces.data(),
+                srcCount.data(),
+                tgtCount.data(),
+                srcAddr.data(),
+                tgtAddr.data()
             )
         );
+    }
+
+    for (int i = 0; i < this->srcPatch_.size(); ++i)
+    {
+        scalar magSf = this->srcMagSf_[i];
+        srcWeights[i] = scalarList(1, magSf);
+
+        labelList l = srcAddr.get(i);
+        l.setSize(srcCount.get(i));
+        srcAddress[i].transfer(l);
+    }
+
+    for (int i = 0; i < this->tgtPatch_.size(); ++i)
+    {
+        scalar magSf = this->tgtMagSf_[i];
+        tgtWeights[i] = scalarList(1, magSf);
+
+        labelList l = tgtAddr.get(i);
+        l.setSize(tgtCount.get(i));
+        tgtAddress[i].transfer(l);
     }
 }
 // ************************************************************************* //

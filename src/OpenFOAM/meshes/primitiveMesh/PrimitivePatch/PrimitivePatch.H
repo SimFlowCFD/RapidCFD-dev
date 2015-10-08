@@ -307,7 +307,10 @@ public:
             return points_;
         }
 
-
+        const gpuField<PointType>& getPoints() const
+        {
+            return gpuField<PointType>(points_);
+        }
     // Access functions for demand driven data
 
         // Topological data; no mesh required.

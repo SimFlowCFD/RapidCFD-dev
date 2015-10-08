@@ -194,7 +194,7 @@ struct faceRayFunctor
         }
 
         point ctr(0, 0, 0);
-        for (unsigned i = 0; i < tgtFace.size(); i++)
+        for (label i = 0; i < tgtFace.size(); i++)
         {
             ctr += meshPoints[start + i];
         }

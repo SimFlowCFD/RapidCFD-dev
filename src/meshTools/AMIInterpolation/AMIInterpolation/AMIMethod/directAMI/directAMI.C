@@ -33,7 +33,7 @@ License
 #include "scalarList.H"
 
 namespace Foam {
-    struct ShootRayFunctor : public std::binary_function<label, label, void> {
+    struct ShootRayFunctor {
         const point *tgtPoints;
         const point *srcPoints;
         const vector *srcCf;
@@ -41,8 +41,8 @@ namespace Foam {
         const faceData *srcFaces;
 
         // Arrays used for addressing
-        labelList* srcAddr;
-        labelList* tgtAddr;
+        label* srcAddr;
+        label* tgtAddr;
 
         // Arrays used to hold the actual count
         label* srcCount;
@@ -50,6 +50,9 @@ namespace Foam {
 
         faceRayFunctor rayFunctor;
         faceNormalFunctor normalFunctor;
+
+        const label srcSize;
+        const label tgtSize;
 
         ShootRayFunctor
         (
@@ -60,8 +63,10 @@ namespace Foam {
             const faceData *_srcFaces,
             label* _srcCount,
             label* _tgtCount,
-            labelList* _srcAddr,
-            labelList* _tgtAddr
+            label* _srcAddr,
+            label* _tgtAddr,
+            const label _srcSize,
+            const label _tgtSize
         ) :
             tgtPoints(_tgtPoints),
             srcPoints(_srcPoints),
@@ -73,20 +78,27 @@ namespace Foam {
             srcCount(_srcCount),
             tgtCount(_tgtCount),
             srcAddr(_srcAddr),
-            tgtAddr(_tgtAddr)
+            tgtAddr(_tgtAddr),
+            srcSize(_srcSize),
+            tgtSize(_tgtSize)
         {}
 
-        __HOST____DEVICE__
-        void operator()(const label& tgtI, const label& srcI) {
+        template <typename Tuple>
+        __host__ __device__
+        void operator()(Tuple t)
+        {
+            const label tgtI = thrust::get<0>(t);
+            const label srcI = thrust::get<1>(t);
+
             if (rayFunctor(tgtFaces[tgtI], srcCf[srcI], normalFunctor(srcFaces[srcI])).hit()) {
                 if (srcCount[srcI] < 15)
                 {
-                    srcAddr[srcI][srcCount[srcI]] = tgtI;
+                    srcAddr[srcSize*srcI + srcCount[srcI]] = tgtI;
                     srcCount[srcI]++;
                 }
                 if (tgtCount[tgtI] < 15)
                 {
-                    tgtAddr[tgtI][tgtCount[tgtI]] = srcI;
+                    tgtAddr[tgtSize*tgtI + tgtCount[tgtI]] = srcI;
                     tgtCount[tgtI]++;
                 }
             }
@@ -289,7 +301,7 @@ Foam::directAMI<SourcePatch, TargetPatch>::~directAMI()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
+//
 //template<class SourcePatch, class TargetPatch>
 //void Foam::directAMI<SourcePatch, TargetPatch>::calculate
 //(
@@ -458,19 +470,29 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
     labelgpuList srcCount(this->srcPatch_.size(), 0);
     labelgpuList tgtCount(this->tgtPatch_.size(), 0);
 
-    gpuList<labelList> srcAddr(this->srcPatch_.size(), labelList(15, -1));
-    gpuList<labelList> tgtAddr(this->tgtPatch_.size(), labelList(15, -1));
+    labelgpuList srcAddr(this->srcPatch_.size()*15, -1);
+    labelgpuList tgtAddr(this->tgtPatch_.size()*15, -1);
 
-    for (int i = 0; i < srcFaces.size(); ++i)
+    for (label i = 0; i < srcFaces.size(); ++i)
     {
-        thrust::counting_iterator<unsigned> tgtStart(0);
-        thrust::counting_iterator<unsigned> tgtEnd = tgtStart + tgtFaces.size();
-        thrust::constant_iterator<unsigned> srcStart(i);
-        thrust::transform
+        thrust::for_each
         (
-            tgtStart,
-            tgtEnd,
-            srcStart,
+            thrust::make_zip_iterator
+            (
+                thrust::make_tuple
+                (
+                    thrust::counting_iterator<label>(0),
+                    thrust::constant_iterator<label>(i)
+                )
+            ),
+            thrust::make_zip_iterator
+            (
+                thrust::make_tuple
+                (
+                    thrust::counting_iterator<label>(tgtFaces.size()),
+                    thrust::constant_iterator<label>(i)
+                )
+            ),
             ShootRayFunctor
             (
                 tgtPoints.data(),
@@ -481,28 +503,40 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
                 srcCount.data(),
                 tgtCount.data(),
                 srcAddr.data(),
-                tgtAddr.data()
+                tgtAddr.data(),
+                this->srcPatch_.size(),
+                this->tgtPatch_.size()
             )
         );
     }
 
-    for (int i = 0; i < this->srcPatch_.size(); ++i)
+    for (label i = 0; i < this->srcPatch_.size(); ++i)
     {
         scalar magSf = this->srcMagSf_[i];
         srcWeights[i] = scalarList(1, magSf);
 
-        labelList l = srcAddr.get(i);
-        l.setSize(srcCount.get(i));
+        labelList l(srcCount.get(i));
+
+        for (label j = 0; j < srcCount.get(i); ++j)
+        {
+            l[j] = srcAddr.get(15*i + j);
+        }
+
         srcAddress[i].transfer(l);
     }
 
-    for (int i = 0; i < this->tgtPatch_.size(); ++i)
+    for (label i = 0; i < this->tgtPatch_.size(); ++i)
     {
         scalar magSf = this->tgtMagSf_[i];
         tgtWeights[i] = scalarList(1, magSf);
 
-        labelList l = tgtAddr.get(i);
-        l.setSize(tgtCount.get(i));
+        labelList l(tgtCount.get(i));
+
+        for (label j = 0; j < tgtCount.get(i); ++j)
+        {
+            l[j] = tgtAddr.get(15*i + j);
+        }
+
         tgtAddress[i].transfer(l);
     }
 }

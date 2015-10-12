@@ -41,25 +41,25 @@ namespace Foam
 template<bool fast>
 struct matrixMultiplyFunctor
 {
-    textures<scalar> psi;
-    const scalar* lower;
-    const scalar* upper;
-    const __restrict__ label* own;
-    const __restrict__ label* nei;
-    const __restrict__ label* ownStart;
-    const __restrict__ label* losortStart;
-    const __restrict__ label* losort;
+    const textures<scalar> psi;
+    const scalar * lower;
+    const scalar * upper;
+    const label * own;
+    const label * nei;
+    const label * ownStart;
+    const label * losortStart;
+    const label * losort;
 
     matrixMultiplyFunctor
     (
-        textures<scalar> _psi, 
-        const scalar* _lower,
-        const scalar* _upper,
-        const __restrict__ label* _own,
-        const __restrict__ label* _nei,
-        const __restrict__ label* _ownStart,
-        const __restrict__ label* _losortStart,
-        const __restrict__ label* _losort
+        const textures<scalar> _psi, 
+        const scalar * _lower,
+        const scalar * _upper,
+        const label * _own,
+        const label * _nei,
+        const label * _ownStart,
+        const label * _losortStart,
+        const label * _losort
     ):
         psi(_psi),
         lower(_lower),

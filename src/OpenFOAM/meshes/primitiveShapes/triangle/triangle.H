@@ -222,6 +222,7 @@ public:
             //  + near edge (nearType=EDGE, nearLabel=0, 1, 2)
             //    Note: edges are counted from starting
             //    vertex so e.g. edge 2 is from f[2] to f[0]
+            __HOST____DEVICE__
             pointHit nearestPointClassify
             (
                 const point& p,
@@ -230,6 +231,7 @@ public:
             ) const;
 
             //- Return nearest point to p on triangle
+            __HOST____DEVICE__
             inline pointHit nearestPoint(const point& p) const;
 
             //- Classify nearest point to p in triangle plane

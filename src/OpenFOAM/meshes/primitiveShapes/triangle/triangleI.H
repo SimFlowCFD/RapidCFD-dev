@@ -526,6 +526,7 @@ inline Foam::pointHit Foam::triangle<Point, PointRef>::intersection
 
 
 template<class Point, class PointRef>
+__HOST____DEVICE__
 Foam::pointHit Foam::triangle<Point, PointRef>::nearestPointClassify
 (
     const point& p,
@@ -675,6 +676,7 @@ Foam::pointHit Foam::triangle<Point, PointRef>::nearestPointClassify
 
 
 template<class Point, class PointRef>
+__HOST____DEVICE__
 inline Foam::pointHit Foam::triangle<Point, PointRef>::nearestPoint
 (
     const point& p

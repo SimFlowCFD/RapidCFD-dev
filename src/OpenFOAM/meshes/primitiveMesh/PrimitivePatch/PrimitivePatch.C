@@ -43,6 +43,7 @@ PrimitivePatch
 :
     FaceList<Face>(faces),
     points_(points),
+    gpuPointsPtr_(NULL),
     gpuEdgesPtr_(NULL),
     edgesPtr_(NULL),
     nInternalEdges_(-1),
@@ -87,6 +88,7 @@ PrimitivePatch
 :
     FaceList<Face>(faces),
     points_(points),
+    gpuPointsPtr_(NULL),
     gpuEdgesPtr_(NULL),
     edgesPtr_(NULL),
     nInternalEdges_(-1),
@@ -132,6 +134,7 @@ PrimitivePatch
 :
     FaceList<Face>(faces, reUse),
     points_(points, reUse),
+    gpuPointsPtr_(NULL),
     gpuEdgesPtr_(NULL),
     edgesPtr_(NULL),
     nInternalEdges_(-1),
@@ -176,6 +179,7 @@ PrimitivePatch
     PrimitivePatchName(),
     FaceList<Face>(pp),
     points_(pp.points_),
+    gpuPointsPtr_(NULL),
     gpuEdgesPtr_(NULL),
     edgesPtr_(NULL),
     nInternalEdges_(-1),

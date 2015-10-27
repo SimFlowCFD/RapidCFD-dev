@@ -36,7 +36,7 @@ License
 namespace Foam
 {
     template<class Type,bool add>
-    struct fvMatrixPatchAddFunctor : public std::binary_function<Type,label,Type>
+    struct fvMatrixPatchAddFunctor
     {
         const Type* issf;
         const label* neiStart;
@@ -53,7 +53,7 @@ namespace Foam
              losort(_losort)
         {}
 
-        __HOST____DEVICE__
+        __host__ __device__
         Type operator()(const Type& d, const label& id)
         {
             Type out = d;
@@ -247,10 +247,40 @@ namespace Foam
     template<class Type>
     struct fvMatrixAddBoundarySourceFunctor
     {
-        __HOST____DEVICE__
-        Type operator()(const Type& s, const thrust::tuple<Type,Type>& t)
+        const Type* pbc;
+        const Type* pnf;
+        const label* neiStart;
+        const label* losort;
+
+        fvMatrixAddBoundarySourceFunctor
+        (
+            const Type* _pbc,
+            const Type* _pnf,
+            const label* _neiStart,
+            const label* _losort
+        ):
+             pbc(_pbc),
+             pnf(_pnf),
+             neiStart(_neiStart),
+             losort(_losort)
+        {}
+
+        __host__ __device__
+        Type operator()(const Type& d, const label& id)
         {
-             return s + cmptMultiply(thrust::get<0>(t),thrust::get<1>(t));
+            Type out = d;
+
+            label nStart = neiStart[id];
+            label nSize = neiStart[id+1] - nStart;
+
+            for(label i = 0; i<nSize; i++)
+            {
+                label face = losort[nStart + i];
+
+                out += cmptMultiply(pbc[face], pnf[face]);
+            }
+
+            return out;
         }
     };
 }
@@ -284,7 +314,9 @@ void Foam::fvMatrix<Type>::addBoundarySource
             tmp<gpuField<Type> > tpnf = ptf.patchNeighbourField();
             const gpuField<Type>& pnf = tpnf();
 
-            const labelgpuList& addr = lduAddr().patchAddr(patchI);
+            const labelgpuList& addr = lduAddr().patchSortCells(patchI);
+            const labelgpuList& sort = lduAddr().patchSortAddr(patchI);
+            const labelgpuList& sortStart = lduAddr().patchSortStartAddr(patchI);
 
             thrust::transform
             (
@@ -298,19 +330,20 @@ void Foam::fvMatrix<Type>::addBoundarySource
                     source.begin(),
                     addr.end()
                 ),
-                thrust::make_zip_iterator(thrust::make_tuple
-                (
-                    pbc.begin(),
-                    pnf.begin()
-                )),
+                thrust::make_counting_iterator(0),
                 thrust::make_permutation_iterator
                 (
                     source.begin(),
                     addr.begin()
                 ),
-                fvMatrixAddBoundarySourceFunctor<Type>()
+                fvMatrixAddBoundarySourceFunctor<Type>
+                (
+                    pbc.data(),
+                    pnf.data(),
+                    sortStart.data(),
+                    sort.data()
+                )
             );
-            
         }
     }
 }

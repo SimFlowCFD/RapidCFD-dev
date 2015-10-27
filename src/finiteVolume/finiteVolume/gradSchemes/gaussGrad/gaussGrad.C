@@ -31,7 +31,7 @@ License
 namespace Foam
 {
     template<class Type,class GradType>
-    struct gaussGradFunctor : public std::binary_function<label,scalar,GradType>
+    struct gaussGradFunctor
     {
         const GradType zero;
         const vector* Sf;
@@ -64,7 +64,7 @@ namespace Foam
         {}
 
         __HOST____DEVICE__
-        GradType operator()(const label& id,const scalar& v)
+        GradType operator()(const label& id)
         {
             GradType out = zero;
             label oStart = ownStart[id];
@@ -85,12 +85,12 @@ namespace Foam
                 out -= Sf[face]*issf[face];
             }
 
-            return out/v;
+            return out;
         }
     };
 
     template<class Type,class GradType>
-    struct gaussGradPatchFunctor : public std::binary_function<label,thrust::tuple<GradType,scalar>,GradType>
+    struct gaussGradPatchFunctor
     {
         const vector* Sf;
         const Type* issf;
@@ -111,10 +111,9 @@ namespace Foam
         {}
 
         __HOST____DEVICE__
-        GradType operator()(const label& id,const thrust::tuple<GradType,scalar>& t)
+        GradType operator()(const label& id,const GradType& g)
         {
-            GradType out = thrust::get<0>(t);
-            scalar v = thrust::get<1>(t);
+            GradType out = g;
             
             label nStart = neiStart[id];
             label nSize = neiStart[id+1] - nStart;
@@ -122,7 +121,7 @@ namespace Foam
             for(label i = 0; i<nSize; i++)
             {
                 label face = losort[nStart + i];
-                out += Sf[face]*(issf[face]/v);
+                out += Sf[face]*issf[face];
             }
 
             return out;
@@ -192,7 +191,6 @@ Foam::fv::gaussGrad<Type>::gradf
     (
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(0)+igGrad.size(),
-        mesh.V().getField().begin(),
         igGrad.begin(),
         gaussGradFunctor<Type,GradType>
         (
@@ -220,19 +218,11 @@ Foam::fv::gaussGrad<Type>::gradf
         (
             thrust::make_counting_iterator(0),
             thrust::make_counting_iterator(0)+pcells.size(),
-            thrust::make_zip_iterator(thrust::make_tuple
+            thrust::make_permutation_iterator
             (
-                thrust::make_permutation_iterator
-                (
-                    igGrad.begin(),
-                    pcells.begin()
-                ),
-                thrust::make_permutation_iterator
-                (
-                    mesh.V().getField().begin(),
-                    pcells.begin()
-                )
-            )),
+                igGrad.begin(),
+                pcells.begin()
+            ),
             thrust::make_permutation_iterator(igGrad.begin(),pcells.begin()),
             gaussGradPatchFunctor<Type,GradType>
             (
@@ -244,6 +234,8 @@ Foam::fv::gaussGrad<Type>::gradf
         );
 
     }
+
+    igGrad /= mesh.V();
 
     gGrad.correctBoundaryConditions();
 

@@ -199,7 +199,7 @@ void surfaceIntegrate
         );
     }
 
-    ivf /= mesh.V().getField();
+    ivf /= mesh.Vsc()().getField();
 }
 
 

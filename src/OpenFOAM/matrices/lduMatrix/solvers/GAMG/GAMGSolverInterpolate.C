@@ -170,9 +170,7 @@ void Foam::GAMGSolver::interpolate
     const lduMatrix& m,
     const FieldField<gpuField, scalar>& interfaceBouCoeffs,
     const lduInterfaceFieldPtrsList& interfaces,
-    const labelgpuList& restrictSortAddressing,
-    const labelgpuList& restrictTargetAddressing,
-    const labelgpuList& restrictTargetStartAddressing,
+    const labelgpuList& restrictAddressing,
     const scalargpuField& psiC,
     const direction cmpt
 ) const
@@ -180,6 +178,8 @@ void Foam::GAMGSolver::interpolate
 
     notImplemented("GAMGSolver::interpolate()");
 
+    //TODO
+    /*
     interpolate
     (
         psi,
@@ -232,8 +232,6 @@ void Foam::GAMGSolver::interpolate
         corrC.begin(),
         GAMGinterpolateCorrCFunctor()
     );
-    //TODO
-    /*
     thrust::transform
     (
         psi.begin(),

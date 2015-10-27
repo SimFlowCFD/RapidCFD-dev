@@ -1,83 +1,57 @@
 #pragma once
 
+#include "gpuAtomic.H"
+
 namespace Foam
 {
 
 template<class Type>
 struct GAMGAgglomerationRestrictFunctor
 {
-    const Type* ff;
-    const label* sort;
-    const Type zero;
+    Type* cf;
 
     GAMGAgglomerationRestrictFunctor
     (
-        const Type* _ff,
-        const label* _sort
+        Type* _cf
     ):
-        ff(_ff),
-        sort(_sort),
-        zero(pTraits<Type>::zero)
+        cf(_cf)
     {}
 
-    __HOST____DEVICE__
-    Type operator()(const label& start, const label& end)
+    template<class Tuple>
+    __device__
+    void operator()(const Tuple& t)
     {
-        Type out = zero;
+        const label& id = thrust::get<0>(t);
+        const Type& val = thrust::get<1>(t);
 
-        for(label i = start; i<end; i++)
-        {
-            out += ff[sort[i]];
-        }
-
-        return out;
+        atomicAdd(cf+id,val);
     }
 };
 
-template<class Type>
-struct GAMGAgglomerationProlongFunctor
-{
-    Type* ff;
-    const Type* cf;
-    const label* sort;
-    const label* target;
-    const label* targetStart;
 
-    GAMGAgglomerationProlongFunctor
+template<class Type>
+struct GAMGAgglomerationRestrictFaceFunctor
+{
+    Type* cf;
+
+    GAMGAgglomerationRestrictFaceFunctor
     (
-        Type* _ff,
-        const Type* _cf,
-        const label* _sort,
-        const label* _target,
-        const label* _targetStart
+        Type* _cf
     ):
-        ff(_ff),
-        cf(_cf),
-        sort(_sort),
-        target(_target),
-        targetStart(_targetStart)
+        cf(_cf)
     {}
 
-    __HOST____DEVICE__
-    void operator()(const label& id)
+    template<class Tuple>
+    __device__
+    void operator()(const Tuple& t)
     {
-        Type val = cf[target[id]];
-     
-        for(label i = targetStart[id]; i < targetStart[id+1]; i++)
+        const label& id = thrust::get<0>(t);
+
+        if(id >= 0)
         {
-            ff[sort[i]] = val;
+            const Type& val = thrust::get<1>(t);
+            atomicAdd(cf+id,val);
         }
-    }
-};
-
-
-template<class Type>
-struct nonNegativeGAMGFunctor
-{
-    __HOST____DEVICE__
-    bool operator()(const Type& x)
-    {
-        return x >= 0;
     }
 };
 

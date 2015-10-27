@@ -348,9 +348,7 @@ void Foam::GAMGSolver::Vcycle
                         matrixLevels_[leveli],
                         interfaceLevelsBouCoeffs_[leveli],
                         interfaceLevels_[leveli],
-                        agglomeration_.restrictSortAddressing(leveli + 1),
-                        agglomeration_.restrictTargetAddressing(leveli + 1),
-                        agglomeration_.restrictTargetStartAddressing(leveli + 1),
+                        agglomeration_.restrictAddressing(leveli + 1),
                         coarseCorrFields[leveli + 1],
                         cmpt
                     );
@@ -427,9 +425,7 @@ void Foam::GAMGSolver::Vcycle
             matrix_,
             interfaceBouCoeffs_,
             interfaces_,
-            agglomeration_.restrictSortAddressing(0),
-            agglomeration_.restrictTargetAddressing(0),
-            agglomeration_.restrictTargetStartAddressing(0),
+            agglomeration_.restrictAddressing(0),
             coarseCorrFields[0],
             cmpt
         );

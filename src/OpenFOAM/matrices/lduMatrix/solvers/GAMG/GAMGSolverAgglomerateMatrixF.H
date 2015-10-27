@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gpuAtomic.H"
+
 namespace Foam
 {
 
@@ -21,169 +23,101 @@ struct luGAMGNegative
     }
 };
 
-struct faceToDiagFunctor 
-   : public std::unary_function<label,label>
+struct GAMGSolverAgglomerateAsymmetricFunctor
 {
-    __HOST____DEVICE__
-    label operator()(const label& n)
-    {
-        return -1 - n;
-    }
-};
+    scalar* coarseUpper;
+    scalar* coarseLower;
+    scalar* coarseDiag;
 
-
-struct GAMGSolverAgglomerateAsymFunctor
-{
-    const scalar* uf;
-    const scalar* lf;
-    const bool* flip;
-    const label* sort;
-
-    GAMGSolverAgglomerateAsymFunctor
+    GAMGSolverAgglomerateAsymmetricFunctor
     (
-        const scalar* _uf,
-        const scalar* _lf,
-        const bool* _flip,
-        const label* _sort
+        scalar* _coarseUpper,
+        scalar* _coarseLower,
+        scalar* _coarseDiag
     ):
-        uf(_uf),
-        lf(_lf),
-        flip(_flip),
-        sort(_sort)
+        coarseUpper(_coarseUpper),
+        coarseLower(_coarseLower),
+        coarseDiag(_coarseDiag)
     {}
     
-    template<class Tuple,class Tuple2>
-    __HOST____DEVICE__
-    thrust::tuple<scalar,scalar> operator()(const Tuple& in,const Tuple2& t)
+    template<class Tuple>
+    __device__
+    void operator()(const Tuple& t)
     {
-        scalar uc = thrust::get<0>(in);
-        scalar lc = thrust::get<1>(in); 
-        label start = thrust::get<0>(t);
-        label end = thrust::get<1>(t);
+        const label& cFace = thrust::get<0>(t);
+        const bool& faceFlipMap = thrust::get<1>(t);
+        const scalar& fineUpper = thrust::get<2>(t);
+        const scalar& fineLower = thrust::get<3>(t);
 
-        for(label i = start; i<end; i++)
+        if (cFace >= 0)
         {
-            label index = sort[i];
-            bool flipVal = flip[index];
-            scalar ufVal = uf[index];
-            scalar lfVal = lf[index];
-            if( ! flipVal)
+            if (!faceFlipMap)
             {
-                uc += ufVal;
-                lc += lfVal;
+                atomicAdd(coarseUpper+cFace,fineUpper);
+                atomicAdd(coarseLower+cFace,fineLower);
             }
             else
             {
-                uc += lfVal;
-                lc += ufVal;
+                atomicAdd(coarseUpper+cFace,fineLower);
+                atomicAdd(coarseLower+cFace,fineUpper);
             }
         }
-
-        return thrust::make_tuple(uc,lc);
-    }
-
-};
-
-
-struct GAMGSolverAgglomerateDiagAsymFunctor
-{
-    const scalar* uf;
-    const scalar* lf;
-    const label* sort;
-
-    GAMGSolverAgglomerateDiagAsymFunctor
-    (
-        const scalar* _uf,
-        const scalar* _lf,
-        const label* _sort
-    ):
-        uf(_uf),
-        lf(_lf),
-        sort(_sort)
-    {}
-
-    template<class Tuple>
-    __HOST____DEVICE__
-    scalar operator()(const scalar& s,const Tuple& t)
-    {
-        scalar out = s;
-        label start = thrust::get<0>(t);
-        label end = thrust::get<1>(t);
-
-        for(label i = start; i<end; i++)
+        else
         {
-            label index = sort[i];
-            out += uf[index] + lf[index];
+            atomicAdd(coarseDiag+(-1 - cFace),fineUpper+fineLower);
         }
-
-        return out;
     }
 };
 
-
-struct GAMGSolverAgglomerateSymFunctor
+struct GAMGSolverAgglomerateDiagSymmetricFunctor
 {
-    const scalar* ff;
-    const label* sort;
+    scalar* coarseDiag;
 
-    GAMGSolverAgglomerateSymFunctor
+    GAMGSolverAgglomerateDiagSymmetricFunctor
     (
-        const scalar* _ff,
-        const label* _sort
+        scalar* _coarseDiag
     ):
-        ff(_ff),
-        sort(_sort)
+        coarseDiag(_coarseDiag)
     {}
     
     template<class Tuple>
-    __HOST____DEVICE__
-    scalar operator()(const scalar& s,const Tuple& t)
+    __device__
+    void operator()(const Tuple& t)
     {
-        scalar out = s;
-        label start = thrust::get<0>(t);
-        label end = thrust::get<1>(t);
+        const label& cFace = thrust::get<0>(t);
 
-        for(label i = start; i<end; i++)
+        if (cFace < 0)
         {
-            out += ff[sort[i]];
+            const scalar& fineUpper = thrust::get<1>(t);
+            atomicAdd(coarseDiag+(-1 - cFace),2*fineUpper);
         }
-
-        return out;
     }
-
 };
 
-struct GAMGSolverAgglomerateDiagSymFunctor
+struct GAMGSolverAgglomerateSymmetricFunctor
 {
-    const scalar* ff;
-    const label* sort;
+    scalar* coarseUpper;
 
-    GAMGSolverAgglomerateDiagSymFunctor
+    GAMGSolverAgglomerateSymmetricFunctor
     (
-        const scalar* _ff,
-        const label* _sort
+        scalar* _coarseUpper
     ):
-        ff(_ff),
-        sort(_sort)
+        coarseUpper(_coarseUpper)
     {}
-
+    
     template<class Tuple>
-    __HOST____DEVICE__
-    scalar operator()(const scalar& s,const Tuple& t)
+    __device__
+    void operator()(const Tuple& t)
     {
-        scalar out = s;
-        label start = thrust::get<0>(t);
-        label end = thrust::get<1>(t);
+        const label& cFace = thrust::get<0>(t);
 
-        for(label i = start; i<end; i++)
+        if (cFace >= 0)
         {
-            out += 2*ff[sort[i]];
+            const scalar& fineUpper = thrust::get<1>(t);
+            atomicAdd(coarseUpper+cFace,fineUpper);
         }
-
-        return out;
     }
 };
-
 
 }
 

@@ -46,22 +46,16 @@ namespace Foam
 void Foam::GAMGAgglomeration::compactLevels(const label nCreatedLevels)
 {
     nCells_.setSize(nCreatedLevels);
-    restrictSortAddressing_.setSize(nCreatedLevels),
-    restrictTargetAddressing_.setSize(nCreatedLevels),
-    restrictTargetStartAddressing_.setSize(nCreatedLevels),
-    restrictAddressingHost_.setSize(nCreatedLevels),
+    restrictAddressing_.setSize(nCreatedLevels);
+    restrictAddressingHost_.setSize(nCreatedLevels);
     nFaces_.setSize(nCreatedLevels);
-    faceRestrictSortAddressing_.setSize(nCreatedLevels),
-    faceRestrictTargetAddressing_.setSize(nCreatedLevels),
-    faceRestrictTargetStartAddressing_.setSize(nCreatedLevels),
-    faceRestrictAddressingHost_.setSize(nCreatedLevels),
+    faceRestrictAddressing_.setSize(nCreatedLevels);
+    faceRestrictAddressingHost_.setSize(nCreatedLevels);
     faceFlipMap_.setSize(nCreatedLevels);
     faceFlipMapHost_.setSize(nCreatedLevels);
     nPatchFaces_.setSize(nCreatedLevels);
-    patchFaceRestrictSortAddressing_.setSize(nCreatedLevels),
-    patchFaceRestrictTargetAddressing_.setSize(nCreatedLevels),
-    patchFaceRestrictTargetStartAddressing_.setSize(nCreatedLevels),
-    patchFaceRestrictAddressingHost_.setSize(nCreatedLevels),
+    patchFaceRestrictAddressing_.setSize(nCreatedLevels);
+    patchFaceRestrictAddressingHost_.setSize(nCreatedLevels);
     meshLevels_.setSize(nCreatedLevels);
 }
 
@@ -96,21 +90,15 @@ Foam::GAMGAgglomeration::GAMGAgglomeration
     ),
     meshInterfaces_(mesh.interfaces()),
     nCells_(maxLevels_),
-    restrictSortAddressing_(maxLevels_),
-    restrictTargetAddressing_(maxLevels_),
-    restrictTargetStartAddressing_(maxLevels_),
+    restrictAddressing_(maxLevels_),
     restrictAddressingHost_(maxLevels_),
     nFaces_(maxLevels_),
-    faceRestrictSortAddressing_(maxLevels_),
-    faceRestrictTargetAddressing_(maxLevels_),
-    faceRestrictTargetStartAddressing_(maxLevels_),
+    faceRestrictAddressing_(maxLevels_),
     faceRestrictAddressingHost_(maxLevels_),
     faceFlipMap_(maxLevels_),
     faceFlipMapHost_(maxLevels_),
     nPatchFaces_(maxLevels_),
-    patchFaceRestrictSortAddressing_(maxLevels_),
-    patchFaceRestrictTargetAddressing_(maxLevels_),
-    patchFaceRestrictTargetStartAddressing_(maxLevels_),
+    patchFaceRestrictAddressing_(maxLevels_),
     patchFaceRestrictAddressingHost_(maxLevels_),
 
     meshLevels_(maxLevels_)
@@ -331,21 +319,15 @@ void Foam::GAMGAgglomeration::clearLevel(const label i)
         if (i < nCells_.size())
         {
             nCells_[i] = -555;
-            restrictSortAddressing_.set(i, NULL);
-            restrictTargetAddressing_.set(i, NULL);
-            restrictTargetStartAddressing_.set(i, NULL);
+            restrictAddressing_.set(i, NULL);
             restrictAddressingHost_.set(i, NULL);
             nFaces_[i] = -666;
-            faceRestrictSortAddressing_.set(i, NULL);
-            faceRestrictTargetAddressing_.set(i, NULL);
-            faceRestrictTargetStartAddressing_.set(i, NULL);
+            faceRestrictAddressing_.set(i, NULL);
             faceRestrictAddressingHost_.set(i, NULL);
             faceFlipMap_.set(i, NULL);
             faceFlipMapHost_.set(i, NULL);
             nPatchFaces_.set(i, NULL);
-            patchFaceRestrictSortAddressing_.set(i, NULL);
-            patchFaceRestrictTargetAddressing_.set(i, NULL);
-            patchFaceRestrictTargetStartAddressing_.set(i, NULL);
+            patchFaceRestrictAddressing_.set(i, NULL);
             patchFaceRestrictAddressingHost_.set(i, NULL);
         }
     }

@@ -80,9 +80,7 @@ protected:
 
         //- Cell restriction addressing array.
         //  Maps from the finer to the coarser level.
-        PtrList<labelgpuField> restrictSortAddressing_;
-        PtrList<labelgpuField> restrictTargetAddressing_;
-        PtrList<labelgpuField> restrictTargetStartAddressing_;
+        PtrList<labelgpuField> restrictAddressing_;
         PtrList<labelField> restrictAddressingHost_;
 
         //- The number of (coarse) faces in each level.
@@ -95,9 +93,7 @@ protected:
         //  of the coarser cells to the corresponding coarser cell face.
         //  Negative indices map the finer faces which are internal to the
         //  coarser cells to minus the corresponding coarser cell index minus 1.
-        PtrList<labelgpuList> faceRestrictSortAddressing_;
-        PtrList<labelgpuList> faceRestrictTargetAddressing_;
-        PtrList<labelgpuList> faceRestrictTargetStartAddressing_;
+        PtrList<labelgpuList> faceRestrictAddressing_;
         PtrList<labelList> faceRestrictAddressingHost_;
 
         //- Face flip: for faces mapped to internal faces stores whether
@@ -113,9 +109,7 @@ protected:
         //- Patch-local face restriction addressing array.
         //  Maps from the finer to the coarser level. Always positive.
         //  Extracted from GAMGInterfaces after agglomeration.
-        PtrList<labelgpuListList> patchFaceRestrictSortAddressing_;
-        PtrList<labelgpuListList> patchFaceRestrictTargetAddressing_;
-        PtrList<labelgpuListList> patchFaceRestrictTargetStartAddressing_;
+        PtrList<labelgpuListList> patchFaceRestrictAddressing_;
         PtrList<labelListList> patchFaceRestrictAddressingHost_;
 
         //- Hierarchy of mesh addressing
@@ -288,21 +282,10 @@ public:
             ) const;
 
             //- Return cell restrict addressing of given level
-            const labelgpuField& restrictSortAddressing(const label leveli) const
+            const labelgpuField& restrictAddressing(const label leveli) const
             {
-                return restrictSortAddressing_[leveli];
+                return restrictAddressing_[leveli];
             }
-
-            const labelgpuField& restrictTargetAddressing(const label leveli) const
-            {
-                return restrictTargetAddressing_[leveli];
-            }
-
-            const labelgpuField& restrictTargetStartAddressing(const label leveli) const
-            {
-                return restrictTargetStartAddressing_[leveli];
-            }
-
 
             const labelField& restrictAddressingHost(const label leveli) const
             {
@@ -310,21 +293,10 @@ public:
             }
 
             //- Face restrict addressing of given level
-            const labelgpuList& faceRestrictSortAddressing(const label leveli) const
+            const labelgpuList& faceRestrictAddressing(const label leveli) const
             {
-                return faceRestrictSortAddressing_[leveli];
+                return faceRestrictAddressing_[leveli];
             }
-
-            const labelgpuList& faceRestrictTargetAddressing(const label leveli) const
-            {
-                return faceRestrictTargetAddressing_[leveli];
-            }
-
-            const labelgpuList& faceRestrictTargetStartAddressing(const label leveli) const
-            {
-                return faceRestrictTargetStartAddressing_[leveli];
-            }
-
 
             const labelList& faceRestrictAddressingHost(const label leveli) const
             {
@@ -332,21 +304,10 @@ public:
             }
 
 
-            const labelgpuListList& patchFaceRestrictSortAddressing(const label leveli) const
+            const labelgpuListList& patchFaceRestrictAddressing(const label leveli) const
             {
-                return patchFaceRestrictSortAddressing_[leveli];
+                return patchFaceRestrictAddressing_[leveli];
             }
-
-            const labelgpuListList& patchFaceRestrictTargetAddressing(const label leveli) const
-            {
-                return patchFaceRestrictTargetAddressing_[leveli];
-            }
-
-            const labelgpuListList& patchFaceRestrictTargetStartAddressing(const label leveli) const
-            {
-                return patchFaceRestrictTargetStartAddressing_[leveli];
-            }
-
 
             const labelListList& patchFaceRestrictAddressingHost(const label leveli) const
             {
@@ -417,9 +378,7 @@ public:
             (
                 gpuField<Type>& cf,
                 const gpuField<Type>& ff,
-                const labelgpuList& sort,
-                const labelgpuList& target,
-                const labelgpuList& targetStart
+                const labelgpuList& fineToCoarse
             ) const;
 
 

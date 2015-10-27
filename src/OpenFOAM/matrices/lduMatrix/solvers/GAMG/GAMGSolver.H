@@ -191,9 +191,7 @@ class GAMGSolver
             const lduMatrix& m,
             const FieldField<gpuField, scalar>& interfaceBouCoeffs,
             const lduInterfaceFieldPtrsList& interfaces,
-            const labelgpuList& restrictSortAddressing,
-            const labelgpuList& restrictTargetAddressing,
-            const labelgpuList& restrictTargetStartAddressing,
+            const labelgpuList& restrictAddressing,
             const scalargpuField& psiC,
             const direction cmpt
         ) const;

@@ -212,6 +212,13 @@ template class gpuField<scalar>;
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<>
+__host__ __device__
+scalar transposeFunctor<scalar>::operator()(const scalar& s) const
+{
+    return s;
+}
+
+template<>
 tmp<scalargpuField> scalargpuField::component(const direction) const
 {
     return *this;
@@ -237,7 +244,13 @@ void scalargpuField::replace(const direction, const scalar& s)
 
 void stabilise(scalargpuField& res, const gpuList<scalar>& sf, const scalar s)
 {
-    thrust::transform(sf.begin(),sf.end(),res.begin(),stabiliseFunctor(s));
+    thrust::transform
+    (
+        sf.begin(),
+        sf.end(),
+        res.begin(),
+        stabiliseFunctor(s)
+    );
 }
 
 tmp<scalargpuField> stabilise(const gpuList<scalar>& sf, const scalar s)
@@ -255,8 +268,16 @@ scalar sumProd(const gpuList<scalar>& f1, const gpuList<scalar>& f2)
     if (f1.size() && (f1.size() == f2.size()))
     {
         thrust::device_vector<scalar> t(f1.size());
-        thrust::transform(f1.begin(),f1.end(),f2.begin(),t.begin(),
-               multiplyOperatorFunctor<scalar,scalar,scalar>());
+
+        thrust::transform
+        (
+            f1.begin(),
+            f1.end(),
+            f2.begin(),
+            t.begin(),
+            multiplyOperatorFunctor<scalar,scalar,scalar>()
+        );
+
         return thrust::reduce(t.begin(),t.end());
     }
     else
@@ -324,10 +345,11 @@ UNARY_FUNCTION(scalar, scalar, paToAtm)
 
 
 #define BesselFunc(func)                                                         \
-struct func##BesselFunctor{                                                      \
+struct func##BesselFunctor                                                       \
+{                                                                                \
     const int n;                                                                 \
     func##BesselFunctor(int _n): n(_n) {}                                        \
-    __HOST____DEVICE__                                                           \
+    __host__ __device__                                                          \
     scalar operator()(const scalar& s)                                           \
     {                                                                            \
         return func(n,s);                                                        \
@@ -336,8 +358,13 @@ struct func##BesselFunctor{                                                     
                                                                                  \
 void func(scalargpuField& res, const int n, const gpuList<scalar>& sf)           \
 {                                                                                \
-    thrust::transform(sf.begin(),sf.end(),res.begin(),                           \
-                     func##BesselFunctor(n));                                    \
+    thrust::transform                                                            \
+    (                                                                            \
+        sf.begin(),                                                              \
+        sf.end(),                                                                \
+        res.begin(),                                                             \
+        func##BesselFunctor(n)                                                   \
+    );                                                                           \
 }                                                                                \
                                                                                  \
 tmp<scalargpuField> func(const int n, const gpuList<scalar>& sf)                 \

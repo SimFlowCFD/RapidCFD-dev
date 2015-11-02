@@ -35,13 +35,12 @@ Description
 
 namespace Foam
 {                
-        
-#define MAN_UNROLL 3
 
-template<bool fast>
+template<bool fast,int nUnroll>
 struct matrixMultiplyFunctor
 {
     const textures<scalar> psi;
+    const scalar * diag;
     const scalar * lower;
     const scalar * upper;
     const label * own;
@@ -53,6 +52,7 @@ struct matrixMultiplyFunctor
     matrixMultiplyFunctor
     (
         const textures<scalar> _psi, 
+        const scalar * _diag,
         const scalar * _lower,
         const scalar * _upper,
         const label * _own,
@@ -62,6 +62,7 @@ struct matrixMultiplyFunctor
         const label * _losort
     ):
         psi(_psi),
+        diag(_diag),
         lower(_lower),
         upper(_upper),
         own(_own),
@@ -72,10 +73,9 @@ struct matrixMultiplyFunctor
     {}
 
     __device__
-    scalar operator()(const scalar& d,const label& id)
+    scalar operator()(const label& id) const
     {
-        scalar out = d;
-        scalar tmpSum[2*MAN_UNROLL] = {};
+        scalar tmpSum[2*nUnroll] = {};
         scalar nExtra = 0;
             
         label oStart = ownStart[id];
@@ -84,7 +84,9 @@ struct matrixMultiplyFunctor
         label nStart = losortStart[id];
         label nSize = losortStart[id+1] - nStart;
 
-        for(label i = 0; i<MAN_UNROLL; i++)
+        scalar out = diag[id]*psi[id];
+
+        for(label i = 0; i<nUnroll; i++)
         {
             if(i<oSize)
             {
@@ -94,7 +96,7 @@ struct matrixMultiplyFunctor
             }
         }
 
-        for(label i = 0; i<MAN_UNROLL; i++)
+        for(label i = 0; i<nUnroll; i++)
         {
             if(i<nSize)
             {
@@ -102,18 +104,18 @@ struct matrixMultiplyFunctor
                  if( ! fast)
                      face = losort[face];
                    
-                 tmpSum[i+MAN_UNROLL] = lower[face]*psi[own[face]];
+                 tmpSum[i+nUnroll] = lower[face]*psi[own[face]];
             }
         }
 
         #pragma unroll
-        for(label i = 0; i<2*MAN_UNROLL; i++)
+        for(label i = 0; i<2*nUnroll; i++)
         {
             out+= tmpSum[i]; 
         }
         
         #pragma unroll 2   
-        for(label i = MAN_UNROLL; i<oSize; i++)
+        for(label i = nUnroll; i<oSize; i++)
         {
             label face = oStart + i;
                 
@@ -121,7 +123,7 @@ struct matrixMultiplyFunctor
         }
             
         #pragma unroll 2    
-        for(label i = MAN_UNROLL; i<nSize; i++)
+        for(label i = nUnroll; i<nSize; i++)
         {
             label face = nStart + i;
             if( ! fast)
@@ -133,8 +135,6 @@ struct matrixMultiplyFunctor
         return out + nExtra;
     }
 };
-    
-#undef MAN_UNROLL
 
 template<bool fast>
 inline void callMultiply
@@ -158,29 +158,13 @@ inline void callMultiply
 
     thrust::transform
     (
-        thrust::make_transform_iterator
-        (
-            thrust::make_zip_iterator(thrust::make_tuple
-            (
-                Diag.begin(),
-                psi.begin()
-            )),
-            lduMatrixDiagonalFunctor()
-        ),
-        thrust::make_transform_iterator
-        (
-            thrust::make_zip_iterator(thrust::make_tuple
-            (
-                Diag.end(),
-                psi.end()
-            )),
-            lduMatrixDiagonalFunctor()
-        ),
-        thrust::make_counting_iterator(label(0)),
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(0)+psi.size(),
         Apsi.begin(),
-        matrixMultiplyFunctor<fast>
+        matrixMultiplyFunctor<fast,3>
         (
             psiTex,
+            Diag.data(),
             Lower.data(),
             Upper.data(),
             l.data(),

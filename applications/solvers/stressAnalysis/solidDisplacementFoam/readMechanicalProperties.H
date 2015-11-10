@@ -42,7 +42,7 @@
                     dimMass/dimVolume,
                     rhoValue
                 ),
-                zeroGradientFvPatchField<scalar>::typeName
+                Foam::zeroGradientFvPatchField<scalar>::typeName
             )
         );
     }
@@ -100,7 +100,7 @@
                     dimMass/dimLength/sqr(dimTime),
                     rhoEValue
                 ),
-                zeroGradientFvPatchField<scalar>::typeName
+                Foam::zeroGradientFvPatchField<scalar>::typeName
             )
         );
     }
@@ -157,7 +157,7 @@
                     dimless,
                     nuValue
                 ),
-                zeroGradientFvPatchField<scalar>::typeName
+                Foam::zeroGradientFvPatchField<scalar>::typeName
             )
         );
     }

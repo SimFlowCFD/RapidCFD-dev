@@ -89,6 +89,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::IOporosityModelList;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

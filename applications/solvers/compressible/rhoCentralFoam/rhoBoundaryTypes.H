@@ -1,14 +1,14 @@
 const volScalarField::GeometricBoundaryField& pbf = p.boundaryField();
-wordList rhoBoundaryTypes = pbf.types();
+Foam::wordList rhoBoundaryTypes = pbf.types();
 
 forAll(rhoBoundaryTypes, patchi)
 {
     if (rhoBoundaryTypes[patchi] == "waveTransmissive")
     {
-        rhoBoundaryTypes[patchi] = zeroGradientFvPatchScalarField::typeName;
+        rhoBoundaryTypes[patchi] = Foam::zeroGradientFvPatchScalarField::typeName;
     }
     else if (pbf[patchi].fixesValue())
     {
-        rhoBoundaryTypes[patchi] = fixedRhoFvPatchScalarField::typeName;
+        rhoBoundaryTypes[patchi] = Foam::fixedRhoFvPatchScalarField::typeName;
     }
 }

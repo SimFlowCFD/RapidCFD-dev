@@ -63,7 +63,7 @@
                 << exit(FatalIOError);
         }
 
-        const labelList& faces = mesh.faceZones()[magnetZonei];
+        const labelgpuList& faces = mesh.faceZones()[magnetZonei].getList();
 
         const scalar muri = magnets[i].mur();
         const scalar Mri = magnets[i].Mr().value();
@@ -71,10 +71,39 @@
 
         const surfaceVectorField& Sf = mesh.Sf();
 
-        forAll(faces, i)
-        {
-            label facei = faces[i];
-            murf[facei] = muri;
-            Mrf[facei] = Mri*(orientationi & Sf[facei]);
-        }
+        thrust::fill
+        (
+            thrust::make_permutation_iterator
+            (
+                murf.getField().begin(),
+                faces.begin()
+            ),
+            thrust::make_permutation_iterator
+            (
+                murf.getField().begin(),
+                faces.end()
+            ),
+            muri
+        );
+
+        thrust::transform
+        (
+            thrust::make_constant_iterator(Mri),
+            thrust::make_constant_iterator(Mri)+faces.size(),
+            thrust::make_transform_iterator
+            (
+                thrust::make_permutation_iterator
+                (
+                    Sf.getField().begin(),
+                    faces.begin()
+                ),
+                Foam::dotOperatorSFFunctor<vector,vector,scalar>(orientationi)
+            ),
+            thrust::make_permutation_iterator
+            (
+                Mrf.getField().begin(),
+                faces.begin()
+            ),
+            Foam::multiplyOperatorFunctor<scalar,scalar,scalar>()
+        );
     }

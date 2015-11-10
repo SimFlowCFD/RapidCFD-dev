@@ -1,4 +1,4 @@
-    autoPtr<radiation::radiationModel> radiation
+    autoPtr<Foam::radiation::radiationModel> radiation
     (
-        radiation::radiationModel::New(thermo.T())
+        Foam::radiation::radiationModel::New(thermo.T())
     );

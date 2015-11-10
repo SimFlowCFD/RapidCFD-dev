@@ -191,6 +191,9 @@ namespace Foam
     }
 }
 
+using Foam::fixedFluxPressureFvPatchScalarField;
+using Foam::setSnGrad;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

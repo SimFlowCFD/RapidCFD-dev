@@ -36,14 +36,14 @@ License
 #include "floatVector.H"
 #include "OSspecific.H"
 #include "mergePoints.H"
-//#include "memInfo.H"
 
-using namespace Foam;
 
 // Dummy yyFlexLexer::yylex() to keep the linker happy. It is not called
 //! \cond dummy
 int yyFlexLexer::yylex()
 {
+    using namespace Foam;
+
     FatalErrorIn("yyFlexLexer::yylex()")
         << "Should not have called this function"
         << abort(FatalError);
@@ -65,24 +65,23 @@ int yyFlexLexer::yywrap()
 }
 //! \endcond
 
-
 class STLLexer
 :
     public yyFlexLexer
 {
     // Private data
 
-        label nTriangles_;
+        Foam::label nTriangles_;
         short region_;       // current region
         short maxRegion_;    // max region
 
-        label lineNo_;
-        word startError_;
+        Foam::label lineNo_;
+        Foam::word startError_;
 
-        DynamicList<floatVector> STLpoints_;
-        //DynamicList<floatVector > STLnormals_;
-        DynamicList<label> STLlabels_;
-        HashTable<label, word> STLsolidNames_;
+        Foam::DynamicList<Foam::floatVector> STLpoints_;
+        //DynamicList<Foam::floatVector > STLnormals_;
+        Foam::DynamicList<Foam::label> STLlabels_;
+        Foam::HashTable<Foam::label, Foam::word> STLsolidNames_;
 
 
 public:
@@ -90,7 +89,7 @@ public:
     // Constructors
 
         //- From input stream and the approximate number of vertices in the STL
-        STLLexer(istream* is, const label approxNpoints);
+        STLLexer(std::istream* is, const Foam::label approxNpoints);
 
 
     // Member Functions
@@ -100,12 +99,12 @@ public:
 
     // Access
 
-        label nTriangles() const
+        Foam::label nTriangles() const
         {
             return nTriangles_;
         }
 
-        DynamicList<floatVector>& STLpoints()
+        Foam::DynamicList<Foam::floatVector>& STLpoints()
         {
             return STLpoints_;
         }
@@ -115,19 +114,19 @@ public:
         //    return STLnormals_;
         //}
 
-        DynamicList<label>& STLlabels()
+        Foam::DynamicList<Foam::label>& STLlabels()
         {
             return STLlabels_;
         }
 
-        const HashTable<label, word>& STLsolidNames() const
+        const Foam::HashTable<Foam::label, Foam::word>& STLsolidNames() const
         {
             return STLsolidNames_;
         }
 };
 
 
-STLLexer::STLLexer(istream* is, const label approxNpoints)
+STLLexer::STLLexer(std::istream* is, const Foam::label approxNpoints)
 :
     yyFlexLexer(is),
 
@@ -201,6 +200,8 @@ endsolid              {space}("endsolid"|"ENDSOLID")({some_space}{word})*
 %%
 
 %{
+    using namespace Foam;
+
     // End of read character pointer returned by strtof
     // char* endPtr;
 
@@ -376,8 +377,11 @@ endsolid              {space}("endsolid"|"ENDSOLID")({some_space}{word})*
 
 #include <fstream>
 
-bool triSurface::readSTLASCII(const fileName& STLfileName)
+
+bool Foam::triSurface::readSTLASCII(const Foam::fileName& STLfileName)
 {
+    using namespace Foam;
+
     IFstream STLstream(STLfileName);
 
     if (!STLstream)
@@ -489,7 +493,6 @@ bool triSurface::readSTLASCII(const fileName& STLfileName)
 
     return true;
 }
-
 
  /* ------------------------------------------------------------------------ *\
     ------ End of STLToFoam.L

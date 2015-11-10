@@ -1,13 +1,13 @@
-    wordList pcorrTypes
+    Foam::wordList pcorrTypes
     (
         p.boundaryField().size(),
-        zeroGradientFvPatchScalarField::typeName
+        Foam::zeroGradientFvPatchScalarField::typeName
     );
 
     for (label i=0; i<p.boundaryField().size(); i++)
     {
         if (p.boundaryField()[i].fixesValue())
         {
-            pcorrTypes[i] = fixedValueFvPatchScalarField::typeName;
+            pcorrTypes[i] = Foam::fixedValueFvPatchScalarField::typeName;
         }
     }

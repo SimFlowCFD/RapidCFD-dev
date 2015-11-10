@@ -47,6 +47,7 @@ transportModels/Allwmake $*
 turbulenceModels/Allwmake $*
 TurbulenceModels/Allwmake $*
 #regionModels/Allwmake $*
+wmake $makeType regionModels/regionModel
 
 wmake $makeType fvMotionSolver
 

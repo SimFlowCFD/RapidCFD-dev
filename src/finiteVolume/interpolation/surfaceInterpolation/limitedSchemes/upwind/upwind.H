@@ -146,6 +146,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::upwind;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

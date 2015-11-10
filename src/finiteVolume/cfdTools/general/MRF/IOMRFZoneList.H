@@ -106,6 +106,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::IOMRFZoneList;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

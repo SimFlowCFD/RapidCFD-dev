@@ -76,7 +76,7 @@ if (thermalStress)
                     dimensionSet(0, 2, -2 , -1, 0),
                     CValue
                 ),
-                zeroGradientFvPatchField<scalar>::typeName
+                Foam::zeroGradientFvPatchField<scalar>::typeName
             )
         );
 
@@ -134,7 +134,7 @@ if (thermalStress)
                     dimensionSet(1, 1, -3 , -1, 0),
                     rhoKValue
                 ),
-                zeroGradientFvPatchField<scalar>::typeName
+                Foam::zeroGradientFvPatchField<scalar>::typeName
             )
         );
 
@@ -193,7 +193,7 @@ if (thermalStress)
                     inv(dimTemperature),
                     alphaValue
                 ),
-                zeroGradientFvPatchField<scalar>::typeName
+                Foam::zeroGradientFvPatchField<scalar>::typeName
             )
         );
     }

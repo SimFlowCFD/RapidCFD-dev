@@ -239,6 +239,8 @@ public:
 } // End namespace incompressible
 } // End namespace Foam
 
+namespace incompressible = Foam::incompressible;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

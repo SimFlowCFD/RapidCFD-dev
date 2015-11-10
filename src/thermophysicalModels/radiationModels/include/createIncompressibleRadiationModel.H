@@ -1,6 +1,6 @@
-    autoPtr<radiation::radiationModel> radiation
+    autoPtr<Foam::radiation::radiationModel> radiation
     (
-        radiation::radiationModel::New(T)
+        Foam::radiation::radiationModel::New(T)
     );
 
     dimensionedScalar rhoCpRef

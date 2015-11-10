@@ -80,6 +80,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::regionProperties;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

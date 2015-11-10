@@ -102,8 +102,8 @@ void Foam::regionModels::singleLayerRegion::initialise()
 
         nBoundaryFaces += fCells.size();
 
-        gpuIndirectList<vector>(nHat, fCells) = pp.faceNormals();
-        gpuIndirectList<scalar>(magSf, fCells) = mag(pp.faceAreas());
+        gpuIndirectList<vector>(nHat, fCells) = pp.getFaceNormals();
+        gpuIndirectList<scalar>(magSf, fCells) = mag(pp.getFaceAreas());
     }
     nHat.correctBoundaryConditions();
     magSf.correctBoundaryConditions();

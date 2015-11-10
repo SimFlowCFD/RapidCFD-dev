@@ -104,6 +104,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::simpleControl;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

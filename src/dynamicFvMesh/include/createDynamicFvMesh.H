@@ -1,3 +1,5 @@
+    using Foam::dynamicFvMesh;
+
     Info<< "Create mesh for time = "
         << runTime.timeName() << nl << endl;
 

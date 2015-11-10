@@ -1,5 +1,5 @@
     Info<< "\nReading g" << endl;
-    uniformDimensionedVectorField g
+    Foam::uniformDimensionedVectorField g
     (
         IOobject
         (

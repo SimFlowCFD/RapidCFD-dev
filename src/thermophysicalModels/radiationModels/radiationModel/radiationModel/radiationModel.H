@@ -265,6 +265,8 @@ public:
 } // End namespace radiation
 } // End namespace Foam
 
+namespace radiation = Foam::radiation;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

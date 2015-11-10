@@ -147,6 +147,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::pimpleControl;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "pimpleControlI.H"

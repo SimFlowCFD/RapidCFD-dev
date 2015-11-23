@@ -135,17 +135,6 @@ public:
                 label srcFaceI = -1,
                 label tgtFaceI = -1
             );
-
-            //- Update addressing and weights
-//            virtual void calculateGPU
-//            (
-//                labelListList& srcAddress,
-//                scalarListList& srcWeights,
-//                labelListList& tgtAddress,
-//                scalarListList& tgtWeights,
-//                label srcFaceI = -1,
-//                label tgtFaceI = -1
-//            );
 };
 
 

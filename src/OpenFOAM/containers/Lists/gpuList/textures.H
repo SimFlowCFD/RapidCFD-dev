@@ -92,6 +92,14 @@ inline __device__ T textures<T>::operator[](const int& i) const
     return __ldg(data + i);
 }
 
+#elif __CUDA_ARCH__ < 300
+
+template<class T>
+inline __device__ T textures<T>::operator[](const int& i) const
+{
+    return data[i];
+}
+
 #else
 
 template<>

@@ -27,7 +27,6 @@ License
 #include "primitiveFieldsFwd.H"
 #include "pointFieldFwd.H"
 #include "faceData.H"
-#include "primitiveFieldsFwd.H"
 #include "faceFunctors.H"
 #include "gpuList.H"
 #include "scalarList.H"
@@ -39,6 +38,7 @@ namespace Foam {
         const vector *srcCf;
         const faceData *tgtFaces;
         const faceData *srcFaces;
+        const label size;
 
         // Arrays used for addressing
         label* srcAddr;
@@ -51,9 +51,6 @@ namespace Foam {
         faceRayFunctor rayFunctor;
         faceNormalFunctor normalFunctor;
 
-        const label srcSize;
-        const label tgtSize;
-
         ShootRayFunctor
         (
             const point *_tgtPoints,
@@ -61,26 +58,24 @@ namespace Foam {
             const vector *_srcCf,
             const faceData *_tgtFaces,
             const faceData *_srcFaces,
+            const label _size,
             label* _srcCount,
             label* _tgtCount,
             label* _srcAddr,
-            label* _tgtAddr,
-            const label _srcSize,
-            const label _tgtSize
+            label* _tgtAddr
         ) :
             tgtPoints(_tgtPoints),
             srcPoints(_srcPoints),
             srcCf(_srcCf),
             tgtFaces(_tgtFaces),
             srcFaces(_srcFaces),
-            rayFunctor(_tgtPoints, intersection::FULL_RAY, intersection::VECTOR),
-            normalFunctor(_srcPoints),
+            size(_size),
             srcCount(_srcCount),
             tgtCount(_tgtCount),
             srcAddr(_srcAddr),
             tgtAddr(_tgtAddr),
-            srcSize(_srcSize),
-            tgtSize(_tgtSize)
+            rayFunctor(_tgtPoints, intersection::FULL_RAY, intersection::VECTOR),
+            normalFunctor(_srcPoints)
         {}
 
         template <typename Tuple>
@@ -91,14 +86,14 @@ namespace Foam {
             const label srcI = thrust::get<1>(t);
 
             if (rayFunctor(tgtFaces[tgtI], srcCf[srcI], normalFunctor(srcFaces[srcI])).hit()) {
-                if (srcCount[srcI] < 15)
+                if (srcCount[srcI] < size)
                 {
-                    srcAddr[srcSize*srcI + srcCount[srcI]] = tgtI;
+                    srcAddr[srcI*size + srcCount[srcI]] = tgtI;
                     srcCount[srcI]++;
                 }
-                if (tgtCount[tgtI] < 15)
+                if (tgtCount[tgtI] < size)
                 {
-                    tgtAddr[tgtSize*tgtI + tgtCount[tgtI]] = srcI;
+                    tgtAddr[tgtI*size + tgtCount[tgtI]] = srcI;
                     tgtCount[tgtI]++;
                 }
             }
@@ -365,11 +360,27 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
         )
     );
 
+    label size = 15;
+
     labelgpuList srcCount(this->srcPatch_.size(), 0);
     labelgpuList tgtCount(this->tgtPatch_.size(), 0);
 
-    labelgpuList srcAddr(this->srcPatch_.size()*15, -1);
-    labelgpuList tgtAddr(this->tgtPatch_.size()*15, -1);
+    labelgpuList srcAddr(this->srcPatch_.size()*size, -1);
+    labelgpuList tgtAddr(this->tgtPatch_.size()*size, -1);
+
+    ShootRayFunctor shootRayFunctor
+        (
+            tgtPoints.data(),
+            srcPoints.data(),
+            srcCf.data(),
+            tgtFaces.data(),
+            srcFaces.data(),
+            size,
+            srcCount.data(),
+            tgtCount.data(),
+            srcAddr.data(),
+            tgtAddr.data()
+        );
 
     for (label i = 0; i < srcFaces.size(); ++i)
     {
@@ -391,20 +402,7 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
                     thrust::constant_iterator<label>(i)
                 )
             ),
-            ShootRayFunctor
-            (
-                tgtPoints.data(),
-                srcPoints.data(),
-                srcCf.data(),
-                tgtFaces.data(),
-                srcFaces.data(),
-                srcCount.data(),
-                tgtCount.data(),
-                srcAddr.data(),
-                tgtAddr.data(),
-                this->srcPatch_.size(),
-                this->tgtPatch_.size()
-            )
+            shootRayFunctor
         );
     }
 
@@ -417,7 +415,7 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
 
         for (label j = 0; j < srcCount.get(i); ++j)
         {
-            l[j] = srcAddr.get(15*i + j);
+            l[j] = srcAddr.get(size*i + j);
         }
 
         srcAddress[i].transfer(l);
@@ -432,7 +430,7 @@ void Foam::directAMI<SourcePatch, TargetPatch>::calculate
 
         for (label j = 0; j < tgtCount.get(i); ++j)
         {
-            l[j] = tgtAddr.get(15*i + j);
+            l[j] = tgtAddr.get(size*i + j);
         }
 
         tgtAddress[i].transfer(l);

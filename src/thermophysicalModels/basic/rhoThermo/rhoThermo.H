@@ -151,6 +151,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::rhoThermo;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

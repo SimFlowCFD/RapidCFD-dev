@@ -275,6 +275,8 @@ public:
 } // End namespace compressible
 } // End namespace Foam
 
+namespace compressible = Foam::compressible;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

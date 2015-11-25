@@ -284,16 +284,29 @@ GENERATE_UNARY_FUNCTION_FUNCTORS(inv)
 #undef GENERATE_UNARY_FUNCTION_FUNCTORS
 
 template<class Type,class RType>
-struct assignFunctor{
+struct assignFunctor
+{
     __host__ __device__
-    RType operator()(const Type& t) const {
+    RType operator()(const Type& t) const 
+    {
         return t;
     }
 };
 
-struct stabiliseFunctor{
+template<class Type>
+struct transposeFunctor
+{
+    __host__ __device__
+    Type operator()(const Type& t) const 
+    {
+        return t.T();
+    }
+};
+
+struct stabiliseFunctor
+{
     const scalar sm;
-    stabiliseFunctor(scalar _s) : sm(_s){}
+    stabiliseFunctor(scalar _s): sm(_s){}
     __host__ __device__
     scalar operator()(const scalar& sf)
     {
@@ -309,31 +322,37 @@ struct stabiliseFunctor{
 };
 
 template<class Type1,class Type2>
-struct assignValueFunctor{
+struct assignValueFunctor
+{
     const Type2 t2;
     assignValueFunctor(Type2 _t2): t2(_t2) {}
-    __HOST____DEVICE__
-    Type1 operator()() const {
+    __host__ __device__
+    Type1 operator()() const 
+    {
         return t2;
     }
 };
 
 template<class Type1,class Type2>
-struct componentFunctor{
+struct componentFunctor
+{
     const direction d;
     componentFunctor(direction _d): d(_d) {}
-    __HOST____DEVICE__
-    Type1 operator()(const Type2& tt){
+    __host__ __device__
+    Type1 operator()(const Type2& tt)
+    {
         return tt.component(d);
     }
 };
 
 template<class Type,class cmptType>
-struct replaceComponentFunctor{
+struct replaceComponentFunctor
+{
     const direction d;
     replaceComponentFunctor(direction _d): d(_d) {}
-    __HOST____DEVICE__
-    Type operator()(const Type& tt,const cmptType& ct){
+    __host__ __device__
+    Type operator()(const Type& tt,const cmptType& ct)
+    {
         Type tr(tt);
         tr.replace(d,ct);
         return tr;
@@ -341,12 +360,22 @@ struct replaceComponentFunctor{
 };
 
 template<class Type,class cmptType>
-struct replaceComponentWithSourceFunctor{
+struct replaceComponentWithSourceFunctor
+{
     const direction d;
     const cmptType ct;
-    replaceComponentWithSourceFunctor(direction _d,cmptType _ct): d(_d), ct(_ct) {}
-    __HOST____DEVICE__
-    Type operator()(const Type& tt){
+    replaceComponentWithSourceFunctor
+    (
+        direction _d,
+        cmptType _ct
+    ): 
+        d(_d), 
+        ct(_ct) 
+    {}
+
+    __host__ __device__
+    Type operator()(const Type& tt)
+    {
         Type tr(tt);
         tr.replace(d,ct);
         return tr;
@@ -354,53 +383,65 @@ struct replaceComponentWithSourceFunctor{
 };
 
 template<class Type>
-struct addWithSourceFunctor{
+struct addWithSourceFunctor
+{
     const Type t;
     addWithSourceFunctor(Type _t): t(_t) {}
-    __HOST____DEVICE__
-    Type operator()(const Type& t1){
+    __host__ __device__
+    Type operator()(const Type& t1)
+    {
         return t + t1;
     }
 };
 
 template<class Type1,class Type2>
-struct powerFunctor{
+struct powerFunctor
+{
     const Type2 tt;
     powerFunctor(Type2 _tt):tt(_tt){}
-    __HOST____DEVICE__
-    Type2 operator()(const Type1& t){
+    __host__ __device__
+    Type2 operator()(const Type1& t)
+    {
         return pow(t,tt);
     }
 };
 
 template<class Type1,class Type2>
-struct outerProductFunctor{
-    __HOST____DEVICE__
-    Type2 operator()(const Type1& t){
+struct outerProductFunctor
+{
+    __host__ __device__
+    Type2 operator()(const Type1& t)
+    {
         return sqr(t);
     }
 };
 
 template<class Type>
-struct productFunctor{
-    __HOST____DEVICE__
-    scalar operator()(const Type& t1,const Type& t2){
+struct productFunctor
+{
+    __host__ __device__
+    scalar operator()(const Type& t1,const Type& t2)
+    {
         return t1 && t2;
     }
 };
 
 template<class Type>
-struct maximumMagnitudeSquaredFunctor{
-    __HOST____DEVICE__
-    Type operator()(const Type& t1,const Type& t2){
+struct maximumMagnitudeSquaredFunctor
+{
+    __host__ __device__
+    Type operator()(const Type& t1,const Type& t2)
+    {
         return maxMagSqrOp<Type>()(t1,t2);
     }
 };
 
 template<class Type>
-struct minimumMagnitudeSquaredFunctor{
-    __HOST____DEVICE__
-    Type operator()(const Type& t1,const Type& t2){
+struct minimumMagnitudeSquaredFunctor
+{
+    __host__ __device__
+    Type operator()(const Type& t1,const Type& t2)
+    {
         return minMagSqrOp<Type>()(t1,t2);
     }
 };

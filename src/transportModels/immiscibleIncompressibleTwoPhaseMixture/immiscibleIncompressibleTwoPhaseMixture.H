@@ -85,6 +85,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::immiscibleIncompressibleTwoPhaseMixture;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

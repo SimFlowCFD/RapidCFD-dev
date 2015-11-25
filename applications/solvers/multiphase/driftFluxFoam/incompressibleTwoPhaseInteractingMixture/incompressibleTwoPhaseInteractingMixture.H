@@ -199,6 +199,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::incompressibleTwoPhaseInteractingMixture;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

@@ -57,7 +57,7 @@
                         tkappaByCp().dimensions(),
                         symmTensor::zero
                     ),
-                    zeroGradientFvPatchSymmTensorField::typeName
+                    Foam::zeroGradientFvPatchSymmTensorField::typeName
                 )
             );
 

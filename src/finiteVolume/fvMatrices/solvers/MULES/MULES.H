@@ -169,6 +169,8 @@ void limitSum(SurfaceScalarFieldList& phiPsiCorrs);
 } // End namespace MULES
 } // End namespace Foam
 
+namespace MULES = Foam::MULES;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository

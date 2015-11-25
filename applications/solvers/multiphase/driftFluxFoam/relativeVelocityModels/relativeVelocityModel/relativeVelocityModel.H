@@ -152,6 +152,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::relativeVelocityModel;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

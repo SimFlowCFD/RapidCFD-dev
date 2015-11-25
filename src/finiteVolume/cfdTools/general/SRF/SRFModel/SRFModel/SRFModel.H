@@ -180,6 +180,8 @@ public:
 } // End namespace SRF
 } // End namespace Foam
 
+namespace SRF = Foam::SRF;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

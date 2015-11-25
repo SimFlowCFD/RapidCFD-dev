@@ -45,13 +45,25 @@ void component
 )
 {
     typedef typename gpuField<Type>::cmptType cmptType;
-    thrust::transform(f.begin(),f.end(),res.begin(),componentFunctor<cmptType,Type>(d));
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        componentFunctor<cmptType,Type>(d)
+    );
 }
 
 template<class Type>
 void T(gpuField<Type>& res, const gpuList<Type>& f)
 {
-    thrust::copy(f.begin(),f.end(),res.begin());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        transposeFunctor<Type>()
+    );
 }
 
 template<class Type, int r>
@@ -62,8 +74,16 @@ void pow
 )
 {
     typedef typename powProduct<Type, r>::type powProductType;
-    thrust::transform(vf.begin(),vf.end(),res.begin(),
-            powBinaryFunctionFSFunctor<Type,powProductType,powProductType>(pTraits<powProductType>::zero));
+    thrust::transform
+    (
+        vf.begin(),
+        vf.end(),
+        res.begin(),
+        powBinaryFunctionFSFunctor<Type,powProductType,powProductType>
+        (
+            pTraits<powProductType>::zero
+        )
+    );
 }
 
 template<class Type, int r>
@@ -107,7 +127,13 @@ void sqr
 )
 {
     typedef typename outerProduct<Type, Type>::type outerProductType;
-    thrust::transform(vf.begin(),vf.end(),res.begin(),outerProductFunctor<Type,outerProductType>());
+    thrust::transform
+    (
+        vf.begin(),
+        vf.end(),
+        res.begin(),
+        outerProductFunctor<Type,outerProductType>()
+    );
 }
 
 template<class Type>
@@ -139,8 +165,13 @@ sqr(const tmp<gpuField<Type> >& tf)
 template<class Type>
 void magSqr(gpuField<scalar>& res, const gpuList<Type>& f)
 {
-   thrust::transform(f.begin(),f.end(),res.begin(),
-           magSqrUnaryFunctionFunctor<Type,scalar>());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        magSqrUnaryFunctionFunctor<Type,scalar>()
+    );
 }
 
 template<class Type>
@@ -164,8 +195,13 @@ tmp<gpuField<scalar> > magSqr(const tmp<gpuField<Type> >& tf)
 template<class Type>
 void mag(gpuField<scalar>& res, const gpuList<Type>& f)
 {
-    thrust::transform(f.begin(),f.end(),res.begin(),
-            magUnaryFunctionFunctor<Type,scalar>());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        magUnaryFunctionFunctor<Type,scalar>()
+    );
 }
 
 template<class Type>
@@ -190,8 +226,13 @@ template<class Type>
 void cmptMax(gpuField<typename gpuField<Type>::cmptType>& res, const gpuList<Type>& f)
 {
     typedef typename gpuField<Type>::cmptType cmptType;
-    thrust::transform(f.begin(),f.end(),res.begin(),
-                      cmptMaxUnaryFunctionFunctor<Type,cmptType>());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        cmptMaxUnaryFunctionFunctor<Type,cmptType>()
+    );
 }
 
 template<class Type>
@@ -218,8 +259,13 @@ template<class Type>
 void cmptMin(gpuField<typename gpuField<Type>::cmptType>& res, const gpuList<Type>& f)
 {
     typedef typename gpuField<Type>::cmptType cmptType;
-    thrust::transform(f.begin(),f.end(),res.begin(),
-                      cmptMaxUnaryFunctionFunctor<Type,cmptType>());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        cmptMaxUnaryFunctionFunctor<Type,cmptType>()
+    );
 }
 
 template<class Type>
@@ -246,8 +292,13 @@ template<class Type>
 void cmptAv(gpuField<typename gpuField<Type>::cmptType>& res, const gpuList<Type>& f)
 {
     typedef typename gpuField<Type>::cmptType cmptType;
-    thrust::transform(f.begin(),f.end(),res.begin(),
-                     cmptAvUnaryFunctionFunctor<Type,cmptType>());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        cmptAvUnaryFunctionFunctor<Type,cmptType>()
+    );
 }
 
 template<class Type>
@@ -273,8 +324,13 @@ tmp<gpuField<typename gpuField<Type>::cmptType> > cmptAv(const tmp<gpuField<Type
 template<class Type>
 void cmptMag(gpuField<Type>& res, const gpuList<Type>& f)
 {
-    thrust::transform(f.begin(),f.end(),res.begin(),
-                      cmptMagUnaryFunctionFunctor<Type,Type>());
+    thrust::transform
+    (
+        f.begin(),
+        f.end(),
+        res.begin(),
+        cmptMagUnaryFunctionFunctor<Type,Type>()
+    );
 }
 
 template<class Type>
@@ -298,7 +354,7 @@ tmp<gpuField<Type> > cmptMag(const tmp<gpuField<Type> >& tf)
 #define TMP_UNARY_FUNCTION(ReturnType, Func)                                  \
                                                                               \
 template<class Type>                                                          \
-ReturnType Func(const tmp<gpuField<Type> >& tf1)                                 \
+ReturnType Func(const tmp<gpuField<Type> >& tf1)                              \
 {                                                                             \
     ReturnType res = Func(tf1());                                             \
     tf1.clear();                                                              \
@@ -340,7 +396,13 @@ Type sum(const gpuList<Type>& f)
 {
     if (f.size())
     {
-        return thrust::reduce(f.begin(), f.end(), pTraits<Type>::zero, thrust::plus<Type>());;
+        return thrust::reduce
+               (
+                   f.begin(), 
+                   f.end(), 
+                   pTraits<Type>::zero, 
+                   thrust::plus<Type>()
+               );
     }
     else
     {
@@ -357,10 +419,19 @@ Type maxMagSqr(const gpuList<Type>& f)
     {
         gpuList<scalar>& ms(f.size());
 
-	thrust::transform(f.begin(),f.end(),ms.begin(),magSqrUnaryFunctionFunctor<Type,scalar>());
-	typename thrust::device_vector<scalar>::iterator iter = thrust::max_element(ms.begin(), ms.end());
+	thrust::transform
+        (
+            f.begin(),
+            f.end(),
+            ms.begin(),
+            magSqrUnaryFunctionFunctor<Type,scalar>()
+        );
+	typename thrust::device_vector<scalar>::iterator iter = 
+                     thrust::max_element(ms.begin(), ms.end());
+
         unsigned int position = iter - ms.begin();
-        return f[position];
+
+        return f.get(position);
     }
     else
     {
@@ -375,10 +446,20 @@ Type minMagSqr(const gpuList<Type>& f)
     {
         gpuList<scalar>& ms (f.size());
 
-	thrust::transform(f.begin(),f.end(),ms.begin(),magSqrUnaryFunctionFunctor<Type,scalar>());
-	typename thrust::device_vector<scalar>::iterator  iter = thrust::min_element(ms.begin(), ms.end());
+	thrust::transform
+        (
+            f.begin(),
+            f.end(),
+            ms.begin(),
+            magSqrUnaryFunctionFunctor<Type,scalar>()
+        );
+
+	typename thrust::device_vector<scalar>::iterator  iter = 
+                     thrust::min_element(ms.begin(), ms.end());
+
         unsigned int position = iter - ms.begin();
-        return f[position];
+
+        return f.get(position);
     }
     else
     {
@@ -393,10 +474,20 @@ scalar sumProd(const gpuList<Type>& f1, const gpuList<Type>& f2)
     {
         gpuList<scalar> tmp(f1.size());
 
-        thrust::transform(f1.begin(),f1.end(),f2.begin(),tmp.begin(),productFunctor<Type>());
+        thrust::transform
+        (
+            f1.begin(),
+            f1.end(),f2.begin(),
+            tmp.begin(),productFunctor<Type>()
+        );
 
-        return thrust::reduce(tmp.begin(),tmp.end(),pTraits<scalar>::zero,thrust::plus<scalar>());
-
+        return thrust::reduce
+               (
+                   tmp.begin(),
+                   tmp.end(),
+                   pTraits<scalar>::zero,
+                   thrust::plus<scalar>()
+               );
     }
     else
     {
@@ -412,10 +503,22 @@ Type sumCmptProd(const gpuList<Type>& f1, const gpuList<Type>& f2)
     { 
         gpuList<Type> tmp(f1.size());
 
-        thrust::transform(f1.begin(),f1.end(),f2.begin(),tmp.begin(),
-                 cmptMultiplyBinaryFunctionFunctor<Type,Type,Type>());
+        thrust::transform
+        (
+            f1.begin(),
+            f1.end(),
+            f2.begin(),
+            tmp.begin(),
+            cmptMultiplyBinaryFunctionFunctor<Type,Type,Type>()
+        );
 
-        return thrust::reduce(tmp.begin(),tmp.end(),pTraits<Type>::zero,thrust::plus<Type>());
+        return thrust::reduce
+               (
+                   tmp.begin(),
+                   tmp.end(),
+                   pTraits<Type>::zero,
+                   thrust::plus<Type>()
+               );
     }
     else
     {
@@ -429,10 +532,21 @@ scalar sumSqr(const gpuList<Type>& f)
 {
     if (f.size())
     {
-        return thrust::reduce(thrust::make_transform_iterator(f.begin(),outerProductFunctor<Type,scalar>()),
-                              thrust::make_transform_iterator(f.end(),outerProductFunctor<Type,scalar>()),
-                              pTraits<scalar>::zero,
-                              thrust::plus<scalar>());
+        return thrust::reduce
+               (
+                   thrust::make_transform_iterator
+                   (
+                       f.begin(),
+                       outerProductFunctor<Type,scalar>()
+                   ),
+                   thrust::make_transform_iterator
+                   (
+                       f.end(),
+                       outerProductFunctor<Type,scalar>()
+                   ),
+                   pTraits<scalar>::zero,
+                   thrust::plus<scalar>()
+                );
     }
     else
     {
@@ -447,10 +561,21 @@ scalar sumMag(const gpuList<Type>& f)
 {
     if (f.size())
     {
-        return thrust::reduce(thrust::make_transform_iterator(f.begin(),magUnaryFunctionFunctor<Type,scalar>()),
-                              thrust::make_transform_iterator(f.end(),magUnaryFunctionFunctor<Type,scalar>()),
-                              pTraits<scalar>::zero,
-                              thrust::plus<scalar>());
+        return thrust::reduce
+               (
+                   thrust::make_transform_iterator
+                   (
+                       f.begin(),
+                       magUnaryFunctionFunctor<Type,scalar>()
+                   ),
+                   thrust::make_transform_iterator
+                   (
+                       f.end(),
+                       magUnaryFunctionFunctor<Type,scalar>()
+                   ),
+                   pTraits<scalar>::zero,
+                   thrust::plus<scalar>()
+               );
     }
     else
     {
@@ -466,10 +591,21 @@ Type sumCmptMag(const gpuList<Type>& f)
 {
     if (f.size())
     {
-        return thrust::reduce(thrust::make_transform_iterator(f.begin(),cmptMagUnaryFunctionFunctor<Type,Type>()),
-                              thrust::make_transform_iterator(f.end(),cmptMagUnaryFunctionFunctor<Type,Type>()),
-                              pTraits<Type>::zero,
-                              thrust::plus<Type>());
+        return thrust::reduce
+               (
+                   thrust::make_transform_iterator
+                   (
+                       f.begin(),
+                       cmptMagUnaryFunctionFunctor<Type,Type>()
+                   ),
+                   thrust::make_transform_iterator
+                   (
+                       f.end(),
+                       cmptMagUnaryFunctionFunctor<Type,Type>()
+                   ),
+                   pTraits<Type>::zero,
+                   thrust::plus<Type>()
+               );
     }
     else
     {
@@ -503,7 +639,7 @@ TMP_UNARY_FUNCTION(Type, average)
 #define G_UNARY_FUNCTION(ReturnType, gFunc, Func, rFunc)                      \
                                                                               \
 template<class Type>                                                          \
-ReturnType gFunc(const gpuList<Type>& f, const int comm)                        \
+ReturnType gFunc(const gpuList<Type>& f, const int comm)                      \
 {                                                                             \
     ReturnType res = Func(f);                                                 \
     reduce(res, rFunc##Op<Type>(), Pstream::msgType(), comm);                 \
@@ -606,140 +742,150 @@ BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, /, divide)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#define PRODUCT_OPERATOR(product, Op, OpFunc)                                 \
-                                                                              \
-template<class Type1, class Type2>                                            \
-void OpFunc                                                                   \
-(                                                                             \
+#define PRODUCT_OPERATOR(product, Op, OpFunc)                                    \
+                                                                                 \
+template<class Type1, class Type2>                                               \
+void OpFunc                                                                      \
+(                                                                                \
     gpuField<typename product<Type1, Type2>::type>& res,                         \
-    const gpuList<Type1>& f1,                                                 \
-    const gpuList<Type2>& f2                                                  \
-)                                                                             \
-{                                                                             \
-    typedef typename product<Type1, Type2>::type productType;                 \
-    thrust::transform(f1.begin(),f1.end(),f2.begin(),res.begin(),             \
-            OpFunc##OperatorFunctor<Type1,Type2,productType>());              \
-}                                                                             \
-                                                                              \
-template<class Type1, class Type2>                                            \
+    const gpuList<Type1>& f1,                                                    \
+    const gpuList<Type2>& f2                                                     \
+)                                                                                \
+{                                                                                \
+    typedef typename product<Type1, Type2>::type productType;                    \
+    thrust::transform(f1.begin(),f1.end(),f2.begin(),res.begin(),                \
+            OpFunc##OperatorFunctor<Type1,Type2,productType>());                 \
+}                                                                                \
+                                                                                 \
+template<class Type1, class Type2>                                               \
 tmp<gpuField<typename product<Type1, Type2>::type> >                             \
-operator Op(const gpuList<Type1>& f1, const gpuList<Type2>& f2)               \
-{                                                                             \
-    typedef typename product<Type1, Type2>::type productType;                 \
-    tmp<gpuField<productType> > tRes(new gpuField<productType>(f1.size()));         \
-    OpFunc(tRes(), f1, f2);                                                   \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Type1, class Type2>                                            \
+operator Op(const gpuList<Type1>& f1, const gpuList<Type2>& f2)                  \
+{                                                                                \
+    typedef typename product<Type1, Type2>::type productType;                    \
+    tmp<gpuField<productType> > tRes(new gpuField<productType>(f1.size()));      \
+    OpFunc(tRes(), f1, f2);                                                      \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Type1, class Type2>                                               \
 tmp<gpuField<typename product<Type1, Type2>::type> >                             \
 operator Op(const gpuList<Type1>& f1, const tmp<gpuField<Type2> >& tf2)          \
-{                                                                             \
-    typedef typename product<Type1, Type2>::type productType;                 \
-    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type2>::New(tf2);   \
-    OpFunc(tRes(), f1, tf2());                                                \
+{                                                                                \
+    typedef typename product<Type1, Type2>::type productType;                    \
+    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type2>::New(tf2);\
+    OpFunc(tRes(), f1, tf2());                                                   \
     reusegpuTmp<productType, Type2>::clear(tf2);                                 \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Type1, class Type2>                                            \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Type1, class Type2>                                               \
 tmp<gpuField<typename product<Type1, Type2>::type> >                             \
 operator Op(const tmp<gpuField<Type1> >& tf1, const gpuList<Type2>& f2)          \
-{                                                                             \
-    typedef typename product<Type1, Type2>::type productType;                 \
-    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type1>::New(tf1);   \
-    OpFunc(tRes(), tf1(), f2);                                                \
+{                                                                                \
+    typedef typename product<Type1, Type2>::type productType;                    \
+    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type1>::New(tf1);\
+    OpFunc(tRes(), tf1(), f2);                                                   \
     reusegpuTmp<productType, Type1>::clear(tf1);                                 \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Type1, class Type2>                                            \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Type1, class Type2>                                               \
 tmp<gpuField<typename product<Type1, Type2>::type> >                             \
-operator Op(const tmp<gpuField<Type1> >& tf1, const tmp<gpuField<Type2> >& tf2)     \
-{                                                                             \
-    typedef typename product<Type1, Type2>::type productType;                 \
+operator Op(const tmp<gpuField<Type1> >& tf1, const tmp<gpuField<Type2> >& tf2)  \
+{                                                                                \
+    typedef typename product<Type1, Type2>::type productType;                    \
     tmp<gpuField<productType> > tRes =                                           \
         reusegpuTmpTmp<productType, Type1, Type1, Type2>::New(tf1, tf2);         \
-    OpFunc(tRes(), tf1(), tf2());                                             \
+    OpFunc(tRes(), tf1(), tf2());                                                \
     reusegpuTmpTmp<productType, Type1, Type1, Type2>::clear(tf1, tf2);           \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Type, class Form, class Cmpt, int nCmpt>                       \
-void OpFunc                                                                   \
-(                                                                             \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Type, class Form, class Cmpt, int nCmpt>                          \
+void OpFunc                                                                      \
+(                                                                                \
     gpuField<typename product<Type, Form>::type>& res,                           \
-    const gpuList<Type>& f1,                                                  \
-    const VectorSpace<Form,Cmpt,nCmpt>& vs                                    \
-)                                                                             \
-{                                                                             \
-    typedef typename product<Type, Form>::type productType;                   \
-    const Form& ff = static_cast<const Form&>(vs);                            \
-    thrust::transform(f1.begin(),f1.end(),res.begin(),                        \
-            OpFunc##OperatorFSFunctor<Type,Form,productType>(ff));            \
-}                                                                             \
-                                                                              \
-template<class Type, class Form, class Cmpt, int nCmpt>                       \
+    const gpuList<Type>& f1,                                                     \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                                \
+{                                                                                \
+    typedef typename product<Type, Form>::type productType;                      \
+    const Form& ff = static_cast<const Form&>(vs);                               \
+    thrust::transform                                                            \
+    (                                                                            \
+        f1.begin(),                                                              \
+        f1.end(),                                                                \
+        res.begin(),                                                             \
+        OpFunc##OperatorFSFunctor<Type,Form,productType>(ff)                     \
+    );                                                                           \
+}                                                                                \
+                                                                                 \
+template<class Type, class Form, class Cmpt, int nCmpt>                          \
 tmp<gpuField<typename product<Type, Form>::type> >                               \
-operator Op(const gpuList<Type>& f1, const VectorSpace<Form,Cmpt,nCmpt>& vs)  \
-{                                                                             \
-    typedef typename product<Type, Form>::type productType;                   \
-    tmp<gpuField<productType> > tRes(new gpuField<productType>(f1.size()));         \
-    OpFunc(tRes(), f1, static_cast<const Form&>(vs));                         \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Type, class Form, class Cmpt, int nCmpt>                       \
+operator Op(const gpuList<Type>& f1, const VectorSpace<Form,Cmpt,nCmpt>& vs)     \
+{                                                                                \
+    typedef typename product<Type, Form>::type productType;                      \
+    tmp<gpuField<productType> > tRes(new gpuField<productType>(f1.size()));      \
+    OpFunc(tRes(), f1, static_cast<const Form&>(vs));                            \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Type, class Form, class Cmpt, int nCmpt>                          \
 tmp<gpuField<typename product<Type, Form>::type> >                               \
-operator Op                                                                   \
-(                                                                             \
+operator Op                                                                      \
+(                                                                                \
     const tmp<gpuField<Type> >& tf1,                                             \
-    const VectorSpace<Form,Cmpt,nCmpt>& vs                                    \
-)                                                                             \
-{                                                                             \
-    typedef typename product<Type, Form>::type productType;                   \
-    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type>::New(tf1);    \
-    OpFunc(tRes(), tf1(), static_cast<const Form&>(vs));                      \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs                                       \
+)                                                                                \
+{                                                                                \
+    typedef typename product<Type, Form>::type productType;                      \
+    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type>::New(tf1); \
+    OpFunc(tRes(), tf1(), static_cast<const Form&>(vs));                         \
     reusegpuTmp<productType, Type>::clear(tf1);                                  \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Form, class Cmpt, int nCmpt, class Type>                       \
-void OpFunc                                                                   \
-(                                                                             \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Form, class Cmpt, int nCmpt, class Type>                          \
+void OpFunc                                                                      \
+(                                                                                \
     gpuField<typename product<Form, Type>::type>& res,                           \
-    const VectorSpace<Form,Cmpt,nCmpt>& vs,                                   \
-    const gpuList<Type>& f1                                                   \
-)                                                                             \
-{                                                                             \
-    typedef typename product<Form, Type>::type productType;                   \
-    const Form& ff = static_cast<const Form&>(vs);                            \
-    thrust::transform(f1.begin(),f1.end(),res.begin(),                        \
-            OpFunc##OperatorSFFunctor<Form,Type,productType>(ff));            \
-}                                                                             \
-                                                                              \
-template<class Form, class Cmpt, int nCmpt, class Type>                       \
+    const VectorSpace<Form,Cmpt,nCmpt>& vs,                                      \
+    const gpuList<Type>& f1                                                      \
+)                                                                                \
+{                                                                                \
+    typedef typename product<Form, Type>::type productType;                      \
+    const Form& ff = static_cast<const Form&>(vs);                               \
+    thrust::transform                                                            \
+    (                                                                            \
+        f1.begin(),                                                              \
+        f1.end(),                                                                \
+        res.begin(),                                                             \
+        OpFunc##OperatorSFFunctor<Form,Type,productType>(ff)                     \
+    );                                                                           \
+}                                                                                \
+                                                                                 \
+template<class Form, class Cmpt, int nCmpt, class Type>                          \
 tmp<gpuField<typename product<Form, Type>::type> >                               \
-operator Op(const VectorSpace<Form,Cmpt,nCmpt>& vs, const gpuList<Type>& f1)  \
-{                                                                             \
-    typedef typename product<Form, Type>::type productType;                   \
-    tmp<gpuField<productType> > tRes(new gpuField<productType>(f1.size()));         \
-    OpFunc(tRes(), static_cast<const Form&>(vs), f1);                         \
-    return tRes;                                                              \
-}                                                                             \
-                                                                              \
-template<class Form, class Cmpt, int nCmpt, class Type>                       \
+operator Op(const VectorSpace<Form,Cmpt,nCmpt>& vs, const gpuList<Type>& f1)     \
+{                                                                                \
+    typedef typename product<Form, Type>::type productType;                      \
+    tmp<gpuField<productType> > tRes(new gpuField<productType>(f1.size()));      \
+    OpFunc(tRes(), static_cast<const Form&>(vs), f1);                            \
+    return tRes;                                                                 \
+}                                                                                \
+                                                                                 \
+template<class Form, class Cmpt, int nCmpt, class Type>                          \
 tmp<gpuField<typename product<Form, Type>::type> >                               \
-operator Op                                                                   \
-(                                                                             \
+operator Op                                                                      \
+(                                                                                \
     const VectorSpace<Form,Cmpt,nCmpt>& vs, const tmp<gpuField<Type> >& tf1      \
-)                                                                             \
-{                                                                             \
-    typedef typename product<Form, Type>::type productType;                   \
-    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type>::New(tf1);    \
-    OpFunc(tRes(), static_cast<const Form&>(vs), tf1());                      \
+)                                                                                \
+{                                                                                \
+    typedef typename product<Form, Type>::type productType;                      \
+    tmp<gpuField<productType> > tRes = reusegpuTmp<productType, Type>::New(tf1); \
+    OpFunc(tRes(), static_cast<const Form&>(vs), tf1());                         \
     reusegpuTmp<productType, Type>::clear(tf1);                                  \
-    return tRes;                                                              \
+    return tRes;                                                                 \
 }
 
 PRODUCT_OPERATOR(typeOfSum, +, add)

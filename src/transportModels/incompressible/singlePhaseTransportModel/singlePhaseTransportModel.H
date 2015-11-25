@@ -108,6 +108,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::singlePhaseTransportModel;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

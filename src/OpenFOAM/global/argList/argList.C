@@ -938,6 +938,8 @@ void Foam::argList::parse
             IOobject::writeDivider(Info);
         }
     }
+
+    cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
 }
 
 

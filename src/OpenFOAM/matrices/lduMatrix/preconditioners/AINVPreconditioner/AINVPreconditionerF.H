@@ -5,27 +5,27 @@ namespace Foam
     template<bool fast,int nUnroll>
     struct AINVPreconditionerFunctor 
     {
-        textures<scalar> psi;
-        textures<scalar> rD;
+        const textures<scalar> psi;
+        const textures<scalar> rD;
         const scalar* lower;
         const scalar* upper;
-        const __restrict__ label* own;
-        const __restrict__ label* nei;
-        const __restrict__ label* ownStart;
-        const __restrict__ label* losortStart;
-        const __restrict__ label* losort;
+        const label* own;
+        const label* nei;
+        const label* ownStart;
+        const label* losortStart;
+        const label* losort;
 
         AINVPreconditionerFunctor
         (
-            textures<scalar> _psi, 
-            textures<scalar> _rD, 
+            const textures<scalar> _psi, 
+            const textures<scalar> _rD, 
             const scalar* _lower,
             const scalar* _upper,
-            const __restrict__ label* _own,
-            const __restrict__ label* _nei,
-            const __restrict__ label* _ownStart,
-            const __restrict__ label* _losortStart,
-            const __restrict__ label* _losort
+            const label* _own,
+            const label* _nei,
+            const label* _ownStart,
+            const label* _losortStart,
+            const label* _losort
         ):
             psi(_psi),
             rD(_rD),

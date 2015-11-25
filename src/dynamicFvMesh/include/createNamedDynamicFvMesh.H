@@ -1,3 +1,5 @@
+    using Foam::dynamicFvMesh;
+
     Foam::word regionName;
 
     if (args.optionReadIfPresent("region", regionName))

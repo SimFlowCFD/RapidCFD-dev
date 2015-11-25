@@ -563,6 +563,8 @@ public:
 } // End namespace fv
 } // End namespace Foam
 
+namespace fv = Foam::fv;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "fvOptionI.H"

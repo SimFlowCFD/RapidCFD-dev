@@ -5,14 +5,15 @@ fieldAverage/fieldAverageFunctionObject/fieldAverageFunctionObject.C
 
 fieldCoordinateSystemTransform/fieldCoordinateSystemTransform.C
 fieldCoordinateSystemTransform/fieldCoordinateSystemTransformFunctionObject.C
-
+/*
 fieldMinMax/fieldMinMax.C
 fieldMinMax/fieldMinMaxFunctionObject.C
-
+*/
 fieldValues/fieldValue/fieldValue.C
 fieldValues/fieldValue/fieldValueNew.C
 fieldValues/fieldValueDelta/fieldValueDelta.C
 fieldValues/fieldValueDelta/fieldValueDeltaFunctionObject.C
+/*
 fieldValues/faceSource/faceSource.C
 fieldValues/faceSource/faceSourceFunctionObject.C
 fieldValues/cellSource/cellSource.C
@@ -45,5 +46,5 @@ surfaceInterpolateFields/surfaceInterpolateFieldsFunctionObject.C
 
 regionSizeDistribution/regionSizeDistribution.C
 regionSizeDistribution/regionSizeDistributionFunctionObject.C
-
+*/
 LIB = $(FOAM_LIBBIN)/libfieldFunctionObjects

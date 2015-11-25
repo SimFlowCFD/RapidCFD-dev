@@ -22,7 +22,31 @@
 
 #ifndef namespaceFoam
 #define namespaceFoam
-    using namespace Foam;
+
+    #include "accessFoamNamespace.H"
+
+    using Foam::fvMesh;
+    using Foam::volMesh;
+    using Foam::fvMatrix;
+    using Foam::fvScalarMatrix;
+    using Foam::fvVectorMatrix;
+    using Foam::solve;
+
+    using Foam::fvSolution;
+
+    using Foam::volScalarField;
+    using Foam::volVectorField;
+    using Foam::volTensorField;
+    using Foam::surfaceScalarField;
+    using Foam::surfaceVectorField;
+    using Foam::fvPatchField;
+    using Foam::fvsPatchScalarField;
+    using Foam::volSymmTensorField;
+    using Foam::uniformDimensionedVectorField;
+
+    namespace fvm = Foam::fvm;
+    namespace fvc = Foam::fvc;
+
 #endif
 
 #endif

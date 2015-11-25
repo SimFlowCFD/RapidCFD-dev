@@ -394,6 +394,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::coordinateSystem;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "coordinateSystemI.H"

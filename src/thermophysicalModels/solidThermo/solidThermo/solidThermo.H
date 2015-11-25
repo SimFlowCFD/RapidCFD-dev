@@ -171,6 +171,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::solidThermo;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

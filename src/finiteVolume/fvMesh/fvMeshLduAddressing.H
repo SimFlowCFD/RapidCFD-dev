@@ -94,11 +94,8 @@ public:
             lduAddressing(mesh.nCells()),
             lowerAddr_
             (
-                labelgpuList
-                (
-                    mesh.getFaceOwner(),
-                    mesh.nInternalFaces()
-                )
+                mesh.getFaceOwner(),
+                mesh.nInternalFaces()
             ),
             upperAddr_(mesh.getFaceNeighbour()),
             patchAddr_(mesh.boundary().size()),

@@ -162,6 +162,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::magnet;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif

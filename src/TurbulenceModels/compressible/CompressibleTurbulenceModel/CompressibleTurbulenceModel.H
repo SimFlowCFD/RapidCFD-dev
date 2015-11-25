@@ -144,6 +144,8 @@ public:
 
 } // End namespace Foam
 
+using Foam::CompressibleTurbulenceModel;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository

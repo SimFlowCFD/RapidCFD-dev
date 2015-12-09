@@ -27,9 +27,14 @@ License
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
+namespace Foam
+{
+
 defineTypeNameAndDebug(calcType, 0);
 
 defineRunTimeSelectionTable(calcType, dictionary);
+
+}
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

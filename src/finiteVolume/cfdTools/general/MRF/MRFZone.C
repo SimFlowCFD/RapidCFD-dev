@@ -184,6 +184,8 @@ void Foam::MRFZone::setMRFFaces()
             internalFacesTmp[nInternal++] = faceI;
         }
     }
+
+    internalFacesTmp.setSize(nInternal);
     internalFaces_ = internalFacesTmp;
 
     labelList nIncludedFaces(patches.size(), 0);

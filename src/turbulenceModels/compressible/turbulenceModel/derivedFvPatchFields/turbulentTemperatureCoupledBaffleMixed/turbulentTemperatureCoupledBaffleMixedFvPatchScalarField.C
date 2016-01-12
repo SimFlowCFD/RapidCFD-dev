@@ -241,8 +241,39 @@ void turbulentTemperatureCoupledBaffleMixedFvPatchScalarField::updateCoeffs()
         nbrKDelta() = contactRes_;
     }
 
-    mpp.distribute(nbrIntFld());
-    mpp.distribute(nbrKDelta());
+    tmp<scalarField> nbrIntFld_cpu;
+    tmp<scalarField> nbrKDelta_cpu;
+
+    thrust::copy
+    (
+        nbrIntFld.begin(),
+        nbrIntFld.end(),
+        nbrIntFld_cpu.begin()
+    );
+
+    thrust::copy
+    (
+        nbrKDelta.begin(),
+        nbrKDelta.end(),
+        nbrKDelta_cpu.begin()
+    );
+
+    mpp.distribute(nbrIntFld_cpu());
+    mpp.distribute(nbrKDelta_cpu());
+
+    thrust::copy
+    (
+        nbrIntFld_cpu.begin(),
+        nbrIntFld_cpu.end(),
+        nbrIntFld.begin()
+    );
+
+    thrust::copy
+    (
+        nbrKDelta_cpu.begin(),
+        nbrKDelta_cpu.end(),
+        nbrKDelta.begin()
+    );
 
     tmp<scalargpuField> myKDelta = kappa(*this)*patch().deltaCoeffs();
 

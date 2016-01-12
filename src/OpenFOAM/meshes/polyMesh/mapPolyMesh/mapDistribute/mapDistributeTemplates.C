@@ -40,7 +40,7 @@ void Foam::mapDistribute::distribute
     const label constructSize,
     const labelListList& subMap,
     const labelListList& constructMap,
-    List<T>& field,
+    gpuList<T>& field,
     const int tag
 )
 {
@@ -910,7 +910,7 @@ void Foam::mapDistribute::distribute
 template<class T>
 void Foam::mapDistribute::distribute
 (
-    List<T>& fld,
+    gpuList<T>& fld,
     const bool dummyTransform,
     const int tag
 ) const

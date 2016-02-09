@@ -33,12 +33,12 @@ License
 
 #include "STLsurfaceFormatCore.H"
 
-using namespace Foam;
-
 // Dummy yyFlexLexer::yylex() to keep the linker happy. It is not called
 //! \cond dummy
 int yyFlexLexer::yylex()
 {
+    using namespace Foam;
+
     FatalErrorIn("yyFlexLexer::yylex()")
         << "Should not have called this function"
         << abort(FatalError);
@@ -68,6 +68,13 @@ class STLASCIILexer
 :
     public yyFlexLexer
 {
+public:
+
+    typedef Foam::point point;
+    typedef Foam::label label;
+    typedef Foam::word word;
+
+private:
     // Private data
 
         bool  sorted_;
@@ -75,11 +82,11 @@ class STLASCIILexer
         label lineNo_;
         word  startError_;
 
-        DynamicList<point> points_;
-        DynamicList<label> facets_;
-        DynamicList<word>  names_;
-        DynamicList<label> sizes_;
-        HashTable<label>   lookup_;
+        Foam::DynamicList<point> points_;
+        Foam::DynamicList<label> facets_;
+        Foam::DynamicList<word>  names_;
+        Foam::DynamicList<label> sizes_;
+        Foam::HashTable<label>   lookup_;
 
 public:
 
@@ -103,26 +110,26 @@ public:
         }
 
         //- A list of points corresponding to a pointField
-        DynamicList<point>& points()
+        Foam::DynamicList<point>& points()
         {
             return points_;
         }
 
         //- A list of facet IDs (group IDs)
         //  corresponds to the number of triangles
-        DynamicList<label>& facets()
+        Foam::DynamicList<label>& facets()
         {
             return facets_;
         }
 
         //- Names
-        DynamicList<word>& names()
+        Foam::DynamicList<word>& names()
         {
             return names_;
         }
 
         //- Sizes
-        DynamicList<label>& sizes()
+        Foam::DynamicList<label>& sizes()
         {
             return sizes_;
         }
@@ -198,6 +205,8 @@ endsolid              {space}("endsolid"|"ENDSOLID")({some_space}{word})*
 %%
 
 %{
+    using namespace Foam;
+
     // End of read character pointer returned by strtof
     // char* endPtr;
 

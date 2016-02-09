@@ -609,7 +609,7 @@ public:
             template<class T>
             void distribute
             (
-                List<T>& fld,
+                gpuList<T>& fld,
                 const bool dummyTransform = true,
                 const int tag = UPstream::msgType()
             ) const;

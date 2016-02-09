@@ -420,7 +420,7 @@ public:
 
             //- Wrapper around map/interpolate data distribution
             template<class Type>
-            void distribute(List<Type>& lst) const;
+            void distribute(gpuList<Type>& lst) const;
 
             //- Wrapper around map/interpolate data distribution with operation
             template<class Type, class CombineOp>

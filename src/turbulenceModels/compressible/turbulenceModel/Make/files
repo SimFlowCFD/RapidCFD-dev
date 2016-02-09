@@ -3,8 +3,9 @@ laminar/laminar.C
 
 derivedFvPatchFields/turbulentHeatFluxTemperature/turbulentHeatFluxTemperatureFvPatchScalarField.C
 derivedFvPatchFields/temperatureCoupledBase/temperatureCoupledBase.C
-/*
+
 derivedFvPatchFields/turbulentTemperatureCoupledBaffleMixed/turbulentTemperatureCoupledBaffleMixedFvPatchScalarField.C
+/*
 derivedFvPatchFields/thermalBaffle1D/thermalBaffle1DFvPatchScalarFields.C
 */
 derivedFvPatchFields/totalFlowRateAdvectiveDiffusive/totalFlowRateAdvectiveDiffusiveFvPatchScalarField.C

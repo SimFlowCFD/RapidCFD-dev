@@ -24,13 +24,13 @@ License
 \*---------------------------------------------------------------------------*/
 
 template<class Type>
-void Foam::mappedPatchBase::distribute(List<Type>& lst) const
+void Foam::mappedPatchBase::distribute(gpuList<Type>& lst) const
 {
     switch (mode_)
     {
         case NEARESTPATCHFACEAMI:
         {
-            lst = AMI().interpolateToSource(Field<Type>(lst.xfer()));
+            lst = AMI().interpolateToSource(gpuField<Type>(lst.xfer()));
             break;
         }
         default:
@@ -75,7 +75,6 @@ void Foam::mappedPatchBase::distribute
         }
     }
 }
-
 
 template<class Type>
 void Foam::mappedPatchBase::reverseDistribute(List<Type>& lst) const

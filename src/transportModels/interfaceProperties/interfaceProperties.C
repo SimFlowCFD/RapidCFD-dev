@@ -97,7 +97,7 @@ void Foam::interfaceProperties::correctContactAngle
 
             scalargpuField b2(nHatp.size());
             
-            thrust::transform(a12.begin(),a12.end(),theta.begin(),b2.end(),
+            thrust::transform(a12.begin(),a12.end(),theta.begin(),b2.begin(),
                               interfacePropertiesCorrectContactAngleFunctor());
 
             const scalargpuField det(1.0 - a12*a12);

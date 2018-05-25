@@ -84,15 +84,15 @@ inline void textures<double>::initResourceDesc(cudaResourceDesc& resDesc)
     resDesc.res.linear.desc.y = 32; 
 }
 
-#if __CUDA_ARCH__ >= 350
+//#if __CUDA_ARCH__ >= 350
 
-template<class T>
-inline __device__ T textures<T>::operator[](const int& i) const
-{
-    return __ldg(data + i);
-}
+//template<class T>
+//inline __device__ T textures<T>::operator[](const int& i) const
+//{
+//    return __ldg(data + i);
+//}
 
-#else
+//#else
 
 template<>
 inline __device__ float textures<float>::operator[](const int& i) const
@@ -113,6 +113,6 @@ inline __device__ double textures<double>::operator[](const int& i) const
     return __hiloint2double(v.y, v.x);
 }
 
-#endif
+//#endif
 
 }

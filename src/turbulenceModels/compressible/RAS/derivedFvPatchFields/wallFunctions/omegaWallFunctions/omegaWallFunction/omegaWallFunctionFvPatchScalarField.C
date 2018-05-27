@@ -63,6 +63,7 @@ struct omegaWallFunctionGraterThanToleranceFunctor : public std::unary_function<
 {
     const scalar tolerance_;
     omegaWallFunctionGraterThanToleranceFunctor(scalar tolerance): tolerance_(tolerance){}
+    __HOST____DEVICE__
     bool operator () (const scalar& s)
     {
         return s > tolerance_;

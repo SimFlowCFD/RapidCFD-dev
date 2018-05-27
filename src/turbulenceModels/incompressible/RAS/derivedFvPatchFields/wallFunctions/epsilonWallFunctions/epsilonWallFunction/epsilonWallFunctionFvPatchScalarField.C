@@ -47,6 +47,7 @@ scalar epsilonWallFunctionFvPatchScalarField::tolerance_ = 1e-5;
 struct epsilonWallFunctionGraterThanToleranceFunctor : public std::unary_function<scalar,bool>{
 	const scalar tolerance_;
 	epsilonWallFunctionGraterThanToleranceFunctor(scalar tolerance): tolerance_(tolerance){}
+    __HOST____DEVICE__
 	bool operator () (const scalar& s){
 		return s > tolerance_;
 	}

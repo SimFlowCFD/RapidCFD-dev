@@ -5,27 +5,27 @@ namespace Foam
     template<bool fast,int nUnroll>
     struct AINVPreconditionerFunctor 
     {
-        const textures<scalar> psi;
-        const textures<scalar> rD;
+        const scalar* psi;
+        const scalar* rD;
         const scalar* lower;
         const scalar* upper;
-        const label* own;
-        const label* nei;
-        const label* ownStart;
-        const label* losortStart;
-        const label* losort;
+        const __restrict__ label* own;
+        const __restrict__ label* nei;
+        const __restrict__ label* ownStart;
+        const __restrict__ label* losortStart;
+        const __restrict__ label* losort;
 
         AINVPreconditionerFunctor
         (
-            const textures<scalar> _psi, 
-            const textures<scalar> _rD, 
+            const scalar* _psi, 
+            const scalar* _rD, 
             const scalar* _lower,
             const scalar* _upper,
-            const label* _own,
-            const label* _nei,
-            const label* _ownStart,
-            const label* _losortStart,
-            const label* _losort
+            const __restrict__ label* _own,
+            const __restrict__ label* _nei,
+            const __restrict__ label* _ownStart,
+            const __restrict__ label* _losortStart,
+            const __restrict__ label* _losort
         ):
             psi(_psi),
             rD(_rD),
@@ -41,6 +41,69 @@ namespace Foam
         __device__
         scalar operator()(const label& id)
         {
+
+        #if __CUDA_ARCH__ >= 350
+
+            scalar out = 0;
+            scalar tmpSum[2*nUnroll] = {};
+            
+            label oStart = __ldg(&ownStart[id]);
+            label oSize = __ldg(&ownStart[id+1]) - oStart;
+            
+            label nStart = __ldg(&losortStart[id]);
+            label nSize = __ldg(&losortStart[id+1]) - nStart;
+
+            for(label i = 0; i<nUnroll; i++)
+            {
+                if(i<oSize)
+                {
+                    label face = oStart + i;
+
+                    tmpSum[i] = __ldg(&upper[face])*__ldg(&rD[nei[face]])*__ldg(&psi[nei[face]]);
+                }
+            }
+
+            for(label i = 0; i<nUnroll; i++)
+            {
+                if(i<nSize)
+                {
+                    label face = nStart + i;
+                    if(!fast)
+                         face = __ldg(&losort[face]);
+
+                    tmpSum[i+nUnroll] = __ldg(&lower[face])*__ldg(&rD[own[face]])*__ldg(&psi[own[face]]);
+                }
+            }
+
+            #pragma unroll
+            for(label i = 0; i<2*nUnroll; i++)
+            {
+                out+= tmpSum[i]; 
+            }
+            
+            #pragma unroll 2
+            for(label i = nUnroll; i<oSize; i++)
+            {
+                label face = oStart + i;
+
+                out += __ldg(&upper[face])*__ldg(&rD[nei[face]])*__ldg(&psi[nei[face]]);
+            }
+            
+            #pragma unroll 2
+            for(label i = nUnroll; i<nSize; i++)
+            {
+                 label face = nStart + i;
+                 if(!fast)
+                      face = __ldg(&losort[face]);
+
+                 out += __ldg(&lower[face])*__ldg(&rD[own[face]])*__ldg(&psi[own[face]]);
+            }
+
+            
+            return __ldg(&rD[id])*(__ldg(&psi[id])-out);
+ 
+        #else
+        
             scalar out = 0;
             scalar tmpSum[2*nUnroll] = {};
             
@@ -98,6 +161,9 @@ namespace Foam
 
             
             return rD[id]*(psi[id]-out);
+            
+        #endif
+ 
         }
     };
 }

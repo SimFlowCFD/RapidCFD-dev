@@ -28,7 +28,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "lduMatrix.H"
-#include "textures.H"
 #include "lduMatrixSolutionCache.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -39,27 +38,27 @@ namespace Foam
 template<bool fast,int nUnroll>
 struct matrixMultiplyFunctor
 {
-    const textures<scalar> psi;
+    const scalar * psi;
     const scalar * diag;
     const scalar * lower;
     const scalar * upper;
-    const label * own;
-    const label * nei;
-    const label * ownStart;
-    const label * losortStart;
-    const label * losort;
+    const __restrict__ label * own;
+    const __restrict__ label * nei;
+    const __restrict__ label * ownStart;
+    const __restrict__ label * losortStart;
+    const __restrict__ label * losort;
 
     matrixMultiplyFunctor
     (
-        const textures<scalar> _psi, 
+        const scalar * _psi, 
         const scalar * _diag,
         const scalar * _lower,
         const scalar * _upper,
-        const label * _own,
-        const label * _nei,
-        const label * _ownStart,
-        const label * _losortStart,
-        const label * _losort
+        const __restrict__ label * _own,
+        const __restrict__ label * _nei,
+        const __restrict__ label * _ownStart,
+        const __restrict__ label * _losortStart,
+        const __restrict__ label * _losort
     ):
         psi(_psi),
         diag(_diag),
@@ -75,64 +74,130 @@ struct matrixMultiplyFunctor
     __device__
     scalar operator()(const label& id) const
     {
-        scalar tmpSum[2*nUnroll] = {};
-        scalar nExtra = 0;
-            
-        label oStart = ownStart[id];
-        label oSize = ownStart[id+1] - oStart;
-            
-        label nStart = losortStart[id];
-        label nSize = losortStart[id+1] - nStart;
+        #if __CUDA_ARCH__ >= 350
 
-        scalar out = diag[id]*psi[id];
-
-        for(label i = 0; i<nUnroll; i++)
-        {
-            if(i<oSize)
+            scalar tmpSum[2*nUnroll] = {};
+            scalar nExtra = 0;
+            
+            label oStart = __ldg(&ownStart[id]);
+            label oSize = __ldg(&ownStart[id+1]) - oStart;
+                
+            label nStart = __ldg(&losortStart[id]);
+            label nSize = __ldg(&losortStart[id+1]) - nStart;
+    
+            scalar out = __ldg(&diag[id])*__ldg(&psi[id]);
+    
+            for(label i = 0; i<nUnroll; i++)
+            {
+                if(i<oSize)
+                {
+                    label face = oStart + i;
+    
+                    tmpSum[i] = __ldg(&upper[face])*__ldg(&psi[nei[face]]); 
+                }
+            }
+    
+            for(label i = 0; i<nUnroll; i++)
+            {
+                if(i<nSize)
+                {
+                     label face = nStart + i;
+                     if( ! fast)
+                         face = __ldg(&losort[face]);
+                       
+                     tmpSum[i+nUnroll] = __ldg(&lower[face])*__ldg(&psi[own[face]]);
+                }
+            }
+        
+            #pragma unroll
+            for(label i = 0; i<2*nUnroll; i++)
+            {
+                out+= tmpSum[i]; 
+            }
+            
+            #pragma unroll 2   
+            for(label i = nUnroll; i<oSize; i++)
             {
                 label face = oStart + i;
-
-                tmpSum[i] = upper[face]*psi[nei[face]]; 
+                    
+                out += __ldg(&upper[face])*__ldg(&psi[nei[face]]);
             }
-        }
-
-        for(label i = 0; i<nUnroll; i++)
-        {
-            if(i<nSize)
-            {
-                 label face = nStart + i;
-                 if( ! fast)
-                     face = losort[face];
-                   
-                 tmpSum[i+nUnroll] = lower[face]*psi[own[face]];
-            }
-        }
-
-        #pragma unroll
-        for(label i = 0; i<2*nUnroll; i++)
-        {
-            out+= tmpSum[i]; 
-        }
-        
-        #pragma unroll 2   
-        for(label i = nUnroll; i<oSize; i++)
-        {
-            label face = oStart + i;
                 
-            out += upper[face]*psi[nei[face]];
-        }
+            #pragma unroll 2    
+            for(label i = nUnroll; i<nSize; i++)
+            {
+                label face = nStart + i;
+                if( ! fast)
+                    face = __ldg(&losort[face]);
+    
+                nExtra += __ldg(&lower[face])*__ldg(&psi[own[face]]); 
+            }  
+                
+            return out + nExtra;
+
+        #else
+
+            scalar tmpSum[2*nUnroll] = {};
+            scalar nExtra = 0;
+                
+            label oStart = ownStart[id];
+            label oSize = ownStart[id+1] - oStart;
+                
+            label nStart = losortStart[id];
+            label nSize = losortStart[id+1] - nStart;
+    
+            scalar out = diag[id]*psi[id];
+    
+            for(label i = 0; i<nUnroll; i++)
+            {
+                if(i<oSize)
+                {
+                    label face = oStart + i;
+    
+                    tmpSum[i] = upper[face]*psi[nei[face]]; 
+                }
+            }
+    
+            for(label i = 0; i<nUnroll; i++)
+            {
+                if(i<nSize)
+                {
+                     label face = nStart + i;
+                     if( ! fast)
+                         face = losort[face];
+                       
+                     tmpSum[i+nUnroll] = lower[face]*psi[own[face]];
+                    }
+            }
+    
+            #pragma unroll
+            for(label i = 0; i<2*nUnroll; i++)
+            {
+                out+= tmpSum[i]; 
+            }
             
-        #pragma unroll 2    
-        for(label i = nUnroll; i<nSize; i++)
-        {
-            label face = nStart + i;
-            if( ! fast)
+            #pragma unroll 2   
+            for(label i = nUnroll; i<oSize; i++)
+            {
+                label face = oStart + i;
+                    
+                out += upper[face]*psi[nei[face]];
+            }
+                
+            #pragma unroll 2    
+            for(label i = nUnroll; i<nSize; i++)
+            {
+                label face = nStart + i;
+                if( ! fast)
                 face = losort[face];
 
-            nExtra += lower[face]*psi[own[face]]; 
-        }  
+                nExtra += lower[face]*psi[own[face]]; 
+            }  
             
-        return out + nExtra;
+            return out + nExtra;
+
+        #endif
+        
     }
 };
 
@@ -154,7 +219,6 @@ inline void callMultiply
     const scalargpuField& Diag
 )
 {
-    textures<scalar> psiTex(psi);
 
     thrust::transform
     (
@@ -163,7 +227,7 @@ inline void callMultiply
         Apsi.begin(),
         matrixMultiplyFunctor<fast,3>
         (
-            psiTex,
+            psi.data(),
             Diag.data(),
             Lower.data(),
             Upper.data(),
@@ -174,8 +238,6 @@ inline void callMultiply
             losort.data()
         )
     );
-
-    psiTex.destroy();
 }
 
 

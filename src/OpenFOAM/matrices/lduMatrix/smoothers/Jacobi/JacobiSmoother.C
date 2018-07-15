@@ -66,8 +66,6 @@ void Foam::JacobiSmoother::smooth
     const scalargpuField& Upper = matrix_.upper();
     const scalargpuField& Diag = matrix_.diag();
 
-    textures<scalar> psiTex(psi);
-
     FieldField<gpuField, scalar>& mBouCoeffs =
         const_cast<FieldField<gpuField, scalar>&>
         (
@@ -115,7 +113,7 @@ void Foam::JacobiSmoother::smooth
                 JacobiSmootherFunctor<true,3>
                 (
                     omega_,
-                    psiTex,
+                    psi.data(),
                     Diag.data(),
                     sourceTmp.data(),
                     Lower.data(),
@@ -140,7 +138,7 @@ void Foam::JacobiSmoother::smooth
                 JacobiSmootherFunctor<false,3>
                 (
                     omega_,
-                    psiTex,
+                    psi.data(),
                     Diag.data(),
                     sourceTmp.data(),
                     Lower.data(),
@@ -165,7 +163,5 @@ void Foam::JacobiSmoother::smooth
             mBouCoeffs[patchi].negate();
         }
     }
-
-    psiTex.destroy();
 }
 

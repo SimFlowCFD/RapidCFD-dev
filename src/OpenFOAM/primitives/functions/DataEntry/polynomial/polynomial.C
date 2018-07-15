@@ -26,7 +26,6 @@ License
 #include "polynomial.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
-#include "textures.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -253,14 +252,14 @@ namespace Foam
 struct polynomialFunctor
 {
     const label size_;
-    const textures<scalar> pre_;
-    const textures<scalar> exp_;
+    const scalar* pre_;
+    const scalar* exp_;
 
     polynomialFunctor
     (
         const label size,
-        const textures<scalar> preCoeffs,
-        const textures<scalar> expCoeffs
+        const scalar* preCoeffs,
+        const scalar* expCoeffs
     ):
         size_(size),
         pre_(preCoeffs),
@@ -292,9 +291,6 @@ Foam::tmp<Foam::scalargpuField > Foam::polynomial::value
     tmp<scalargpuField> tfld(new scalargpuField(x.size()));
     scalargpuField& fld = tfld();
 
-    textures<scalar> preCoeffs(preCoeffs_);
-    textures<scalar> expCoeffs(expCoeffs_);
-
     thrust::transform
     (
         x.begin(),
@@ -303,13 +299,10 @@ Foam::tmp<Foam::scalargpuField > Foam::polynomial::value
         polynomialFunctor
         (
             coeffs_.size(),
-            preCoeffs,
-            expCoeffs
+            preCoeffs_.data(),
+            expCoeffs_.data()
         )
     );
-
-    preCoeffs.destroy();
-    expCoeffs.destroy();
 
     return tfld;
 }

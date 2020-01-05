@@ -28,6 +28,7 @@ License
 #include "scalarField.H"
 #include "DynamicList.H"
 #include "error.H"
+#include <thrust/iterator/discard_iterator.h>
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -70,7 +71,7 @@ void Foam::lduAddressing::calcPatchSort() const
             nbrTmp.end(),
             lst.begin()
         );
-         
+
         labelgpuList* cellsSortPtr= new labelgpuList(nbr.size());
         patchSortCells_.set(i,cellsSortPtr);
         labelgpuList& cellsSort = *cellsSortPtr;
@@ -89,7 +90,7 @@ void Foam::lduAddressing::calcPatchSort() const
             ),
             cellsSort.begin()
         );
-                      
+
         cellsSort.setSize
         (
             thrust::unique(cellsSort.begin(),cellsSort.end()) - cellsSort.begin()
@@ -125,7 +126,6 @@ void Foam::lduAddressing::calcPatchSortStart() const
         labelgpuList& lsrtStart = *patchSortStartPtr_;
 
         labelgpuList ones(nbr.size(),1);
-        labelgpuList tmpCell(nbr.size());
         labelgpuList tmpSum(nbr.size());
 
         labelgpuList nbrSort(nbr.size());
@@ -150,7 +150,7 @@ void Foam::lduAddressing::calcPatchSortStart() const
             nbrSort.begin(),
             nbrSort.end(),
             ones.begin(),
-            tmpCell.begin(),
+            thrust::make_discard_iterator(),
             tmpSum.begin()
         );
 
@@ -192,7 +192,7 @@ void Foam::lduAddressing::calcLosort() const
         nbrTmp.begin(),
         nbrTmp.end(),
         lst.begin()
-    );                
+    );
 }
 
 
@@ -212,47 +212,46 @@ void Foam::lduAddressing::calcOwnerStart() const
     labelgpuList& ownStart = *ownerStartPtr_;
 
     labelgpuList ones(own.size()+size(),1);
-    labelgpuList tmpCell(size());
     labelgpuList tmpSum(size());
-    
+
     labelgpuList ownSort(own.size()+size());
-    
-    
+
+
     thrust::copy
     (
         own.begin(),
         own.end(),
         ownSort.begin()
     );
-                 
+
     thrust::copy
     (
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(0)+size(),
         ownSort.begin()+own.size()
     );
-                 
+
     thrust::fill
     (
         ones.begin()+own.size(),
         ones.end(),
         0
     );
-    
+
     thrust::stable_sort_by_key
     (
         ownSort.begin(),
         ownSort.end(),
         ones.begin()
-    );  
-    
+    );
+
 
     thrust::reduce_by_key
     (
         ownSort.begin(),
         ownSort.end(),
         ones.begin(),
-        tmpCell.begin(),
+        thrust::make_discard_iterator(),
         tmpSum.begin()
     );
 
@@ -283,7 +282,6 @@ void Foam::lduAddressing::calcLosortStart() const
     labelgpuList& lsrtStart = *losortStartPtr_;
 
     labelgpuList ones(nbr.size()+size(),1);
-    labelgpuList tmpCell(size());
     labelgpuList tmpSum(size());
 
     labelgpuList nbrSort(nbr.size()+size());
@@ -302,35 +300,35 @@ void Foam::lduAddressing::calcLosortStart() const
         ),
         nbrSort.begin()
     );
-                 
+
     thrust::copy
     (
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(0)+size(),
         nbrSort.begin()+nbr.size()
     );
-                 
+
     thrust::fill
     (
         ones.begin()+nbr.size(),
         ones.end(),
         0
     );
-                 
+
 
     thrust::stable_sort_by_key
     (
         nbrSort.begin(),
         nbrSort.end(),
         ones.begin()
-    );     
+    );
 
     thrust::reduce_by_key
     (
         nbrSort.begin(),
         nbrSort.end(),
         ones.begin(),
-        tmpCell.begin(),
+        thrust::make_discard_iterator(),
         tmpSum.begin()
     );
 
@@ -350,7 +348,7 @@ Foam::lduAddressing::~lduAddressing()
     deleteDemandDrivenData(ownerStartPtr_);
     deleteDemandDrivenData(losortStartPtr_);
     deleteDemandDrivenData(ownerSortAddrPtr_);
-    
+
     patchSortCells_.clear();
     patchSortAddr_.clear();
     patchSortStartAddr_.clear();
@@ -372,13 +370,13 @@ const Foam::labelgpuList& Foam::lduAddressing::losortAddr() const
 const Foam::labelgpuList& Foam::lduAddressing::ownerSortAddr() const
 {
     if ( ! ownerSortAddrPtr_)
-    { 
+    {
         const labelgpuList& own = lowerAddr();
         const labelgpuList& lsrt = losortAddr();
 
         ownerSortAddrPtr_ = new labelgpuList(own.size());
         labelgpuList& ownSort = *ownerSortAddrPtr_;
-        
+
         thrust::copy
         (
             thrust::make_permutation_iterator
@@ -486,7 +484,7 @@ Foam::Tuple2<Foam::label, Foam::scalar> Foam::lduAddressing::band() const
     label bandwidth = max(cellBandwidth);
 
     // Do not use field algebra because of conversion label to scalar
-    scalar profile = 
+    scalar profile =
         thrust::reduce
         (
             cellBandwidth.begin(),

@@ -176,6 +176,28 @@ void Foam::lduMatrix::solver::read(const dictionary& solverControls)
     readControls();
 }
 
+namespace Foam {
+struct normFactorFunctor {
+     const scalar * Apsi;
+     const scalar * source;
+     const scalar * tmpField;
+     const scalar average;
+
+     normFactorFunctor (
+          const scalar * _Apsi,
+          const scalar * _source,
+          const scalar * _tmpField,
+          const scalar _average
+    ): Apsi(_Apsi), source(_source), tmpField(_tmpField), average(_average) {}
+
+    __HOST____DEVICE__
+    scalar operator()(const label id)
+    {
+        scalar tmpVal = average * tmpField[id];
+        return mag(Apsi[id] - tmpVal) + mag(source[id] - tmpVal);
+    }
+};
+}
 
 Foam::scalar Foam::lduMatrix::solver::normFactor
 (
@@ -188,15 +210,23 @@ Foam::scalar Foam::lduMatrix::solver::normFactor
     // --- Calculate A dot reference value of psi
     matrix_.sumA(tmpField, interfaceBouCoeffs_, interfaces_);
 
-    tmpField *= gAverage(psi, matrix_.lduMesh_.comm());
+    scalar average = gAverage(psi, matrix_.lduMesh_.comm());
 
-    return
-        gSum
-        (
-            (mag(Apsi - tmpField) + mag(source - tmpField))(),
-            matrix_.lduMesh_.comm()
+    struct normFactorFunctor kernel(
+        Apsi.data(), source.data(), tmpField.data(), average
+    );
+
+    scalar factor = thrust::reduce (
+        thrust::make_transform_iterator (
+            thrust::make_counting_iterator(0), kernel
+        ),
+        thrust::make_transform_iterator(
+            thrust::make_counting_iterator(psi.size()), kernel
         )
-      + solverPerformance::small_;
+    );
+
+    reduce(factor, sumOp<scalar>(), Pstream::msgType(), matrix_.lduMesh_.comm());
+    return factor + solverPerformance::small_;
 
     // At convergence this simpler method is equivalent to the above
     // return 2*gSumMag(source) + solverPerformance::small_;

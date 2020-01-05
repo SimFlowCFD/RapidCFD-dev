@@ -13,46 +13,45 @@ private:
     const T* data;
 
     inline void initResourceDesc(cudaResourceDesc& resDesc);
-    void init(int n, T* data_);
+    void bind(int n);
 
 public:
     textures(int n, T* _data):
         tex(0),
         data(_data)
     {
-        init(n,_data);
+        if(needTextureBind())
+            bind(n);
     }
 
     textures(const gpuList<T>& list):
-        tex(0)
+        tex(0),
+        data(list.data())
     {
-        init(list.size(),const_cast<T*>(list.data()));
+        if(needTextureBind())
+            bind(list.size());
     }
 
     inline __device__ T operator[](const int& i) const;
 
     void destroy()
     {
-        cudaDestroyTextureObject(tex);
+        if(needTextureBind())
+            cudaDestroyTextureObject(tex);
     }
 };
 
 template<class T>
-inline void textures<T>::initResourceDesc(cudaResourceDesc& resDesc)
-{
-}
-
-template<class T>
-inline void textures<T>::init(int n, T* _data)
+inline void textures<T>::bind(int n)
 {
     cudaResourceDesc resDesc;
     memset(&resDesc, 0, sizeof(cudaResourceDesc));
-   
+
     resDesc.resType = cudaResourceTypeLinear;
-    resDesc.res.linear.devPtr = _data;
+    resDesc.res.linear.devPtr = const_cast<T*>(data);
     resDesc.res.linear.sizeInBytes = n*sizeof(T);
 
-    initResourceDesc(resDesc); 
+    initResourceDesc(resDesc);
 
     cudaTextureDesc texDesc;
     memset(&texDesc, 0, sizeof(cudaTextureDesc));
@@ -61,11 +60,18 @@ inline void textures<T>::init(int n, T* _data)
     cudaCreateTextureObject(&tex, &resDesc, &texDesc, NULL);
 }
 
+
+template<class T>
+inline void textures<T>::initResourceDesc(cudaResourceDesc& resDesc)
+{
+}
+
+
 template<>
 inline void textures<float>::initResourceDesc(cudaResourceDesc& resDesc)
 {
     resDesc.res.linear.desc.f = cudaChannelFormatKindFloat;
-    resDesc.res.linear.desc.x = 32; 
+    resDesc.res.linear.desc.x = 32;
 }
 
 
@@ -73,16 +79,26 @@ template<>
 inline void textures<int>::initResourceDesc(cudaResourceDesc& resDesc)
 {
     resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
-    resDesc.res.linear.desc.x = 32; 
+    resDesc.res.linear.desc.x = 32;
 }
 
 template<>
 inline void textures<double>::initResourceDesc(cudaResourceDesc& resDesc)
 {
     resDesc.res.linear.desc.f = cudaChannelFormatKindSigned;
-    resDesc.res.linear.desc.x = 32; 
-    resDesc.res.linear.desc.y = 32; 
+    resDesc.res.linear.desc.x = 32;
+    resDesc.res.linear.desc.y = 32;
 }
+
+#if __CUDA_ARCH__ >= 350
+
+template<class T>
+inline __device__ T textures<T>::operator[](const int& i) const
+{
+    return __ldg(data + i);
+}
+
+#else
 
 template<>
 inline __device__ float textures<float>::operator[](const int& i) const
@@ -102,5 +118,7 @@ inline __device__ double textures<double>::operator[](const int& i) const
     int2 v = tex1Dfetch<int2>(tex, i);
     return __hiloint2double(v.y, v.x);
 }
+
+#endif
 
 }

@@ -12,6 +12,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/constant_iterator.h>
+#include <thrust/iterator/discard_iterator.h>
 
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
@@ -37,26 +38,19 @@ namespace gpu_api = thrust;
 
 #define GPU_ERROR_CHECK()                                  \
  cudaDeviceSynchronize();                                  \
- CUDA_CALL( cudaPeekAtLastError());    
+ CUDA_CALL( cudaPeekAtLastError());
 
 #define GPU_ERROR_CHECK_ASYNC()                            \
- CUDA_CALL(cudaPeekAtLastError());    
+ CUDA_CALL(cudaPeekAtLastError());
 
 namespace Foam
 {
-
-inline int getGpuDeviceCount()
-{
-    int num_devices;
-    CUDA_CALL(cudaGetDeviceCount(&num_devices));
-    return num_devices;
-}
-
-inline void setGpuDevice(int device)
-{
-   CUDA_CALL(cudaSetDevice(device));
-}
-
+    int deviceCount();
+    int currentDevice();
+    void setCurrentDevice(int device);
+    int deviceComputeCapability(int device);
+    int currentComputeCapability();
+    bool needTextureBind();
 }
 
 #else

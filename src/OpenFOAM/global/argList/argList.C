@@ -586,7 +586,7 @@ void Foam::argList::parse
     // Case is a single processor run unless it is running parallel
     int nProcs = 1;
 
-    int deviceCount = getGpuDeviceCount();
+    int nDeviceCount = deviceCount();
 
     // Roots if running distributed
     fileNameList roots;
@@ -787,7 +787,7 @@ void Foam::argList::parse
             {
                 int device = devices[Pstream::myProcNo()];
 
-                if(device < 0 || device >= deviceCount)
+                if(device < 0 || device >= nDeviceCount)
                 {
                     FatalError
                         <<"Invalid device ID: "<<device
@@ -795,19 +795,19 @@ void Foam::argList::parse
                     FatalError.exit();
                 }
 
-                setGpuDevice(device);
+                setCurrentDevice(device);
             }
         }
         else
         {
-            if(Pstream::myProcNo() >= deviceCount)
+            if(Pstream::myProcNo() >= nDeviceCount)
             {
                 FatalError
                     <<"Specify device IDs with 'devices' argument"<<endl;
                 FatalError.exit();
             }
 
-            setGpuDevice(Pstream::myProcNo());
+            setCurrentDevice(Pstream::myProcNo());
         }
     }
     else
@@ -820,14 +820,14 @@ void Foam::argList::parse
         {
             int device = optionRead<int>("device");
 
-            if(device < 0 || device >= deviceCount)
+            if(device < 0 || device >= nDeviceCount)
             {
                 FatalError
                     <<"Invalid device ID: "<<device<<endl;
                 FatalError.exit();
             }
 
-            setGpuDevice(device);
+            setCurrentDevice(device);
 
         }
     }

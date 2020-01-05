@@ -28,8 +28,8 @@ Foam::AINVPreconditioner::AINVPreconditioner
         sol.matrix().diag().size()
     ),
     rDTex(rD)
-{ 
-  
+{
+
     const scalargpuField& Diag = solver_.matrix().diag();
 
     thrust::transform
@@ -56,7 +56,7 @@ void Foam::AINVPreconditioner::preconditionImpl
 {
     bool fastPath = lduMatrixSolutionCache::favourSpeed;
 
-    const labelgpuList& l = fastPath? 
+    const labelgpuList& l = fastPath?
                             solver_.matrix().lduAddr().ownerSortAddr():
                             solver_.matrix().lduAddr().lowerAddr();
     const labelgpuList& u = solver_.matrix().lduAddr().upperAddr();
@@ -120,4 +120,3 @@ void Foam::AINVPreconditioner::preconditionImpl
 
     rTex.destroy();
 }
-

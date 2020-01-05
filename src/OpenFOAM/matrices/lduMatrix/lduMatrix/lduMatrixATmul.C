@@ -34,7 +34,7 @@ Description
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
-{                
+{
 
 template<bool fast,int nUnroll>
 struct matrixMultiplyFunctor
@@ -51,7 +51,7 @@ struct matrixMultiplyFunctor
 
     matrixMultiplyFunctor
     (
-        const textures<scalar> _psi, 
+        const textures<scalar> _psi,
         const scalar * _diag,
         const scalar * _lower,
         const scalar * _upper,
@@ -77,10 +77,10 @@ struct matrixMultiplyFunctor
     {
         scalar tmpSum[2*nUnroll] = {};
         scalar nExtra = 0;
-            
+
         label oStart = ownStart[id];
         label oSize = ownStart[id+1] - oStart;
-            
+
         label nStart = losortStart[id];
         label nSize = losortStart[id+1] - nStart;
 
@@ -92,7 +92,7 @@ struct matrixMultiplyFunctor
             {
                 label face = oStart + i;
 
-                tmpSum[i] = upper[face]*psi[nei[face]]; 
+                tmpSum[i] = upper[face]*psi[nei[face]];
             }
         }
 
@@ -103,7 +103,7 @@ struct matrixMultiplyFunctor
                  label face = nStart + i;
                  if( ! fast)
                      face = losort[face];
-                   
+
                  tmpSum[i+nUnroll] = lower[face]*psi[own[face]];
             }
         }
@@ -111,27 +111,25 @@ struct matrixMultiplyFunctor
         #pragma unroll
         for(label i = 0; i<2*nUnroll; i++)
         {
-            out+= tmpSum[i]; 
+            out+= tmpSum[i];
         }
-        
-        #pragma unroll 2   
+
         for(label i = nUnroll; i<oSize; i++)
         {
             label face = oStart + i;
-                
+
             out += upper[face]*psi[nei[face]];
         }
-            
-        #pragma unroll 2    
+
         for(label i = nUnroll; i<nSize; i++)
         {
             label face = nStart + i;
             if( ! fast)
                 face = losort[face];
 
-            nExtra += lower[face]*psi[own[face]]; 
-        }  
-            
+            nExtra += lower[face]*psi[own[face]];
+        }
+
         return out + nExtra;
     }
 };
@@ -379,7 +377,7 @@ void Foam::lduMatrix::sumA
         if (interfaces.set(patchI))
         {
             const scalargpuField& pCoeffs = interfaceBouCoeffs[patchI];
-                                               
+
             matrixPatchOperation
             (
                 patchI,
@@ -424,7 +422,7 @@ functionName                                                                    
         l.data(),                                                                           \
         negateUnaryOperatorFunctor<scalar,scalar>()                                         \
     )                                                                                       \
-);  
+);
 
 void Foam::lduMatrix::residual
 (
@@ -483,7 +481,7 @@ void Foam::lduMatrix::residual
     else
     {
         CALL_RESIDUAL_FUNCTION(matrixOperation);
-    }							                                     
+    }
 
     // Update interface interfaces
     updateMatrixInterfaces
@@ -541,7 +539,7 @@ void Foam::lduMatrix::H1(scalargpuField& H_) const
 
         const scalargpuField& Lower = fastPath?lowerSort():lower();
         const scalargpuField& Upper = upper();
-        
+
         if(fastPath)
         {
             CALL_H_FUNCTION(matrixFastOperation);

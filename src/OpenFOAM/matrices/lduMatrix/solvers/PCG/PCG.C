@@ -137,7 +137,7 @@ Foam::solverPerformance Foam::PCG::solve
 
             // --- Precondition residual
             preconPtr->precondition(wA, rA, cmpt);
-            
+
             // --- Update search directions:
             wArA = gSumProd(wA, rA, matrix().mesh().comm());
 

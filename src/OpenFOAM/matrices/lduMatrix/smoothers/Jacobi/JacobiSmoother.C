@@ -10,7 +10,7 @@ namespace Foam
         addJacobiSmootherSymMatrixConstructorToTable_;
 
     lduMatrix::smoother::addasymMatrixConstructorToTable<JacobiSmoother>
-        addJacobiSmootherAsymMatrixConstructorToTable_;   
+        addJacobiSmootherAsymMatrixConstructorToTable_;
 }
 
 Foam::JacobiSmoother::JacobiSmoother
@@ -168,4 +168,3 @@ void Foam::JacobiSmoother::smooth
 
     psiTex.destroy();
 }
-

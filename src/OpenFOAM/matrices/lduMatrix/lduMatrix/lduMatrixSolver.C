@@ -212,7 +212,7 @@ Foam::scalar Foam::lduMatrix::solver::normFactor
 
     scalar average = gAverage(psi, matrix_.lduMesh_.comm());
 
-    struct normFactorFunctor kernel(
+    normFactorFunctor kernel(
         Apsi.data(), source.data(), tmpField.data(), average
     );
 

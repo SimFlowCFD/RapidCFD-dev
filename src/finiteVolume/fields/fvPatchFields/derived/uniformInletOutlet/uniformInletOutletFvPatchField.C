@@ -65,7 +65,7 @@ Foam::uniformInletOutletFvPatchField<Type>::uniformInletOutletFvPatchField
     this->valueFraction() = 0.0;
 
     // Map value (unmapped get refValue)
-    if (&iF && iF.size())
+    if (iF.size())
     {
         fvPatchField<Type>::operator=(this->refValue());
     }

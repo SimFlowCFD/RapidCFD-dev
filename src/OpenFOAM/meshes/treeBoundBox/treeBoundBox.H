@@ -67,7 +67,16 @@ SourceFiles
 namespace Foam
 {
 
+// Forward declaration of friend functions and operators
+
+class treeBoundBox;
 class Random;
+
+bool operator==(const treeBoundBox&, const treeBoundBox&);
+bool operator!=(const treeBoundBox&, const treeBoundBox&);
+
+Istream& operator>>(Istream& is, treeBoundBox&);
+Ostream& operator<<(Ostream& os, const treeBoundBox&);
 
 /*---------------------------------------------------------------------------*\
                         Class treeBoundBox Declaration

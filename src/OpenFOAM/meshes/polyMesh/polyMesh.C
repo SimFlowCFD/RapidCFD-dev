@@ -86,9 +86,9 @@ void Foam::polyMesh::calcDirections() const
             }
         }
     }
-    
+
     reduce(nEmptyPatches, maxOp<label>());
-    reduce(nWedgePatches, maxOp<label>());    
+    reduce(nWedgePatches, maxOp<label>());
 
     if (nEmptyPatches)
     {
@@ -702,23 +702,20 @@ void Foam::polyMesh::resetPrimitives
 
     // Take over new primitive data.
     // Optimized to avoid overwriting data at all
-    if (&points)
+
     {
         points_.transfer(points());
         bounds_ = boundBox(points_, validBoundary);
     }
 
-    if (&faces)
     {
         faces_.transfer(faces());
     }
 
-    if (&owner)
     {
         owner_.transfer(owner());
     }
 
-    if (&neighbour)
     {
         neighbour_.transfer(neighbour());
     }
@@ -821,7 +818,7 @@ void Foam::polyMesh::resetPrimitives
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 Foam::polyMesh::~polyMesh()
-{ 
+{
     clearOut();
     resetMotion();
 }
@@ -866,7 +863,7 @@ void Foam::polyMesh::initgpuFaces() const
         label size = f.size();
         faceData fd(pos,size);
         fData[i] = fd;
-        
+
         forAll(f,j)
         {
             fNodes[pos+j] = f[j];
@@ -1035,7 +1032,7 @@ void Foam::polyMesh::addPatches
     // there is some info in parallelData which might be interesting inbetween
     // removeBoundary and addPatches.
     globalMeshDataPtr_.clear();
-    
+
     if (validBoundary)
     {
         // Calculate topology for the patches (processor-processor comms etc.)

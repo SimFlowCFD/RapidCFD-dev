@@ -66,7 +66,7 @@ fixedValueFvPatchField<Type>::fixedValueFvPatchField
 :
     fvPatchField<Type>(ptf, p, iF, mapper)
 {
-    if (&iF && mapper.hasUnmapped())
+    if (mapper.hasUnmapped())
     {
         WarningIn
         (

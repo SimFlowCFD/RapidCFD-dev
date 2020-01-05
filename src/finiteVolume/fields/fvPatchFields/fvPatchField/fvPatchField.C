@@ -114,7 +114,7 @@ Foam::fvPatchField<Type>::fvPatchField
     patchType_(ptf.patchType_)
 {
     // For unmapped faces set to internal field value (zero-gradient)
-    if (&iF && iF.size())
+    if (iF.size())
     {
         fvPatchField<Type>::operator=(this->patchInternalField());
     }
@@ -313,7 +313,7 @@ void Foam::fvPatchField<Type>::rmap
     const labelgpuList& addr
 )
 {
-	
+
 	notImplemented(type() + "::rmap()");
     gpuField<Type>::rmap(ptf, addr);
 }
@@ -470,7 +470,7 @@ void Foam::fvPatchField<Type>::operator-=
 (
     const fvPatchField<Type>& ptf
 )
-{    
+{
     if (debug)
     {
         Info << "fvPatchField::operator-=(fvPatchField &)"
@@ -654,7 +654,7 @@ void Foam::fvPatchField<Type>::operator/=
 (
     const scalar s
 )
-{    
+{
     if (debug)
     {
         Info << "fvPatchField::operator/=(const scalar)"

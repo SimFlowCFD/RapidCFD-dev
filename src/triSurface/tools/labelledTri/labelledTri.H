@@ -43,6 +43,11 @@ SourceFiles
 namespace Foam
 {
 
+class labelledTri;
+
+Istream& operator>>(Istream&, labelledTri&);
+Ostream& operator<<(Ostream&, const labelledTri&);
+
 /*---------------------------------------------------------------------------*\
                            Class labelledTri Declaration
 \*---------------------------------------------------------------------------*/

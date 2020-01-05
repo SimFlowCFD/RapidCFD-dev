@@ -141,10 +141,14 @@ SourceFiles
 namespace Foam
 {
 
+class mapDistribute;
 class mapPolyMesh;
 class globalIndex;
 class PstreamBuffers;
 class globalIndexAndTransform;
+
+Istream& operator>>(Istream&, mapDistribute&);
+Ostream& operator<<(Ostream&, const mapDistribute&);
 
 /*---------------------------------------------------------------------------*\
                            Class mapDistribute Declaration

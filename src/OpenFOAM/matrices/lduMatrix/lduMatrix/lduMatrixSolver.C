@@ -177,7 +177,7 @@ void Foam::lduMatrix::solver::read(const dictionary& solverControls)
 }
 
 namespace Foam {
-struct normFactorFunctor {
+struct normFactorFunctor: public thrust::unary_function<label, double> {
      const scalar * Apsi;
      const scalar * source;
      const scalar * tmpField;

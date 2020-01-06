@@ -116,7 +116,7 @@ void checkgpuFields
 #define GENERATE_UNARY_OPERATOR_FUNCTORS(Op,opFunc)                                                 \
                                                                                                     \
 template<class Type,class RType>                                                                    \
-struct opFunc##UnaryOperatorFunctor {                                                               \
+struct opFunc##UnaryOperatorFunctor: thrust::unary_function<Type, RType> {                          \
     __HOST____DEVICE__                                                                              \
     RType operator()(const Type& t){                                                                \
         return Op t;                                                                                \
@@ -126,7 +126,7 @@ struct opFunc##UnaryOperatorFunctor {                                           
 #define GENERATE_OPERATOR_FUNCTORS(Op,opFunc)                                                       \
                                                                                                     \
 template<class Type1,class Type2,class RType>                                                       \
-struct opFunc##OperatorFunctor {                                                                    \
+struct opFunc##OperatorFunctor: thrust::unary_function<thrust::tuple<Type1,Type2>, RType> {         \
     __HOST____DEVICE__                                                                              \
     RType operator()(const Type1& t1, const Type2& t2){                                             \
         return t1 Op t2;                                                                            \
@@ -139,7 +139,7 @@ struct opFunc##OperatorFunctor {                                                
 };                                                                                                  \
                                                                                                     \
 template<class Type1,class Type2,class RType>                                                       \
-struct opFunc##OperatorFSFunctor {                                                                  \
+struct opFunc##OperatorFSFunctor: thrust::unary_function<Type1, RType> {                            \
     const Type2 t2;                                                                                 \
     opFunc##OperatorFSFunctor(Type2 _t2):t2(_t2){}                                                  \
     __HOST____DEVICE__                                                                              \
@@ -149,7 +149,7 @@ struct opFunc##OperatorFSFunctor {                                              
 };                                                                                                  \
                                                                                                     \
 template<class Type1,class Type2,class RType>                                                       \
-struct opFunc##OperatorSFFunctor {                                                                  \
+struct opFunc##OperatorSFFunctor: thrust::unary_function<Type2, RType> {                            \
     const Type1 t1;                                                                                 \
     opFunc##OperatorSFFunctor(Type1 _t1):t1(_t1){}                                                  \
     __HOST____DEVICE__                                                                              \
@@ -162,7 +162,7 @@ struct opFunc##OperatorSFFunctor {                                              
 #define GENERATE_UNARY_FUNCTION_FUNCTORS(opFunc)                                                    \
                                                                                                     \
 template<class Type,class RType>                                                                    \
-struct opFunc##UnaryFunctionFunctor {                                                               \
+struct opFunc##UnaryFunctionFunctor: thrust::unary_function<Type, RType> {                          \
     __HOST____DEVICE__                                                                              \
     RType operator()(const Type& t) const {                                                         \
         return opFunc(t);                                                                           \
@@ -172,7 +172,7 @@ struct opFunc##UnaryFunctionFunctor {                                           
 #define GENERATE_BINARY_FUNCTION_FUNCTORS(opFunc)                                                   \
                                                                                                     \
 template<class Type1,class Type2,class RType>                                                       \
-struct opFunc##BinaryFunctionFunctor {                                                              \
+struct opFunc##BinaryFunctionFunctor: thrust::unary_function<thrust::tuple<Type1,Type2>, RType> {   \
     __HOST____DEVICE__                                                                              \
     RType operator()(const Type1& t1, const Type2& t2) const {                                      \
         return opFunc(t1, t2);                                                                      \
@@ -185,7 +185,7 @@ struct opFunc##BinaryFunctionFunctor {                                          
 };                                                                                                  \
                                                                                                     \
 template<class Type1,class Type2,class RType>                                                       \
-struct opFunc##BinaryFunctionFSFunctor {                                                            \
+struct opFunc##BinaryFunctionFSFunctor: thrust::unary_function<Type1, RType> {                      \
     const Type2 t2;                                                                                 \
     opFunc##BinaryFunctionFSFunctor(Type2 _t2):t2(_t2){}                                            \
     __HOST____DEVICE__                                                                              \
@@ -195,7 +195,7 @@ struct opFunc##BinaryFunctionFSFunctor {                                        
 };                                                                                                  \
                                                                                                     \
 template<class Type1,class Type2,class RType>                                                       \
-struct opFunc##BinaryFunctionSFFunctor {                                                            \
+struct opFunc##BinaryFunctionSFFunctor: thrust::unary_function<Type2, RType>                        {                                                            \
     const Type1 t1;                                                                                 \
     opFunc##BinaryFunctionSFFunctor(Type1 _t1):t1(_t1){}                                            \
     __HOST____DEVICE__                                                                              \
@@ -423,7 +423,8 @@ struct outerProductFunctor
 };
 
 template<class Type>
-struct productFunctor
+struct productFunctor:
+    public thrust::unary_function<thrust::tuple<Type,Type>, scalar>
 {
     __host__ __device__
     scalar operator()(const Type& t1,const Type& t2)
@@ -439,7 +440,8 @@ struct productFunctor
 };
 
 template<class Type>
-struct maximumMagnitudeSquaredFunctor
+struct maximumMagnitudeSquaredFunctor:
+    public thrust::unary_function<thrust::tuple<Type,Type>, Type>
 {
     __host__ __device__
     Type operator()(const Type& t1,const Type& t2)
@@ -455,7 +457,8 @@ struct maximumMagnitudeSquaredFunctor
 };
 
 template<class Type>
-struct minimumMagnitudeSquaredFunctor
+struct minimumMagnitudeSquaredFunctor:
+    public thrust::unary_function<thrust::tuple<Type,Type>, Type>
 {
     __host__ __device__
     Type operator()(const Type& t1,const Type& t2)

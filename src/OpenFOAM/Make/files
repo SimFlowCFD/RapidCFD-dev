@@ -236,6 +236,11 @@ scalarMatrices = matrices/scalarMatrices
 $(scalarMatrices)/scalarMatrices.C
 $(scalarMatrices)/SVD/SVD.C
 
+LUscalarMatrix = matrices/LUscalarMatrix
+$(LUscalarMatrix)/LUscalarMatrix.C
+$(LUscalarMatrix)/procLduMatrix.C
+$(LUscalarMatrix)/procLduInterface.C
+
 lduMatrix = matrices/lduMatrix
 $(lduMatrix)/lduMatrix/lduMatrix.C
 $(lduMatrix)/lduMatrix/lduMatrixOperations.C

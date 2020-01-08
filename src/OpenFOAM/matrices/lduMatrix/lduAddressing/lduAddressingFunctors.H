@@ -43,7 +43,7 @@ struct lduAddressingFunctor
         Type out = d;
         label oStart = ownStart[id];
         label oSize = ownStart[id+1] - oStart;
-		
+
         label nStart = neiStart[id];
         label nSize = neiStart[id+1] - nStart;
 
@@ -94,7 +94,7 @@ struct lduAddressingFastFunctor
 
         label oStart = ownStart[id];
         label oSize = ownStart[id+1] - oStart;
-		
+
         label nStart = neiStart[id];
         label nSize = neiStart[id+1] - nStart;
 
@@ -112,29 +112,29 @@ struct lduAddressingFastFunctor
             if(i<nSize)
             {
                  label face = nStart + i;
-                   
+
                  tmpSum[i+MAX_NEI_SIZE] = nFun(id,face);
             }
         }
 
         for(label i = 0; i<2*MAX_NEI_SIZE; i++)
         {
-            out+= tmpSum[i]; 
+            out+= tmpSum[i];
         }
-           
+
         for(label i = MAX_NEI_SIZE; i<oSize; i++)
         {
             label face = oStart + i;
-                
+
             out += oFun(id,face);
         }
-            
+
         for(label i = MAX_NEI_SIZE; i<nSize; i++)
         {
             label face = nStart + i;
 
-            nExtra += nFun(id,face); 
-        }  
+            nExtra += nFun(id,face);
+        }
 
         return out;
     }
@@ -206,7 +206,7 @@ struct matrixCoeffsMultiplyFunctor
     {}
 
     __HOST____DEVICE__
-    Type operator()(const label& cell, const label& face) 
+    Type operator()(const label& cell, const label& face)
     {
         return op(coeffs[face]*psi[addr[face]]);
     }
@@ -234,7 +234,7 @@ struct matrixCoeffsFunctor
     }
 };
 
-template<class Type>
+template<class Type, bool negate = false>
 struct matrixInterfaceFunctor
 {
     const scalar* coeffs;
@@ -242,7 +242,7 @@ struct matrixInterfaceFunctor
 
     matrixInterfaceFunctor
     (
-        const scalar* _coeffs, 
+        const scalar* _coeffs,
         const Type* _val
     ):
         coeffs(_coeffs),
@@ -252,17 +252,22 @@ struct matrixInterfaceFunctor
     __HOST____DEVICE__
     Type operator()(const label&, const label& id)
     {
-        return -coeffs[id]*val[id];
+        Type value = coeffs[id]*val[id];
+        // yes the sign is correct
+        if(negate)
+            return value;
+        else
+            return -value;
     }
 };
 
 template<class Type,class Input, class OwnFun,class NeiFun,class OwnOp,class NeiOp>
 inline void matrixOperation
 (
-    Input in, 
+    Input in,
     gpuList<Type>& out,
     const lduAddressing& addr,
-    OwnFun o, 
+    OwnFun o,
     NeiFun n,
     OwnOp oo,
     NeiOp no
@@ -271,7 +276,7 @@ inline void matrixOperation
     const labelgpuList& ownStart = addr.ownerStartAddr();
     const labelgpuList& losortStart = addr.losortStartAddr();
     const labelgpuList& losort = addr.losortAddr();
-    
+
     thrust::transform
     (
         thrust::make_counting_iterator(0),
@@ -295,19 +300,19 @@ inline void matrixOperation
 template<class Type,class Input, class OwnFun,class NeiFun>
 inline void matrixOperation
 (
-    Input in, 
+    Input in,
     gpuList<Type>& out,
     const lduAddressing& addr,
-    OwnFun o, 
+    OwnFun o,
     NeiFun n
 )
 {
     matrixOperation
     (
-        in, 
+        in,
         out,
         addr,
-        o, 
+        o,
         n,
         sumOp<Type>(),
         sumOp<Type>()
@@ -317,16 +322,16 @@ inline void matrixOperation
 template<class Input, class OwnFun,class NeiFun>
 inline void matrixFastOperation
 (
-    Input in, 
+    Input in,
     gpuList<scalar>& out,
     const lduAddressing& addr,
-    OwnFun o, 
+    OwnFun o,
     NeiFun n
 )
 {
     const labelgpuList& ownStart = addr.ownerStartAddr();
     const labelgpuList& losortStart = addr.losortStartAddr();
-    
+
     thrust::transform
     (
         thrust::make_counting_iterator(0),
@@ -346,7 +351,7 @@ inline void matrixFastOperation
 template<class Type, class Fun, class Op>
 inline void matrixPatchOperation
 (
-    label patchI, 
+    label patchI,
     gpuList<Type>& out,
     const lduAddressing& addr,
     Fun f,
@@ -357,7 +362,7 @@ inline void matrixPatchOperation
 
     const labelgpuList& losort = addr.patchSortAddr(patchI);
     const labelgpuList& losortStart = addr.patchSortStartAddr(patchI);
-    
+
     thrust::transform
     (
         thrust::make_counting_iterator(0),
@@ -378,7 +383,7 @@ inline void matrixPatchOperation
 template<class Type, class Fun>
 inline void matrixPatchOperation
 (
-    label patchI, 
+    label patchI,
     gpuList<Type>& out,
     const lduAddressing& addr,
     Fun f
@@ -386,7 +391,7 @@ inline void matrixPatchOperation
 {
     matrixPatchOperation
     (
-        patchI, 
+        patchI,
         out,
         addr,
         f,

@@ -359,7 +359,8 @@ void Foam::processorFvPatchField<Type>::initInterfaceMatrixUpdate
     const scalargpuField& psiInternal,
     const scalargpuField&,
     const direction,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const
 {
     this->patch().patchInternalField(psiInternal, scalargpuSendBuf_);
@@ -443,7 +444,8 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
     const scalargpuField&,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const
 {
     if (this->updatedMatrix())
@@ -476,18 +478,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
-        // Multiply the field by coefficients and add into the result
-        matrixPatchOperation
-        (
-            this->patch().index(),
-            result,
-            this->patch().boundaryMesh().mesh().lduAddr(),
-            matrixInterfaceFunctor<scalar>
-            (
-                coeffs.data(),
-                scalargpuReceiveBuf_.data()
-            )
-        );
+        coupledFvPatchField<Type>::updateInterfaceMatrix(result, coeffs, scalargpuReceiveBuf_, negate);
     }
     else
     {
@@ -497,18 +488,7 @@ void Foam::processorFvPatchField<Type>::updateInterfaceMatrix
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
-        // Multiply the field by coefficients and add into the result
-        matrixPatchOperation
-        (
-            this->patch().index(),
-            result,
-            this->patch().boundaryMesh().mesh().lduAddr(),
-            matrixInterfaceFunctor<scalar>
-            (
-                coeffs.data(),
-                scalargpuReceiveBuf_.data()
-            )
-       );
+        coupledFvPatchField<Type>::updateInterfaceMatrix(result, coeffs, scalargpuReceiveBuf_, negate);
     }
 
     const_cast<processorFvPatchField<Type>&>(*this).updatedMatrix() = true;

@@ -42,7 +42,8 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
     const scalargpuField&,
     const scalargpuField&,
     const direction,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const;
 
 
@@ -53,7 +54,8 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
     const scalargpuField&,
     const scalargpuField& coeffs,
     const direction,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const;
 
 

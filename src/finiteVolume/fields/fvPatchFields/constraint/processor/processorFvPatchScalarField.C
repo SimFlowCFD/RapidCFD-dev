@@ -40,7 +40,8 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
     const scalargpuField& psiInternal,
     const scalargpuField&,
     const direction,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const
 {
     this->patch().patchInternalField(psiInternal, scalargpuSendBuf_);
@@ -124,7 +125,8 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
     const scalargpuField&,
     const scalargpuField& coeffs,
     const direction,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const
 {
     if (this->updatedMatrix())
@@ -154,34 +156,14 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         }
 
         // Consume straight from scalargpuReceiveBuf_
-        matrixPatchOperation
-        (
-            this->patch().index(),
-            result,
-            this->patch().boundaryMesh().mesh().lduAddr(),
-            matrixInterfaceFunctor<scalar>
-            (
-                coeffs.data(),
-                scalargpuReceiveBuf_.data()
-            )
-       );
+        coupledFvPatchField<scalar>::updateInterfaceMatrix(result, coeffs, scalargpuReceiveBuf_, negate);
     }
     else
     {
         scalargpuReceiveBuf_.setSize(this->size());
         procPatch_.compressedReceive<scalar>(commsType, scalargpuReceiveBuf_);
 
-        matrixPatchOperation
-        (
-            this->patch().index(),
-            result,
-            this->patch().boundaryMesh().mesh().lduAddr(),
-            matrixInterfaceFunctor<scalar>
-            (
-                coeffs.data(),
-                scalargpuReceiveBuf_.data()
-            )
-        );
+        coupledFvPatchField<scalar>::updateInterfaceMatrix(result, coeffs, scalargpuReceiveBuf_, negate);
     }
 
     const_cast<processorFvPatchField<scalar>&>(*this).updatedMatrix() = true;

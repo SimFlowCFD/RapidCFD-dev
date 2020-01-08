@@ -88,7 +88,6 @@ class cyclicFvPatchField
             const gpuField<Type2>&
         ) const;
 
-
 public:
 
     //- Runtime type information
@@ -182,7 +181,8 @@ public:
                 const scalargpuField& psiInternal,
                 const scalargpuField& coeffs,
                 const direction cmpt,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool reverse = false
             ) const;
 
             //- Update result field based on interface functionality

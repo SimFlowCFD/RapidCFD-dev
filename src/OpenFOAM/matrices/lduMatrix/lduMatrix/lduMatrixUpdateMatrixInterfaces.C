@@ -33,7 +33,8 @@ void Foam::lduMatrix::initMatrixInterfaces
     const lduInterfaceFieldPtrsList& interfaces,
     const scalargpuField& psiif,
     scalargpuField& result,
-    const direction cmpt
+    const direction cmpt,
+    const bool negate
 ) const
 {
     if
@@ -52,7 +53,8 @@ void Foam::lduMatrix::initMatrixInterfaces
                     psiif,
                     coupleCoeffs[interfaceI],
                     cmpt,
-                    Pstream::defaultCommsType
+                    Pstream::defaultCommsType,
+                    negate
                 );
             }
         }
@@ -78,7 +80,8 @@ void Foam::lduMatrix::initMatrixInterfaces
                     psiif,
                     coupleCoeffs[interfaceI],
                     cmpt,
-                    Pstream::blocking
+                    Pstream::blocking,
+                    negate
                 );
             }
         }
@@ -99,7 +102,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
     const lduInterfaceFieldPtrsList& interfaces,
     const scalargpuField& psiif,
     scalargpuField& result,
-    const direction cmpt
+    const direction cmpt,
+    const bool negate
 ) const
 {
     if (Pstream::defaultCommsType == Pstream::blocking)
@@ -114,7 +118,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
                     psiif,
                     coupleCoeffs[interfaceI],
                     cmpt,
-                    Pstream::defaultCommsType
+                    Pstream::defaultCommsType,
+                    negate
                 );
             }
         }
@@ -142,7 +147,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
                                 psiif,
                                 coupleCoeffs[interfaceI],
                                 cmpt,
-                                Pstream::defaultCommsType
+                                Pstream::defaultCommsType,
+                                negate
                             );
                         }
                         else
@@ -193,7 +199,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
                     psiif,
                     coupleCoeffs[interfaceI],
                     cmpt,
-                    Pstream::defaultCommsType
+                    Pstream::defaultCommsType,
+                    negate
                 );
             }
         }
@@ -217,7 +224,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
                         psiif,
                         coupleCoeffs[interfaceI],
                         cmpt,
-                        Pstream::scheduled
+                        Pstream::scheduled,
+                        negate
                     );
                 }
                 else
@@ -228,7 +236,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
                         psiif,
                         coupleCoeffs[interfaceI],
                         cmpt,
-                        Pstream::scheduled
+                        Pstream::scheduled,
+                        negate
                     );
                 }
             }
@@ -251,7 +260,8 @@ void Foam::lduMatrix::updateMatrixInterfaces
                     psiif,
                     coupleCoeffs[interfaceI],
                     cmpt,
-                    Pstream::blocking
+                    Pstream::blocking,
+                    negate
                 );
             }
         }

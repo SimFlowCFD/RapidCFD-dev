@@ -187,14 +187,7 @@ public:
             //- Return true if running parallel
             virtual bool coupled() const
             {
-                if (Pstream::parRun())
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return Pstream::parRun();
             }
 
             //- Return neighbour field given internal field
@@ -225,7 +218,8 @@ public:
                 const scalargpuField& psiInternal,
                 const scalargpuField& coeffs,
                 const direction cmpt,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool negate = false
             ) const;
 
             //- Update result field based on interface functionality
@@ -235,7 +229,8 @@ public:
                 const scalargpuField& psiInternal,
                 const scalargpuField& coeffs,
                 const direction cmpt,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool negate = false
             ) const;
 
             //- Initialise neighbour matrix update

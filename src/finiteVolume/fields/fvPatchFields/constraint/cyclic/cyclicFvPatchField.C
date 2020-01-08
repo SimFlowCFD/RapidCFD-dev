@@ -25,7 +25,6 @@ License
 
 #include "cyclicFvPatchField.H"
 #include "transformField.H"
-#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -153,7 +152,7 @@ tmp<gpuField<Type> > cyclicFvPatchField<Type>::patchNeighbourField() const
     if (doTransform())
     {
         tensor t = forwardT()[0];
-        
+
         thrust::transform
         (
             thrust::make_permutation_iterator
@@ -208,15 +207,6 @@ const
     );
 }
 
-template<class Type>
-struct updateCyclicInterfaceMatrixFunctor
-{
-   __HOST____DEVICE__
-   Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c)
-   {
-       return s - thrust::get<0>(c) * thrust::get<1>(c);
-   }
-};
 
 template<class Type>
 void cyclicFvPatchField<Type>::updateInterfaceMatrix
@@ -225,7 +215,8 @@ void cyclicFvPatchField<Type>::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes
+    const Pstream::commsTypes,
+    const bool negate
 ) const
 {
     const labelgpuList& nbrFaceCells =
@@ -236,18 +227,7 @@ void cyclicFvPatchField<Type>::updateInterfaceMatrix
     // Transform according to the transformation tensors
     transformCoupleField(pnf, cmpt);
 
-    // Multiply the field by coefficients and add into the result
-    matrixPatchOperation
-    (
-        this->patch().index(),
-        result,
-        this->patch().boundaryMesh().mesh().lduAddr(),
-        matrixInterfaceFunctor<scalar>
-        (
-            coeffs.data(),
-            pnf.data()
-        )
-    );
+    coupledFvPatchField<Type>::updateInterfaceMatrix(result, coeffs, pnf, negate);
 }
 
 

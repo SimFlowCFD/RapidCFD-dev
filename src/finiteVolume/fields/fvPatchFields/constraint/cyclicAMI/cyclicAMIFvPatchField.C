@@ -198,7 +198,8 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes
+    const Pstream::commsTypes,
+    const bool negate
 ) const
 {
     const labelgpuList& nbrFaceCells =
@@ -219,18 +220,8 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
         pnf = cyclicAMIPatch_.interpolate(pnf);
     }
 
-    // Multiply the field by coefficients and add into the result
-    matrixPatchOperation
-    (
-        this->patch().index(),
-        result,
-        this->patch().boundaryMesh().mesh().lduAddr(),
-        matrixInterfaceFunctor<scalar>
-        (
-            coeffs.data(),
-            pnf.data()
-        )
-    );
+
+    coupledFvPatchField<Type>::updateInterfaceMatrix(result, coeffs, pnf, negate);
 }
 
 

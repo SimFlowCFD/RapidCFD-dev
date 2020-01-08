@@ -58,6 +58,24 @@ class coupledFvPatchField
     public fvPatchField<Type>
 {
 
+protected:
+
+        void updateInterfaceMatrix
+        (
+            scalargpuField& result,
+            const scalargpuField& coeffs,
+            const scalargpuField& pnf,
+            const bool negate
+        ) const;
+
+        template<bool negate>
+        void updateInterfaceMatrix
+        (
+            scalargpuField& result,
+            const scalargpuField& coeffs,
+            const scalargpuField& pnf
+        ) const;
+
 public:
 
     //- Runtime type information
@@ -219,7 +237,8 @@ public:
                 const scalargpuField& psiInternal,
                 const scalargpuField& coeffs,
                 const direction,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool negate = false
             ) const = 0;
 
             //- Update result field based on interface functionality

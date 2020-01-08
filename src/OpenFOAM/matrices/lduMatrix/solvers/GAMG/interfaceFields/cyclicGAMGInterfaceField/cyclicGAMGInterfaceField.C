@@ -113,7 +113,8 @@ void Foam::cyclicGAMGInterfaceField::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes
+    const Pstream::commsTypes,
+    const bool reverse
 ) const
 {
     // Get neighbouring field
@@ -129,7 +130,8 @@ void Foam::cyclicGAMGInterfaceField::updateInterfaceMatrix
         result,
         coeffs,
         pnf,
-        cyclicInterface_
+        cyclicInterface_,
+        reverse
     );
 }
 

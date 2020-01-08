@@ -97,7 +97,8 @@ void Foam::processorGAMGInterfaceField::initInterfaceMatrixUpdate
     const scalargpuField& psiInternal,
     const scalargpuField&,
     const direction,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const
 {
     label oldWarn = UPstream::warnComm;
@@ -174,7 +175,8 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
     const scalargpuField&,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const
 {
     if (updatedMatrix())
@@ -210,14 +212,15 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
         // Transform according to the transformation tensor
         transformCoupleField(scalargpuReceiveBuf_, cmpt);
 
-        // Multiply the field by coefficients and add into the result  
+        // Multiply the field by coefficients and add into the result
         GAMGUpdateInterfaceMatrix
         (
             result,
             coeffs,
             scalargpuReceiveBuf_,
-            procInterface_
-        );      
+            procInterface_,
+            negate
+        );
     }
     else
     {
@@ -231,8 +234,9 @@ void Foam::processorGAMGInterfaceField::updateInterfaceMatrix
             result,
             coeffs,
             scalargpuReceiveBuf_,
-            procInterface_
-        ); 
+            procInterface_,
+            negate
+        );
     }
 
     const_cast<processorGAMGInterfaceField&>(*this).updatedMatrix() = true;

@@ -704,7 +704,8 @@ public:
                 const lduInterfaceFieldPtrsList& interfaces,
                 const scalargpuField& psiif,
                 scalargpuField& result,
-                const direction cmpt
+                const direction cmpt,
+                const bool negate = false
             ) const;
 
             //- Update interfaced interfaces for matrix operations
@@ -714,7 +715,8 @@ public:
                 const lduInterfaceFieldPtrsList& interfaces,
                 const scalargpuField& psiif,
                 scalargpuField& result,
-                const direction cmpt
+                const direction cmpt,
+                const bool negate = false
             ) const;
 
 

@@ -68,20 +68,6 @@ void Foam::JacobiSmoother::smooth
 
     textures<scalar> psiTex(psi);
 
-    FieldField<gpuField, scalar>& mBouCoeffs =
-        const_cast<FieldField<gpuField, scalar>&>
-        (
-            interfaceBouCoeffs_
-        );
-
-    forAll(mBouCoeffs, patchi)
-    {
-        if (interfaces_.set(patchi))
-        {
-            mBouCoeffs[patchi].negate();
-        }
-    }
-
     for (label sweep=0; sweep<nSweeps; sweep++)
     {
         sourceTmp = source;
@@ -92,7 +78,8 @@ void Foam::JacobiSmoother::smooth
             interfaces_,
             psi,
             sourceTmp,
-            cmpt
+            cmpt,
+            true
         );
 
         matrix_.updateMatrixInterfaces
@@ -101,7 +88,8 @@ void Foam::JacobiSmoother::smooth
             interfaces_,
             psi,
             sourceTmp,
-            cmpt
+            cmpt,
+            true
         );
 
         if(fastPath)
@@ -156,14 +144,6 @@ void Foam::JacobiSmoother::smooth
         }
 
         psi = Apsi;
-    }
-
-    forAll(mBouCoeffs, patchi)
-    {
-        if (interfaces_.set(patchi))
-        {
-            mBouCoeffs[patchi].negate();
-        }
     }
 
     psiTex.destroy();

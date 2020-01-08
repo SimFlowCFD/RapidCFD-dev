@@ -212,18 +212,6 @@ Foam::cyclicACMIFvPatchField<Type>::nonOverlapPatchField() const
     return fld.boundaryField()[cyclicACMIPatch_.nonOverlapPatchID()];
 }
 
-namespace Foam
-{
-    template<class Type>
-    struct updateCyclicACMIInterfaceMatrixFunctor
-    {
-        __HOST____DEVICE__
-        Type operator()(const Type& s, const thrust::tuple<scalar,Type>& c)
-        {
-             return s - thrust::get<0>(c) * thrust::get<1>(c);
-        }
-    };
-}
 
 template<class Type>
 void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
@@ -232,7 +220,8 @@ void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes
+    const Pstream::commsTypes,
+    const bool negate
 ) const
 {
     // note: only applying coupled contribution
@@ -247,17 +236,7 @@ void Foam::cyclicACMIFvPatchField<Type>::updateInterfaceMatrix
 
     pnf = cyclicACMIPatch_.interpolate(pnf);
 
-    matrixPatchOperation
-    (
-        this->patch().index(),
-        result,
-        this->patch().boundaryMesh().mesh().lduAddr(),
-        matrixInterfaceFunctor<scalar>
-        (
-            coeffs.data(),
-            pnf.data()
-        )
-    );
+    coupledFvPatchField<Type>::updateInterfaceMatrix(result, coeffs, pnf, negate);
 }
 
 

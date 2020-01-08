@@ -138,7 +138,8 @@ public:
                 const scalargpuField&,
                 const scalargpuField&,
                 const direction,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool negate = false
             ) const
             {}
 
@@ -149,7 +150,8 @@ public:
                 const scalargpuField&,
                 const scalargpuField&,
                 const direction,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool negate = false
             ) const = 0;
 };
 

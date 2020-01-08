@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "coupledFvPatchField.H"
+#include "lduAddressingFunctors.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -213,6 +214,46 @@ Foam::coupledFvPatchField<Type>::gradientBoundaryCoeffs() const
 {
     notImplemented("coupledFvPatchField<Type>::gradientBoundaryCoeffs()");
     return -this->gradientInternalCoeffs();
+}
+
+
+template<class Type>
+void Foam::coupledFvPatchField<Type>::updateInterfaceMatrix
+(
+    scalargpuField& result,
+    const scalargpuField& coeffs,
+    const scalargpuField& pnf,
+    const bool negate
+) const
+{
+    if(negate)
+        updateInterfaceMatrix<true>(result, coeffs, pnf);
+    else
+        updateInterfaceMatrix<false>(result, coeffs, pnf);
+}
+
+
+template<class Type>
+template<bool negate>
+void Foam::coupledFvPatchField<Type>::updateInterfaceMatrix
+(
+    scalargpuField& result,
+    const scalargpuField& coeffs,
+    const scalargpuField& pnf
+) const
+{
+    // Multiply the field by coefficients and add into the result
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<scalar,negate>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 

@@ -5,14 +5,14 @@
 namespace Foam
 {
 
-template<class Fun, class Op>
+template<class Fun, class EqOp>
 struct GAMGInterfaceFunctor
 {
     const label* cellStart;
     const label* cellFaces;
     const label* interfaceCells;
     Fun fun;
-    Op op;
+    EqOp op;
 
     GAMGInterfaceFunctor
     (
@@ -20,7 +20,7 @@ struct GAMGInterfaceFunctor
         const label* _cellFaces,
         const label* _interfaceCells,
         const Fun _fun,
-        const Op _op
+        const EqOp _op
     ):
         cellStart(_cellStart),
         cellFaces(_cellFaces),
@@ -40,7 +40,7 @@ struct GAMGInterfaceFunctor
         for(label i = start; i < end; i++)
         {
             label face = cellFaces[i];
-            out = op(out,fun(interfaceCells[id],face));
+            op(out,fun(interfaceCells[id],face));
         }
 
         return out;
@@ -68,20 +68,20 @@ struct GAMGUpdateInterfaceMatrixFunctor
     }
 };
 
-template<class Fun, class Op>
+template<class Fun, class EqOp>
 void GAMGInterfaceOperation
 (
     gpuList<scalar>& out,
     const GAMGInterface& inter,
     Fun f,
-    Op o
+    EqOp o
 )
 {
     const labelgpuList& cellsSort = inter.sortCells();
 
     const labelgpuList& cellFaces = inter.cellFaces();
     const labelgpuList& cellFacesStart = inter.cellFacesStart();
-    
+
     thrust::transform
     (
         thrust::make_counting_iterator(0),
@@ -96,7 +96,7 @@ void GAMGInterfaceOperation
             out.begin(),
             cellsSort.begin()
         ),
-        GAMGInterfaceFunctor<Fun,Op>
+        GAMGInterfaceFunctor<Fun,EqOp>
         (
             cellFacesStart.data(),
             cellFaces.data(),
@@ -107,12 +107,14 @@ void GAMGInterfaceOperation
     );
 }
 
-inline void GAMGUpdateInterfaceMatrix
+template<class EqOp>
+void GAMGInterfaceOperation
 (
     scalargpuList& out,
     const scalargpuList& coeffs,
     const scalargpuList& pnf,
-    const GAMGInterface& inter
+    const GAMGInterface& inter,
+    EqOp op
 )
 {
     GAMGInterfaceOperation
@@ -124,8 +126,23 @@ inline void GAMGUpdateInterfaceMatrix
             coeffs.data(),
             pnf.data()
         ),
-        minusOp<scalar>()
+        op
     );
+}
+
+inline void GAMGUpdateInterfaceMatrix
+(
+    scalargpuList& out,
+    const scalargpuList& coeffs,
+    const scalargpuList& pnf,
+    const GAMGInterface& inter,
+    const bool reverse
+)
+{
+    if(reverse)
+        GAMGInterfaceOperation(out, coeffs, pnf, inter, plusEqOp<scalar>());
+    else
+        GAMGInterfaceOperation(out, coeffs, pnf, inter, minusEqOp<scalar>());
 }
 
 }

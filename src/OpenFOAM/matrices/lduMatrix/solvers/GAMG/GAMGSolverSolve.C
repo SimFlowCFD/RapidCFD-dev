@@ -556,47 +556,58 @@ void Foam::GAMGSolver::solveCoarsestLevel
     label oldWarn = UPstream::warnComm;
     UPstream::warnComm = coarseComm;
 
-    coarsestCorrField = 0;
-    solverPerformance coarseSolverPerf;
-
-    if (matrixLevels_[coarsestLevel].asymmetric())
+    if (directSolveCoarsest_)
     {
-        coarseSolverPerf = BICCG
-        (
-            "coarsestLevelCorr",
-            matrixLevels_[coarsestLevel],
-            interfaceLevelsBouCoeffs_[coarsestLevel],
-            interfaceLevelsIntCoeffs_[coarsestLevel],
-            interfaceLevels_[coarsestLevel],
-            tolerance_,
-            relTol_
-        ).solve
-        (
-            coarsestCorrField,
-            coarsestSource
-        );
+        scalarField& coarsestBuffer = coarsestBufferPtr_();
+        cudaMemcpy(coarsestBuffer.data(), coarsestSource.data(), coarsestSource.byteSize(), cudaMemcpyDeviceToHost);
+        coarsestLUMatrixPtr_->solve(coarsestBuffer);
+        cudaMemcpy(coarsestCorrField.data(), coarsestBuffer.data(), coarsestSource.byteSize(), cudaMemcpyHostToDevice);
     }
     else
     {
-        coarseSolverPerf = ICCG
-        (
-            "coarsestLevelCorr",
-            matrixLevels_[coarsestLevel],
-            interfaceLevelsBouCoeffs_[coarsestLevel],
-            interfaceLevelsIntCoeffs_[coarsestLevel],
-            interfaceLevels_[coarsestLevel],
-            tolerance_,
-            relTol_
-        ).solve
-        (
-            coarsestCorrField,
-            coarsestSource
-        );
-    }
+        coarsestCorrField = 0;
+        solverPerformance coarseSolverPerf;
 
-    if (debug >= 2)
-    {
-         coarseSolverPerf.print(Info.masterStream(coarseComm));
+        if (matrixLevels_[coarsestLevel].asymmetric())
+        {
+            coarseSolverPerf = BICCG
+            (
+                "coarsestLevelCorr",
+                matrixLevels_[coarsestLevel],
+                interfaceLevelsBouCoeffs_[coarsestLevel],
+                interfaceLevelsIntCoeffs_[coarsestLevel],
+                interfaceLevels_[coarsestLevel],
+                tolerance_,
+                relTol_
+            ).solve
+            (
+                coarsestCorrField,
+                coarsestSource
+            );
+        }
+        else
+        {
+            coarseSolverPerf = ICCG
+            (
+                "coarsestLevelCorr",
+                matrixLevels_[coarsestLevel],
+                interfaceLevelsBouCoeffs_[coarsestLevel],
+                interfaceLevelsIntCoeffs_[coarsestLevel],
+                interfaceLevels_[coarsestLevel],
+                tolerance_,
+                relTol_
+            ).solve
+            (
+                coarsestCorrField,
+                coarsestSource
+            );
+        }
+
+        if (debug >= 2)
+        {
+             coarseSolverPerf.print(Info.masterStream(coarseComm));
+        }
+
     }
 
     UPstream::warnComm = oldWarn;

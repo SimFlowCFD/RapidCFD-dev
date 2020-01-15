@@ -374,7 +374,7 @@ SYSTEMOPENMPI)
     ;;
 
 OPENMPI)
-    export FOAM_MPI=openmpi-1.8.4
+    export FOAM_MPI=openmpi-4.0.2
     # optional configuration tweaks:
     _foamSource `$WM_PROJECT_DIR/bin/foamEtcFile config/openmpi.sh`
 
@@ -393,7 +393,7 @@ OPENMPI)
     ;;
 
 MVAPICH2)
-    export FOAM_MPI=mvapich2-2.1
+    export FOAM_MPI=mvapich2-2.3.2
     export MPI_HOME=$WM_THIRD_PARTY_DIR/$FOAM_MPI
     export MPI_ARCH_PATH=$WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/$FOAM_MPI
     export MV2_USE_CUDA=1

@@ -131,7 +131,7 @@ class GAMGSolver
         autoPtr<LUscalarMatrix> coarsestLUMatrixPtr_;
 
         //- Coarsest matrix result buffer
-        autoPtr<scalarField> coarsestBufferPtr_;
+        mutable autoPtr<scalarField> coarsestBufferPtr_;
 
 
     // Private Member Functions

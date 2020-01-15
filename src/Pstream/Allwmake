@@ -29,7 +29,7 @@ set -x
 wmake $makeType dummy
 
 case "$WM_MPLIB" in
-*MPI*)
+*MPI*|MVAPICH2)
     set +x
     echo
     echo "Note: ignore spurious warnings about missing mpicxx.h headers"

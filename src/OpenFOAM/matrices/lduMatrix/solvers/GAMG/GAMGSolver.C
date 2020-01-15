@@ -72,6 +72,7 @@ Foam::GAMGSolver::GAMGSolver
     nFinestSweeps_(2),
     interpolateCorrection_(false),
     scaleCorrection_(matrix.symmetric()),
+    directSolveCoarsest_(false),
     agglomeration_(GAMGAgglomeration::New(matrix_, controlDict_)),
 
     matrixLevels_(agglomeration_.size()),
@@ -138,8 +139,40 @@ Foam::GAMGSolver::GAMGSolver
         Pout<< endl;
     }
 
+    if (matrixLevels_.size())
+    {
+        if (directSolveCoarsest_)
+        {
+            const label coarsestLevel = matrixLevels_.size() - 1;
 
-    if ( ! matrixLevels_.size())
+            if (matrixLevels_.set(coarsestLevel))
+            {
+                const lduMatrix& coarsestMatrix = matrixLevels_[coarsestLevel];
+
+                label coarseComm = coarsestMatrix.mesh().comm();
+                label oldWarn = UPstream::warnComm;
+                UPstream::warnComm = coarseComm;
+
+                coarsestLUMatrixPtr_.set
+                (
+                    new LUscalarMatrix
+                    (
+                        coarsestMatrix,
+                        interfaceLevelsBouCoeffs_[coarsestLevel],
+                        interfaceLevels_[coarsestLevel]
+                    )
+                );
+
+                coarsestBufferPtr_.set
+                (
+                    new scalarField(coarsestMatrix.lduAddr().size())
+                );
+
+                UPstream::warnComm = oldWarn;
+            }
+        }
+    }
+    else
     {
         FatalErrorIn
         (
@@ -197,6 +230,7 @@ void Foam::GAMGSolver::readControls()
     controlDict_.readIfPresent("nFinestSweeps", nFinestSweeps_);
     controlDict_.readIfPresent("interpolateCorrection", interpolateCorrection_);
     controlDict_.readIfPresent("scaleCorrection", scaleCorrection_);
+    controlDict_.readIfPresent("directSolveCoarsest", directSolveCoarsest_);
 
     if (debug)
     {

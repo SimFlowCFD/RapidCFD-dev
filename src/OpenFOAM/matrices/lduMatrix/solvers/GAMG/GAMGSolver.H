@@ -57,6 +57,7 @@ SourceFiles
 #include "lduMatrix.H"
 #include "labelField.H"
 #include "primitiveFields.H"
+#include "LUscalarMatrix.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -105,6 +106,9 @@ class GAMGSolver
         //  but not for asymmetric matrices.
         bool scaleCorrection_;
 
+        //- Direct or iteratively solve the coarsest level
+        bool directSolveCoarsest_;
+
         //- The agglomeration
         const GAMGAgglomeration& agglomeration_;
 
@@ -122,6 +126,12 @@ class GAMGSolver
 
         //- Hierarchy of interface internal coefficients
         PtrList<FieldField<gpuField, scalar> > interfaceLevelsIntCoeffs_;
+
+        //- LU decompsed coarsest matrix
+        autoPtr<LUscalarMatrix> coarsestLUMatrixPtr_;
+
+        //- Coarsest matrix result buffer
+        autoPtr<scalarField> coarsestBufferPtr_;
 
 
     // Private Member Functions

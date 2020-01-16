@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "IOField.H"
+#include "gpuField.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -185,6 +186,13 @@ void Foam::IOField<Type>::operator=(const IOField<Type>& rhs)
 
 template<class Type>
 void Foam::IOField<Type>::operator=(const Field<Type>& rhs)
+{
+    Field<Type>::operator=(rhs);
+}
+
+
+template<class Type>
+void Foam::IOField<Type>::operator=(const gpuField<Type>& rhs)
 {
     Field<Type>::operator=(rhs);
 }

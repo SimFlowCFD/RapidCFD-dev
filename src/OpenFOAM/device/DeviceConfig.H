@@ -1,5 +1,4 @@
-#ifndef gpuConfig_H
-#define gpuConfig_H
+#pragma once
 
 #ifdef __CUDACC__
 
@@ -57,4 +56,3 @@ namespace Foam
 #error "Currently only CUDA is supported."
 #endif
 
-#endif

@@ -201,13 +201,9 @@ void Foam::LUscalarMatrix::convert
     const scalargpuField& diag = ldum.diag();
     const scalargpuField& upper = ldum.upper();
     const scalargpuField& lower = ldum.lower();
-    scalarField diagPtr(diag.size());
-    scalarField upperPtr(upper.size());
-    scalarField lowerPtr(lower.size());
-
-    thrust::copy(diag.begin(), diag.end(), diagPtr.begin());
-    thrust::copy(upper.begin(), upper.end(), upperPtr.begin());
-    thrust::copy(lower.begin(), lower.end(), lowerPtr.begin());
+    const scalarField diagPtr(diag);
+    const scalarField upperPtr(upper);
+    const scalarField lowerPtr(lower);
 
     register const label nCells = ldum.diag().size();
     register const label nFaces = ldum.upper().size();
@@ -243,8 +239,7 @@ void Foam::LUscalarMatrix::convert
                 interfaces[nbrInt].interface().faceCellsHost().begin();
 
             const scalargpuField& coeffs = interfaceCoeffs[nbrInt];
-            scalarField nbrUpperLowerPtr(coeffs.size());
-            thrust::copy(coeffs.begin(),coeffs.end(),nbrUpperLowerPtr.begin());
+            const scalarField nbrUpperLowerPtr(coeffs);
 
             register label inFaces = interface.faceCellsHost().size();
 

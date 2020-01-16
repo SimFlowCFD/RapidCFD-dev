@@ -2,7 +2,7 @@
 
 cWARN        = -Xcompiler -Wall
 
-cc          = nvcc -m64 -arch=sm_75 
+cc          = nvcc -m64 -arch=sm_30 
 
 include $(RULES)/c$(WM_COMPILE_OPTION)
 

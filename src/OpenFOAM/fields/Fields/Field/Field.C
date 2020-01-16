@@ -27,6 +27,7 @@ License
 #include "FieldM.H"
 #include "dictionary.H"
 #include "contiguous.H"
+#include "gpuList.H"
 
 // * * * * * * * * * * * * * * * Static Members  * * * * * * * * * * * * * * //
 
@@ -236,6 +237,14 @@ Foam::Field<Type>::Field(const UList<Type>& list)
 :
     List<Type>(list)
 {}
+
+template<class Type>
+Foam::Field<Type>::Field(const gpuList<Type>& list)
+:
+    List<Type>(list.size())
+{
+    copyDeviceToHost(this->data(), list.data(), list.size());
+}
 
 
 // Construct as copy of tmp<Field>
@@ -702,6 +711,15 @@ template<class Type>
 void Foam::Field<Type>::operator=(const UList<Type>& rhs)
 {
     List<Type>::operator=(rhs);
+}
+
+
+template<class Type>
+void Foam::Field<Type>::operator=(const gpuList<Type>& rhs)
+{
+    if(this->size() != rhs.size())
+        this->setSize(rhs.size());
+    copyDeviceToHost(this->data(), rhs.data(), rhs.size());
 }
 
 

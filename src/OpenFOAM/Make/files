@@ -105,7 +105,9 @@ $(ranges)/labelRange/labelRanges.C
 $(ranges)/scalarRange/scalarRange.C
 $(ranges)/scalarRange/scalarRanges.C
 
-containers/Lists/gpuList/gpuConfig.C
+
+device/DeviceConfig.C
+
 containers/HashTables/HashTable/HashTableCore.C
 containers/HashTables/StaticHashTable/StaticHashTableCore.C
 containers/Lists/PackedList/PackedListCore.C

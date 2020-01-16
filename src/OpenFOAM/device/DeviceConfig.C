@@ -1,4 +1,4 @@
-#include "gpuConfig.H"
+#include "DeviceConfig.H"
 
 namespace Foam {
 

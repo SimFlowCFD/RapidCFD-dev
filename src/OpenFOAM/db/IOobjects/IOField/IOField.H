@@ -43,6 +43,8 @@ SourceFiles
 namespace Foam
 {
 
+template<class T> class gpuField;
+
 /*---------------------------------------------------------------------------*\
                            Class IOField Declaration
 \*---------------------------------------------------------------------------*/
@@ -88,6 +90,8 @@ public:
         void operator=(const IOField<Type>&);
 
         void operator=(const Field<Type>&);
+
+        void operator=(const gpuField<Type>&);
 };
 
 

@@ -77,8 +77,7 @@ void Foam::pointPatchDist::correct()
     }
 
 
-    pointField points(points_.size());
-    points_.copyInto(points.begin());
+    pointField points(points_);
     externalPointEdgePoint::trackingData td(points);
 
     // Set initial changed points to all the patch points(if patch present)

@@ -2,6 +2,7 @@
 
 #include "gpuList.H"
 #include "contiguous.H"
+#include "DeviceMemory.H"
 
 
 template<class T>
@@ -37,12 +38,6 @@ std::streamsize Foam::gpuList<T>::byteSize() const
     return this->size()*sizeof(T);
 }
 
-template<class T>
-template<class Iterator>
-void Foam::gpuList<T>::copyInto(Iterator it) const
-{
-    gpu_api::copy(this->begin(),this->end(),it);
-}
 
 template<class T>
 void Foam::gpuList<T>::operator=(const T& t)
@@ -58,14 +53,14 @@ void Foam::gpuList<T>::operator=(const gpuList<T>& l)
         setSize(l.size());
     }
 
-    gpu_api::copy(l.begin(),l.end(),begin());
+    copyDeviceToDevice(this->data(), l.data(), l.size());
 }
 
 template<class T>
 void Foam::gpuList<T>::operator=(const UList<T>& l)
 {
     setSize(l.size());
-    gpu_api::copy(l.begin(),l.end(),begin());
+    copyHostToDevice(this->data(), l.begin(), l.size());
 }
 
 template<class T>

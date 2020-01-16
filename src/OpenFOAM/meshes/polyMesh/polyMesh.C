@@ -1292,7 +1292,7 @@ Foam::tmp<Foam::scalargpuField> Foam::polyMesh::movePoints
         gpuPointsPtr_ = new pointgpuField(newPoints);
     }
 
-    gpuPointsPtr_->copyInto(points_.begin());
+    points_=*gpuPointsPtr_;
 
     bool moveError = false;
     if (debug)

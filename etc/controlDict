@@ -60,7 +60,7 @@ OptimisationSwitches
     commsType      nonBlocking;// nonBlocking; //scheduled; //blocking;
     floatTransfer     0;
     nProcsSimpleSum   0;
-    gpuDirectTransfer 1;
+    gpuDirectTransfer 0;
 
     // How much additional GPU memory can be sacrificed for speed
     favourSpeedOverMemory        2;

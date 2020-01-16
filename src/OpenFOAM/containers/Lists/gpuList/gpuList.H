@@ -5,7 +5,7 @@
 #include "label.H"
 #include "uLabel.H"
 #include "Xfer.H"
-#include "gpuConfig.H"
+#include "DeviceConfig.H"
 
 namespace Foam
 {
@@ -70,10 +70,6 @@ public:
         void setDelegate(gpuList<T>&);
         void setDelegate(gpuList<T>&,label);
         void setDelegate(gpuList<T>&,label,label);
-
-        //Requires iterator to have sufficient capacity
-        template<class Iterator>
-        void copyInto(Iterator it) const;
 
         void operator=(const T&);
         void operator=(const gpuList<T>&);

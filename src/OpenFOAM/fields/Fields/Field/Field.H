@@ -62,6 +62,9 @@ template<class Type>
 class SubField;
 
 template<class Type>
+class gpuList;
+
+template<class Type>
 Ostream& operator<<(Ostream&, const Field<Type>&);
 
 template<class Type>
@@ -119,6 +122,9 @@ public:
 
         //- Construct as copy of a UList\<Type\>
         explicit Field(const UList<Type>&);
+
+        //- Construct as copy of a UList\<Type\>
+        explicit Field(const gpuList<Type>&);
 
         //- Construct by transferring the List contents
         explicit Field(const Xfer<List<Type> >&);
@@ -347,6 +353,7 @@ public:
         void operator=(const Field<Type>&);
         void operator=(const UList<Type>&);
         void operator=(const SubField<Type>&);
+        void operator=(const gpuList<Type>&);
         void operator=(const tmp<Field<Type> >&);
         void operator=(const Type&);
 

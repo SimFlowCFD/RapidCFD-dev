@@ -110,9 +110,8 @@ namespace Foam
         static_assert(is_number<T>::value, "Number is required");
         return false;
     }
+}
 
     #else
     #error "Currently only CUDA is supported."
     #endif
-
-}

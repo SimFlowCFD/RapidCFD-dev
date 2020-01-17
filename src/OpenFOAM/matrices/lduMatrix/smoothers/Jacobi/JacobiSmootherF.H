@@ -1,6 +1,6 @@
 #pragma once
 
-#include "textures.H"
+#include "Textures.H"
 
 namespace Foam
 {

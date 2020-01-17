@@ -2,8 +2,6 @@
 
 #include <type_traits>
 
-#ifdef __CUDACC__
-
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/device_ptr.h>
@@ -112,6 +110,3 @@ namespace Foam
     }
 }
 
-    #else
-    #error "Currently only CUDA is supported."
-    #endif

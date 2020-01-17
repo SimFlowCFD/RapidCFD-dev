@@ -43,7 +43,6 @@ Foam::AINVPreconditioner::AINVPreconditioner
 
 Foam::AINVPreconditioner::~AINVPreconditioner()
 {
-   rDTex.destroy();
 }
 
 template<bool normalMult>
@@ -73,7 +72,7 @@ void Foam::AINVPreconditioner::preconditionImpl
                                   solver_.matrix().upper():
                                   solver_.matrix().lower();
 
-    textures<scalar> rTex(r);
+    textureBind<scalar> rTex(r);
 
     if(fastPath)
     {
@@ -84,8 +83,8 @@ void Foam::AINVPreconditioner::preconditionImpl
             w.begin(),
             AINVPreconditionerFunctor<true,3>
             (
-                rTex,
-                rDTex,
+                rTex(),
+                rDTex(),
                 Lower.data(),
                 Upper.data(),
                 l.data(),
@@ -105,8 +104,8 @@ void Foam::AINVPreconditioner::preconditionImpl
             w.begin(),
             AINVPreconditionerFunctor<false,3>
             (
-                rTex,
-                rDTex,
+                rTex(),
+                rDTex(),
                 Lower.data(),
                 Upper.data(),
                 l.data(),
@@ -117,6 +116,4 @@ void Foam::AINVPreconditioner::preconditionImpl
             )
         );
     }
-
-    rTex.destroy();
 }

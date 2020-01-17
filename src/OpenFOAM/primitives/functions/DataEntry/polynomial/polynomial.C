@@ -26,7 +26,7 @@ License
 #include "polynomial.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
-#include "textures.H"
+#include "Textures.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -292,8 +292,9 @@ Foam::tmp<Foam::scalargpuField > Foam::polynomial::value
     tmp<scalargpuField> tfld(new scalargpuField(x.size()));
     scalargpuField& fld = tfld();
 
-    textures<scalar> preCoeffs(preCoeffs_);
-    textures<scalar> expCoeffs(expCoeffs_);
+    //TODO coeffs should go through constant memory
+    textureBind<scalar> preCoeffs(preCoeffs_);
+    textureBind<scalar> expCoeffs(expCoeffs_);
 
     thrust::transform
     (
@@ -303,13 +304,10 @@ Foam::tmp<Foam::scalargpuField > Foam::polynomial::value
         polynomialFunctor
         (
             coeffs_.size(),
-            preCoeffs,
-            expCoeffs
+            preCoeffs(),
+            expCoeffs()
         )
     );
-
-    preCoeffs.destroy();
-    expCoeffs.destroy();
 
     return tfld;
 }

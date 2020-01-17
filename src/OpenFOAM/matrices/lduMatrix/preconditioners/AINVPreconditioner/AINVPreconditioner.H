@@ -13,7 +13,7 @@
 #define AINVPreconditioner_H
 
 #include "lduMatrix.H"
-#include "textures.H"
+#include "Textures.H"
 
 namespace Foam
 {
@@ -23,7 +23,7 @@ class AINVPreconditioner
     public lduMatrix::preconditioner
 {
         scalargpuField rD;
-        textures<scalar> rDTex;
+        textureBind<scalar> rDTex;
 
         AINVPreconditioner(const AINVPreconditioner&);
 

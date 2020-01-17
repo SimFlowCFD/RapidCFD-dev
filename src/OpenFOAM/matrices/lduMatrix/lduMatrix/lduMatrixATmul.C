@@ -28,7 +28,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "lduMatrix.H"
-#include "textures.H"
+#include "Textures.H"
 #include "lduMatrixSolutionCache.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -152,7 +152,7 @@ inline void callMultiply
     const scalargpuField& Diag
 )
 {
-    textures<scalar> psiTex(psi);
+    textureBind<scalar> psiTex(psi);
 
     thrust::transform
     (
@@ -161,7 +161,7 @@ inline void callMultiply
         Apsi.begin(),
         matrixMultiplyFunctor<fast,3>
         (
-            psiTex,
+            psiTex(),
             Diag.data(),
             Lower.data(),
             Upper.data(),
@@ -172,8 +172,6 @@ inline void callMultiply
             losort.data()
         )
     );
-
-    psiTex.destroy();
 }
 
 

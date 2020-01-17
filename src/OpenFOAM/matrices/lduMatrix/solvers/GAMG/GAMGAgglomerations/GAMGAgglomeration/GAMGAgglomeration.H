@@ -80,6 +80,7 @@ protected:
 
         //- Cell restriction addressing array.
         //  Maps from the finer to the coarser level.
+        PtrList<labelgpuField> restrictAddressing_;
         PtrList<labelgpuField> restrictSortAddressing_;
         PtrList<labelgpuField> restrictTargetAddressing_;
         PtrList<labelgpuField> restrictTargetStartAddressing_;
@@ -95,6 +96,7 @@ protected:
         //  of the coarser cells to the corresponding coarser cell face.
         //  Negative indices map the finer faces which are internal to the
         //  coarser cells to minus the corresponding coarser cell index minus 1.
+        PtrList<labelgpuList> faceRestrictAddressing_;
         PtrList<labelgpuList> faceRestrictSortAddressing_;
         PtrList<labelgpuList> faceRestrictTargetAddressing_;
         PtrList<labelgpuList> faceRestrictTargetStartAddressing_;
@@ -113,6 +115,7 @@ protected:
         //- Patch-local face restriction addressing array.
         //  Maps from the finer to the coarser level. Always positive.
         //  Extracted from GAMGInterfaces after agglomeration.
+        PtrList<labelgpuListList> patchFaceRestrictAddressing_;
         PtrList<labelgpuListList> patchFaceRestrictSortAddressing_;
         PtrList<labelgpuListList> patchFaceRestrictTargetAddressing_;
         PtrList<labelgpuListList> patchFaceRestrictTargetStartAddressing_;
@@ -137,8 +140,15 @@ protected:
 
         void clearLevel(const label leveli);
 
+        void buildFullRestrictAddr(const labelgpuList&, const label);
+        void buildFullFaceRestrictAddr(const labelgpuList&, const label);
+        void buildFullPatchFaceRestrictAddr(const labelgpuListList&, const label);
 
 private:
+
+        bool useAtomic_;
+
+        bool hasFullAddressing_;
 
     // Private Member Functions
 
@@ -275,6 +285,12 @@ public:
                 return meshLevels_.size();
             }
 
+            //- Are we using atomic operations
+            bool useAtomic() const;
+
+            //- Make sure full addressing is built
+            void buildFullAddressing();
+
             //- Return LDU mesh of given level
             const lduMesh& meshLevel(const label leveli) const;
 
@@ -288,6 +304,11 @@ public:
             ) const;
 
             //- Return cell restrict addressing of given level
+            const labelgpuField& restrictAddressing(const label leveli) const
+            {
+                return restrictAddressing_[leveli];
+            }
+
             const labelgpuField& restrictSortAddressing(const label leveli) const
             {
                 return restrictSortAddressing_[leveli];
@@ -310,6 +331,11 @@ public:
             }
 
             //- Face restrict addressing of given level
+            const labelgpuList& faceRestrictAddressing(const label leveli) const
+            {
+                return faceRestrictAddressing_[leveli];
+            }
+
             const labelgpuList& faceRestrictSortAddressing(const label leveli) const
             {
                 return faceRestrictSortAddressing_[leveli];
@@ -332,6 +358,11 @@ public:
             }
 
 
+            const labelgpuListList& patchFaceRestrictAddressing(const label leveli) const
+            {
+                return patchFaceRestrictAddressing_[leveli];
+            }
+
             const labelgpuListList& patchFaceRestrictSortAddressing(const label leveli) const
             {
                 return patchFaceRestrictSortAddressing_[leveli];
@@ -346,7 +377,6 @@ public:
             {
                 return patchFaceRestrictTargetStartAddressing_[leveli];
             }
-
 
             const labelListList& patchFaceRestrictAddressingHost(const label leveli) const
             {
@@ -420,6 +450,15 @@ public:
                 const labelgpuList& sort,
                 const labelgpuList& target,
                 const labelgpuList& targetStart
+            ) const;
+
+            //- Atomic version of restrict
+            template<class Type>
+            void restrictField
+            (
+                gpuField<Type>& cf,
+                const gpuField<Type>& ff,
+                const labelgpuList& fineToCoarse
             ) const;
 
 

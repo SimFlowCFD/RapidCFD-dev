@@ -60,29 +60,19 @@ void Foam::pairGAMGAgglomeration::agglomerate
 
             restrictAddressingHost_.set(nCreatedLevels, finalAgglomPtr);
 
-            restrictSortAddressing_.set(nCreatedLevels, new labelgpuField());
-            restrictTargetAddressing_.set(nCreatedLevels, new labelgpuField());
-            restrictTargetStartAddressing_.set(nCreatedLevels, new labelgpuField());
-
-            labelgpuList restrictAddressingTmp(restrictAddressingHost_[nCreatedLevels]);
-
-            labelgpuList& restrictSortAddressing = restrictSortAddressing_[nCreatedLevels];
-            labelgpuList& restrictTargetAddressing = restrictTargetAddressing_[nCreatedLevels];
-            labelgpuList& restrictTargetStartAddressing = restrictTargetStartAddressing_[nCreatedLevels];
-
-            createSort
-            (
-                restrictAddressingTmp,
-                restrictSortAddressing
-            );
-
-            createTarget
-            (
-                restrictAddressingTmp,
-                restrictSortAddressing,
-                restrictTargetAddressing,
-                restrictTargetStartAddressing
-            );
+            if (useAtomic())
+            {
+                restrictAddressing_.set
+                (
+                    nCreatedLevels, 
+                    new labelgpuField(restrictAddressingHost_[nCreatedLevels])
+                );
+            }
+            else
+            {
+                const labelgpuList restrictAddressingTmp(restrictAddressingHost_[nCreatedLevels]);
+                buildFullRestrictAddr(restrictAddressingTmp, nCreatedLevels);
+            }
         }
         else
         {

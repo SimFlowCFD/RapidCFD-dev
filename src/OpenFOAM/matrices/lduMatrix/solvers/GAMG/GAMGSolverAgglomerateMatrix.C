@@ -28,6 +28,7 @@ License
 #include "processorLduInterfaceField.H"
 #include "processorGAMGInterfaceField.H"
 #include "GAMGSolverAgglomerateMatrixF.H"
+#include "GAMGAgglomerateF.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -120,231 +121,199 @@ void Foam::GAMGSolver::agglomerateMatrix
             coarseInterfaceIntCoeffs
         );
 
-
-        // Get face restriction addressing for current level
-        const labelgpuList& faceRestrictSortAddr =
-            agglomeration_.faceRestrictSortAddressing(fineLevelIndex); 
-        const labelgpuList& faceRestrictTargetAddr = 
-            agglomeration_.faceRestrictTargetAddressing(fineLevelIndex);
-        const labelgpuList& faceRestrictTargetStartAddr = 
-            agglomeration_.faceRestrictTargetStartAddressing(fineLevelIndex);
         const boolgpuList& faceFlipMap =
             agglomeration_.faceFlipMap(fineLevelIndex);
 
-        typedef typename thrust::pair<labelgpuList::iterator,scalargpuField::iterator> Pair;
+        const scalargpuField& fineUpper = fineMatrix.upper();
+        scalargpuField& coarseUpper = coarseMatrix.upper(nCoarseFaces);
 
-        // Check if matrix is asymetric and if so agglomerate both upper
-        // and lower coefficients ...
-        if (fineMatrix.hasLower())
+        if(agglomeration_.useAtomic())
         {
-            // Get off-diagonal matrix coefficients
-            const scalargpuField& fineUpper = fineMatrix.upper();
-            const scalargpuField& fineLower = fineMatrix.lower();
+            // Get face restriction addressing for current level
+            const labelgpuList& faceRestrictAddr =
+                agglomeration_.faceRestrictAddressing(fineLevelIndex);
 
-            // Coarse matrix upper coefficients. Note passed in size
-            scalargpuField& coarseUpper = coarseMatrix.upper(nCoarseFaces);
-            scalargpuField& coarseLower = coarseMatrix.lower(nCoarseFaces);
+            auto fineFaceBegin = thrust::make_counting_iterator(0);
+            auto fineFaceEnd = fineFaceBegin + faceRestrictAddr.size();
 
+            // Check if matrix is asymetric and if so agglomerate both upper
+            // and lower coefficients ...
+            if (fineMatrix.hasLower())
+            {
+                // Get off-diagonal matrix coefficients
+                const scalargpuField& fineLower = fineMatrix.lower();
 
-            thrust::transform_if
-            (
-                thrust::make_zip_iterator(thrust::make_tuple
+                // Coarse matrix upper coefficients. Note passed in size
+                scalargpuField& coarseLower = coarseMatrix.lower(nCoarseFaces);
+
+                thrust::for_each
                 (
-                    thrust::make_permutation_iterator
+                    fineFaceBegin, fineFaceEnd, 
+                    GAMG::asymAtomicAgglomerate
                     (
-                        coarseUpper.begin(),
-                        faceRestrictTargetAddr.begin()
-                    ),
-
-                    thrust::make_permutation_iterator
-                    (
-                        coarseLower.begin(),
-                        faceRestrictTargetAddr.begin()
+                        coarseDiag.data(),
+                        coarseUpper.data(),
+                        coarseLower.data(),
+                        fineUpper.data(),
+                        fineLower.data(),
+                        faceRestrictAddr.data(),
+                        faceFlipMap.data()
                     )
-                )),
+                );
 
-                thrust::make_zip_iterator(thrust::make_tuple
+            }
+            else // ... Otherwise it is symmetric so agglomerate just the upper
+            {
+                thrust::for_each
                 (
-                    thrust::make_permutation_iterator
+                    fineFaceBegin, fineFaceEnd, 
+                    GAMG::symAtomicAgglomerate
                     (
-                        coarseUpper.begin(),
-                        faceRestrictTargetAddr.end()
-                    ),
-
-                    thrust::make_permutation_iterator
-                    (
-                        coarseLower.begin(),
-                        faceRestrictTargetAddr.end()
+                        coarseDiag.data(),
+                        coarseUpper.data(),
+                        fineUpper.data(),
+                        faceRestrictAddr.data()
                     )
-                )),
-
-                thrust::make_zip_iterator(thrust::make_tuple
-                (
-                    faceRestrictTargetStartAddr.begin(),
-                    faceRestrictTargetStartAddr.begin()+1
-                )),
-
-                faceRestrictTargetAddr.begin(),
-
-                thrust::make_zip_iterator(thrust::make_tuple
-                (
-                    thrust::make_permutation_iterator
-                    (
-                        coarseUpper.begin(),
-                        faceRestrictTargetAddr.begin()
-                    ),
-
-                    thrust::make_permutation_iterator
-                    (
-                        coarseLower.begin(),
-                        faceRestrictTargetAddr.begin()
-                    )
-                )),
-
-                GAMGSolverAgglomerateAsymFunctor
-                (
-                    fineUpper.data(),
-                    fineLower.data(),
-                    faceFlipMap.data(),
-                    faceRestrictSortAddr.data()
-                ),
-
-                luGAMGNonNegative()
-            );
-
-
-            thrust::transform_if
-            (
-                thrust::make_permutation_iterator
-                (
-                    coarseDiag.begin(),
-                    thrust::make_transform_iterator
-                    (
-                        faceRestrictTargetAddr.begin(),
-                        faceToDiagFunctor()
-                    )
-                ),
-
-                thrust::make_permutation_iterator
-                (
-                    coarseDiag.begin(),
-                    thrust::make_transform_iterator
-                    (
-                        faceRestrictTargetAddr.end(),
-                        faceToDiagFunctor()
-                    )
-                ),
-
-                thrust::make_zip_iterator(thrust::make_tuple
-                (
-                    faceRestrictTargetStartAddr.begin(),
-                    faceRestrictTargetStartAddr.begin()+1
-                )),
-
-                faceRestrictTargetAddr.begin(),
-
-                thrust::make_permutation_iterator
-                (
-                    coarseDiag.begin(),
-                    thrust::make_transform_iterator
-                    (
-                        faceRestrictTargetAddr.begin(),
-                        faceToDiagFunctor()
-                    )
-                ),
-
-                GAMGSolverAgglomerateDiagAsymFunctor
-                (
-                    fineUpper.data(),
-                    fineLower.data(),
-                    faceRestrictSortAddr.data()
-                ),
-
-                luGAMGNegative()
-            );
-
+                );
+            }
         }
-        else // ... Otherwise it is symmetric so agglomerate just the upper
+        else //================================================================
         {
-            // Get off-diagonal matrix coefficients
-            const scalargpuField& fineUpper = fineMatrix.upper();
 
-            // Coarse matrix upper coefficients
-            scalargpuField& coarseUpper = coarseMatrix.upper(nCoarseFaces);
+            // Get face restriction addressing for current level
+            const labelgpuList& faceRestrictSortAddr =
+                agglomeration_.faceRestrictSortAddressing(fineLevelIndex); 
+            const labelgpuList& faceRestrictTargetAddr = 
+                agglomeration_.faceRestrictTargetAddressing(fineLevelIndex);
+            const labelgpuList& faceRestrictTargetStartAddr = 
+                agglomeration_.faceRestrictTargetStartAddressing(fineLevelIndex);
 
-            thrust::transform_if
-            (
-                thrust::make_permutation_iterator
-                (
-                    coarseUpper.begin(),
-                    faceRestrictTargetAddr.begin()
-                ),
-                thrust::make_permutation_iterator
-                (
-                    coarseUpper.begin(),
-                    faceRestrictTargetAddr.end()
-                ),
-                thrust::make_zip_iterator(thrust::make_tuple
-                (
-                    faceRestrictTargetStartAddr.begin(),
-                    faceRestrictTargetStartAddr.begin()+1
-                )),
-                faceRestrictTargetAddr.begin(),
-                thrust::make_permutation_iterator
-                (
-                    coarseUpper.begin(),
-                    faceRestrictTargetAddr.begin()
-                ),
-                GAMGSolverAgglomerateSymFunctor
-                (
-                    fineUpper.data(),
-                    faceRestrictSortAddr.data()
-                ),
-                luGAMGNonNegative()
-            );
+            // Check if matrix is asymetric and if so agglomerate both upper
+            // and lower coefficients ...
+            if (fineMatrix.hasLower())
+            {
+                // Get off-diagonal matrix coefficients
+                const scalargpuField& fineLower = fineMatrix.lower();
 
-            thrust::transform_if
-            (
-                thrust::make_permutation_iterator
-                (
-                    coarseDiag.begin(),
-                    thrust::make_transform_iterator
+                // Coarse matrix upper coefficients. Note passed in size
+                scalargpuField& coarseLower = coarseMatrix.lower(nCoarseFaces);
+
+                auto coarseLUIter = thrust::make_zip_iterator(thrust::make_tuple
                     (
-                        faceRestrictTargetAddr.begin(),
-                        faceToDiagFunctor()
-                    )
-                ),
-                thrust::make_permutation_iterator
+                        thrust::make_permutation_iterator
+                        (
+                            coarseUpper.begin(),
+                            faceRestrictTargetAddr.begin()
+                        ),
+
+                        thrust::make_permutation_iterator
+                        (
+                            coarseLower.begin(),
+                            faceRestrictTargetAddr.begin()
+                        )
+                    ));
+
+                thrust::transform_if
                 (
-                    coarseDiag.begin(),
-                    thrust::make_transform_iterator
+                    coarseLUIter, coarseLUIter + faceRestrictTargetAddr.size(),
+                    thrust::make_zip_iterator(thrust::make_tuple
                     (
-                        faceRestrictTargetAddr.end(),
-                        faceToDiagFunctor()
-                    )
-                ),
-                thrust::make_zip_iterator(thrust::make_tuple
-                (
-                    faceRestrictTargetStartAddr.begin(),
-                    faceRestrictTargetStartAddr.begin()+1
-                )),
-                faceRestrictTargetAddr.begin(),
-                thrust::make_permutation_iterator
-                (
-                    coarseDiag.begin(),
-                    thrust::make_transform_iterator
+                        faceRestrictTargetStartAddr.begin(),
+                        faceRestrictTargetStartAddr.begin()+1
+                    )),
+                    faceRestrictTargetAddr.begin(),
+                    coarseLUIter,
+                    GAMG::asymAgglomerate
                     (
-                        faceRestrictTargetAddr.begin(),
-                        faceToDiagFunctor()
-                    )
-                ),
-                GAMGSolverAgglomerateDiagSymFunctor
+                        fineUpper.data(),
+                        fineLower.data(),
+                        faceFlipMap.data(),
+                        faceRestrictSortAddr.data()
+                    ),
+
+                    GAMG::nonNegative()
+                );
+
+                auto coarseDiagIter = thrust::make_permutation_iterator
+                    (
+                        coarseDiag.begin(),
+                        thrust::make_transform_iterator
+                        (
+                            faceRestrictTargetAddr.begin(),
+                            GAMG::faceToDiag()
+                        )
+                    );
+
+                thrust::transform_if
                 (
-                    fineUpper.data(),
-                    faceRestrictSortAddr.data()
-                ),
-                luGAMGNegative()
-            );
+                    coarseDiagIter, coarseDiagIter + faceRestrictTargetAddr.size(),
+                    thrust::make_zip_iterator(thrust::make_tuple
+                    (
+                        faceRestrictTargetStartAddr.begin(),
+                        faceRestrictTargetStartAddr.begin()+1
+                    )),
+                    faceRestrictTargetAddr.begin(),
+                    coarseDiagIter,
+                    GAMG::diagAsymAgglomerate
+                    (
+                        fineUpper.data(),
+                        fineLower.data(),
+                        faceRestrictSortAddr.data()
+                    ),
+                    GAMG::negative()
+                );
+
+            }
+            else // ... Otherwise it is symmetric so agglomerate just the upper
+            {
+                auto coarseUpperIter = thrust::make_permutation_iterator(
+                     coarseUpper.begin(),  faceRestrictTargetAddr.begin());
+
+                thrust::transform_if
+                (
+                    coarseUpperIter, coarseUpperIter + faceRestrictTargetAddr.size(),
+                    thrust::make_zip_iterator(thrust::make_tuple
+                    (
+                        faceRestrictTargetStartAddr.begin(),
+                        faceRestrictTargetStartAddr.begin()+1
+                    )),
+                    faceRestrictTargetAddr.begin(),
+                    coarseUpperIter,
+                    GAMG::symAgglomerate
+                    (
+                        fineUpper.data(),
+                        faceRestrictSortAddr.data()
+                    ),
+                    GAMG::nonNegative()
+                );
+
+                auto coarseDiagIter = thrust::make_permutation_iterator(
+                        coarseDiag.begin(),
+                        thrust::make_transform_iterator
+                        (
+                            faceRestrictTargetAddr.begin(),
+                            GAMG::faceToDiag()
+                        )
+                    );
+
+                thrust::transform_if
+                (
+                    coarseDiagIter, coarseDiagIter + faceRestrictTargetAddr.size(),
+                    thrust::make_zip_iterator(thrust::make_tuple
+                    (
+                        faceRestrictTargetStartAddr.begin(),
+                        faceRestrictTargetStartAddr.begin()+1
+                    )),
+                    faceRestrictTargetAddr.begin(),
+                    coarseDiagIter,
+                    GAMG::diagSymAgglomerate
+                    (
+                        fineUpper.data(),
+                        faceRestrictSortAddr.data()
+                    ),
+                    GAMG::negative()
+                );
+            }
         }
     }
 }
@@ -372,15 +341,6 @@ void Foam::GAMGSolver::agglomerateInterfaceCoefficients
     // Get reference to fine-level internal coefficients
     const FieldField<gpuField, scalar>& fineInterfaceIntCoeffs =
         interfaceIntCoeffsLevel(fineLevelIndex);
-
-    const labelgpuListList& patchFineToCoarseSort =
-        agglomeration_.patchFaceRestrictSortAddressing(fineLevelIndex);
-
-    const labelgpuListList& patchFineToCoarseTarget =
-        agglomeration_.patchFaceRestrictTargetAddressing(fineLevelIndex);
-
-    const labelgpuListList& patchFineToCoarseTargetStart =
-        agglomeration_.patchFaceRestrictTargetStartAddressing(fineLevelIndex);
 
     const labelList& nPatchFaces =
         agglomeration_.nPatchFaces(fineLevelIndex);
@@ -412,22 +372,11 @@ void Foam::GAMGSolver::agglomerateInterfaceCoefficients
                 &coarsePrimInterfaces[inti]
             );
 
-            const labelgpuList& faceRestrictSortAddressing = patchFineToCoarseSort[inti];
-            const labelgpuList& faceRestrictTargetAddressing = patchFineToCoarseTarget[inti];
-            const labelgpuList& faceRestrictTargetStartAddressing = patchFineToCoarseTargetStart[inti];
 
             coarseInterfaceBouCoeffs.set
             (
                 inti,
                 new scalargpuField(nPatchFaces[inti], 0.0)
-            );
-            agglomeration_.restrictField
-            (
-                coarseInterfaceBouCoeffs[inti],
-                fineInterfaceBouCoeffs[inti],
-                faceRestrictSortAddressing,
-                faceRestrictTargetAddressing,
-                faceRestrictTargetStartAddressing
             );
 
             coarseInterfaceIntCoeffs.set
@@ -435,14 +384,59 @@ void Foam::GAMGSolver::agglomerateInterfaceCoefficients
                 inti,
                 new scalargpuField(nPatchFaces[inti], 0.0)
             );
-            agglomeration_.restrictField
-            (
-                coarseInterfaceIntCoeffs[inti],
-                fineInterfaceIntCoeffs[inti],
-                faceRestrictSortAddressing,
-                faceRestrictTargetAddressing,
-                faceRestrictTargetStartAddressing
-            );
+
+            if(agglomeration_.useAtomic())
+            {
+                const labelgpuListList& patchFineToCoarse =
+		    agglomeration_.patchFaceRestrictAddressing(fineLevelIndex);
+                const labelgpuList& faceRestrictAddressing = patchFineToCoarse[inti];
+
+                agglomeration_.restrictField
+                (
+                    coarseInterfaceBouCoeffs[inti],
+                    fineInterfaceBouCoeffs[inti],
+                    faceRestrictAddressing
+                );
+
+                agglomeration_.restrictField
+                (
+                    coarseInterfaceIntCoeffs[inti],
+                    fineInterfaceIntCoeffs[inti],
+                    faceRestrictAddressing
+                );
+            }
+            else
+            {
+                const labelgpuListList& patchFineToCoarseSort =
+                    agglomeration_.patchFaceRestrictSortAddressing(fineLevelIndex);
+                const labelgpuListList& patchFineToCoarseTarget =
+                    agglomeration_.patchFaceRestrictTargetAddressing(fineLevelIndex);
+                const labelgpuListList& patchFineToCoarseTargetStart =
+                    agglomeration_.patchFaceRestrictTargetStartAddressing(fineLevelIndex);
+
+                const labelgpuList& faceRestrictSortAddressing = patchFineToCoarseSort[inti];
+                const labelgpuList& faceRestrictTargetAddressing = patchFineToCoarseTarget[inti];
+                const labelgpuList& faceRestrictTargetStartAddressing = patchFineToCoarseTargetStart[inti];
+
+                agglomeration_.restrictField
+                (
+                    coarseInterfaceBouCoeffs[inti],
+                    fineInterfaceBouCoeffs[inti],
+                    faceRestrictSortAddressing,
+                    faceRestrictTargetAddressing,
+                    faceRestrictTargetStartAddressing
+                );
+
+                agglomeration_.restrictField
+                (
+                    coarseInterfaceIntCoeffs[inti],
+                    fineInterfaceIntCoeffs[inti],
+                    faceRestrictSortAddressing,
+                    faceRestrictTargetAddressing,
+                    faceRestrictTargetStartAddressing
+                );
+            }
+
         }
     }
 }

@@ -62,7 +62,6 @@ void Foam::GAMGAgglomeration::createTarget
 )
 {
     labelgpuList ones(list.size(),1);
-    labelgpuList tmpTarget(list.size());
     labelgpuList tmpSum(list.size());
 
     labelgpuList listSort(list.size());
@@ -100,7 +99,7 @@ void Foam::GAMGAgglomeration::createTarget
         listSort.begin(),
         listSort.end(),
         ones.begin(),
-        tmpTarget.begin(),
+        thrust::make_discard_iterator(),
         tmpSum.begin()
     );
 
@@ -113,6 +112,128 @@ void Foam::GAMGAgglomeration::createTarget
 
     targetStart.setSize(targetSize+1);
     targetStart.set(targetSize,list.size());
+}
+
+
+void Foam::GAMGAgglomeration::buildFullRestrictAddr
+(
+    const labelgpuList& addr,
+    const label level
+)
+{
+    restrictSortAddressing_.set(level, new labelgpuField(addr.size()));
+    restrictTargetAddressing_.set(level, new labelgpuField());
+    restrictTargetStartAddressing_.set(level, new labelgpuField());
+
+    createSort
+    (
+        addr,
+        restrictSortAddressing_[level]
+    );
+
+    createTarget
+    (
+        addr,
+        restrictSortAddressing_[level],
+        restrictTargetAddressing_[level],
+        restrictTargetStartAddressing_[level]
+    );
+}
+
+
+void Foam::GAMGAgglomeration::buildFullFaceRestrictAddr
+(
+    const labelgpuList& addr,
+    const label level
+)
+{
+    faceRestrictSortAddressing_.set(level, new labelgpuList(addr.size()));
+    faceRestrictTargetAddressing_.set(level, new labelgpuList());
+    faceRestrictTargetStartAddressing_.set(level, new labelgpuList());
+
+    createSort
+    (
+        addr,
+        faceRestrictSortAddressing_[level]
+    );
+
+    createTarget
+    (
+        addr,
+        faceRestrictSortAddressing_[level],
+        faceRestrictTargetAddressing_[level],
+        faceRestrictTargetStartAddressing_[level]
+    );
+}
+
+
+void Foam::GAMGAgglomeration::buildFullPatchFaceRestrictAddr
+(
+    const labelgpuListList& addr,
+    const label level
+)
+{
+    patchFaceRestrictSortAddressing_.set
+    ( 
+        level,
+        new labelgpuListList(addr.size())
+    );
+    patchFaceRestrictTargetAddressing_.set
+    (
+        level,
+        new labelgpuListList(addr.size())
+    );
+    patchFaceRestrictTargetStartAddressing_.set
+    ( 
+        level,
+        new labelgpuListList(addr.size())
+    );
+
+    labelgpuListList& patchFineToCoarseSortDevice =
+        patchFaceRestrictSortAddressing_[level];
+    labelgpuListList& patchFineToCoarseTargetDevice =
+        patchFaceRestrictTargetAddressing_[level];
+    labelgpuListList& patchFineToCoarseTargetStartDevice =
+        patchFaceRestrictTargetStartAddressing_[level];
+
+    forAll(addr,patchi)
+    {
+        createSort
+        (
+            addr[patchi],
+            patchFineToCoarseSortDevice[patchi]
+        );
+
+        createTarget
+        (
+            addr[patchi],
+            patchFineToCoarseSortDevice[patchi],
+            patchFineToCoarseTargetDevice[patchi],
+            patchFineToCoarseTargetStartDevice[patchi]
+        );
+    }
+}
+
+
+void Foam::GAMGAgglomeration::buildFullAddressing()
+{
+    if(hasFullAddressing_) return;
+    hasFullAddressing_ = true;
+
+    forAll(restrictAddressing_, leveli)
+    {
+        buildFullRestrictAddr(restrictAddressing_[leveli], leveli);
+    }
+
+    forAll(faceRestrictAddressing_, leveli)
+    {
+        buildFullFaceRestrictAddr(faceRestrictAddressing_[leveli], leveli);
+    }
+
+    forAll(patchFaceRestrictAddressing_, leveli)
+    {
+        buildFullPatchFaceRestrictAddr(patchFaceRestrictAddressing_[leveli], leveli);
+    }
 }
 
 
@@ -434,70 +555,36 @@ void Foam::GAMGAgglomeration::agglomerateLduAddressing
     );
 
     //GPU addressing
-    patchFaceRestrictSortAddressing_.set
-    ( 
-        fineLevelIndex,
-        new labelgpuListList(fineInterfaces.size())
-    );
-    patchFaceRestrictTargetAddressing_.set
-    (
-        fineLevelIndex,
-        new labelgpuListList(fineInterfaces.size())
-    );
-    patchFaceRestrictTargetStartAddressing_.set
-    ( 
-        fineLevelIndex,
-        new labelgpuListList(fineInterfaces.size())
-    );
-
-    labelgpuListList& patchFineToCoarseSortDevice =
-        patchFaceRestrictSortAddressing_[fineLevelIndex];
-    labelgpuListList& patchFineToCoarseTargetDevice =
-        patchFaceRestrictTargetAddressing_[fineLevelIndex];
-    labelgpuListList& patchFineToCoarseTargetStartDevice =
-        patchFaceRestrictTargetStartAddressing_[fineLevelIndex];
-
-    forAll(patchFineToCoarse,patchi)
-    {
-        labelgpuList patchFineToCoarseTmp(patchFineToCoarse[patchi]);
-
-        createSort
-        (
-            patchFineToCoarseTmp,
-            patchFineToCoarseSortDevice[patchi]
-        );
-
-        createTarget
-        (
-            patchFineToCoarseTmp,
-            patchFineToCoarseSortDevice[patchi],
-            patchFineToCoarseTargetDevice[patchi],
-            patchFineToCoarseTargetStartDevice[patchi]
-        );
-    }
-
-
     faceFlipMap_.set(fineLevelIndex, new boolgpuList(faceFlipMap));
 
-    labelgpuList faceRestrictAddressingTmp(faceRestrictAddr);
-    faceRestrictSortAddressing_.set(fineLevelIndex, new labelgpuList(faceRestrictAddr.size()));
+    if (useAtomic())
+    {
+        faceRestrictAddressing_.set(fineLevelIndex, new labelgpuList(faceRestrictAddr));
 
-    createSort
-    (
-        faceRestrictAddressingTmp,
-        faceRestrictSortAddressing_[fineLevelIndex]
-    );
+        patchFaceRestrictSortAddressing_.set
+        ( 
+            fineLevelIndex,
+            new labelgpuListList(patchFineToCoarse.size())
+        );
+        labelgpuListList& patchFaceRestrictAddressingTmp = 
+            patchFaceRestrictSortAddressing_[fineLevelIndex];
+        forAll(patchFineToCoarse,patchi)
+        {
+            patchFaceRestrictAddressingTmp[patchi] = patchFineToCoarse[patchi];
+        }
+    }
+    else
+    {
+        labelgpuList faceRestrictAddressingTmp(faceRestrictAddr);
+        buildFullFaceRestrictAddr(faceRestrictAddressingTmp, fineLevelIndex);
 
-    faceRestrictTargetAddressing_.set(fineLevelIndex, new labelgpuList());
-    faceRestrictTargetStartAddressing_.set(fineLevelIndex, new labelgpuList());
-
-    createTarget
-    (
-        faceRestrictAddressingTmp,
-        faceRestrictSortAddressing_[fineLevelIndex],
-        faceRestrictTargetAddressing_[fineLevelIndex],
-        faceRestrictTargetStartAddressing_[fineLevelIndex]
-    );
+        labelgpuListList patchFaceRestrictAddressingTmp(patchFineToCoarse.size());
+        forAll(patchFineToCoarse,patchi)
+        {
+            patchFaceRestrictAddressingTmp[patchi] = patchFineToCoarse[patchi];
+        }
+        buildFullPatchFaceRestrictAddr(patchFaceRestrictAddressingTmp, fineLevelIndex);
+    }
 
     if (debug & 2)
     {
@@ -568,6 +655,7 @@ void Foam::GAMGAgglomeration::combineLevels(const label curLevel)
     faceRestrictAddressingHost_.set(curLevel, NULL);
     faceFlipMapHost_.set(curLevel, NULL);
 
+    faceRestrictAddressing_.set(curLevel, NULL);
     faceRestrictSortAddressing_.set(curLevel, NULL);
     faceRestrictTargetAddressing_.set(curLevel, NULL);
     faceRestrictTargetStartAddressing_.set(curLevel, NULL);
@@ -596,6 +684,7 @@ void Foam::GAMGAgglomeration::combineLevels(const label curLevel)
     );
 
     // Delete the restrictAddressing for the coarser level
+    restrictAddressing_.set(curLevel, NULL);
     restrictSortAddressing_.set(curLevel, NULL);
     restrictTargetAddressing_.set(curLevel, NULL);
     restrictTargetStartAddressing_.set(curLevel, NULL);

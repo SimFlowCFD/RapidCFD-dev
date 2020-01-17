@@ -27,6 +27,7 @@ License
 #include "mapDistribute.H"
 #include "globalIndex.H"
 #include "GAMGAgglomerationF.H"
+#include "GAMGAgglomerateF.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,12 +53,45 @@ void Foam::GAMGAgglomeration::restrictField
             cf.begin(),
             target.begin()
         ),
-        GAMGAgglomerationRestrictFunctor<Type>
+        GAMG::restrict<Type>
         (
             ff.data(),
             sort.data()
         )
     );
+}
+
+template<class Type>
+void Foam::GAMGAgglomeration::restrictField
+(
+    gpuField<Type>& cf,
+    const gpuField<Type>& ff,
+    const labelgpuList& fineToCoarse
+) const
+{
+    if(!is_number<Type>::value || !useAtomic())
+    {
+        FatalErrorIn
+            (
+                "void GAMGAgglomeration::restrictField"
+                "(gpuField<Type>& cf, const gpuField<Type>& ff, "
+                "const labelgpuList& fineToCoarse) const"
+            )   << "atempting to perform atomic restriction"
+                << " when it is not supported " 
+                << abort(FatalError);
+    }
+   
+    // TODO maybe it is redundant?
+    cf = pTraits<Type>::zero;
+    
+    auto restrictOp = GAMG::atomicRestrict<Type>(
+        cf.data(),
+        ff.data(),
+        fineToCoarse.data()
+    );
+    auto start = thrust::make_counting_iterator(0);
+
+    thrust::for_each(start, start + fineToCoarse.size(), restrictOp);
 }
 
 
@@ -69,31 +103,52 @@ void Foam::GAMGAgglomeration::restrictField
     const label fineLevelIndex
 ) const
 {
-    const labelgpuList& sort = restrictSortAddressing_[fineLevelIndex];
-    const labelgpuList& target = restrictTargetAddressing_[fineLevelIndex];
-    const labelgpuList& targetStart = restrictTargetStartAddressing_[fineLevelIndex];
-
-    if (ff.size() != sort.size())
+    if (is_number<Type>::value && useAtomic())
     {
-        FatalErrorIn
-        (
-            "void GAMGAgglomeration::restrictField"
-            "(Field<Type>& cf, const Field<Type>& ff, "
-            "const label fineLevelIndex) const"
-        )   << "field does not correspond to level " << fineLevelIndex
-            << " sizes: field = " << ff.size()
-            << " level = " << sort.size()
-            << abort(FatalError);
-    }
+        const labelgpuList& fineToCoarse = restrictAddressing_[fineLevelIndex];
+        if (ff.size() != fineToCoarse.size())
+        {
+            FatalErrorIn
+            (
+                "void GAMGAgglomeration::restrictField"
+                "(gpuField<Type>& cf, const gpuField<Type>& ff, "
+                "const label fineLevelIndex) const"
+            )   << "field does not correspond to level " << fineLevelIndex
+                << " sizes: field = " << ff.size()
+                << " level = " << fineToCoarse.size()
+                << abort(FatalError);
+        }
 
-    restrictField
-    (
-        cf, 
-        ff,
-        sort,
-        target,
-        targetStart
-    );
+        restrictField(cf, ff, fineToCoarse);
+    }
+    else
+    {
+        const labelgpuList& sort = restrictSortAddressing_[fineLevelIndex];
+        const labelgpuList& target = restrictTargetAddressing_[fineLevelIndex];
+        const labelgpuList& targetStart = restrictTargetStartAddressing_[fineLevelIndex];
+
+        if (ff.size() != sort.size())
+        {
+            FatalErrorIn
+            (
+                "void GAMGAgglomeration::restrictField"
+                "(Field<Type>& cf, const Field<Type>& ff, "
+                "const label fineLevelIndex) const"
+            )   << "field does not correspond to level " << fineLevelIndex
+                << " sizes: field = " << ff.size()
+                << " sort = " << sort.size()
+                << abort(FatalError);
+        }
+
+        restrictField
+        (
+            cf, 
+            ff,
+            sort,
+            target,
+            targetStart
+        );
+    }
 }
 
 template<class Type>
@@ -104,43 +159,77 @@ void Foam::GAMGAgglomeration::restrictFaceField
     const label fineLevelIndex
 ) const
 {
-    const labelgpuList& sort = faceRestrictSortAddressing_[fineLevelIndex];
-    const labelgpuList& target = faceRestrictTargetAddressing_[fineLevelIndex];
-    const labelgpuList& targetStart = faceRestrictTargetStartAddressing_[fineLevelIndex];
-
-    if (ff.size() != sort.size())
-    {
-        FatalErrorIn
-        (
-            "void GAMGAgglomeration::restrictFaceField"
-            "(Field<Type>& cf, const Field<Type>& ff, "
-            "const label fineLevelIndex) const"
-        )   << "field does not correspond to level " << fineLevelIndex
-            << " sizes: field = " << ff.size()
-            << " level = " << sort.size()
-            << abort(FatalError);
-    }
-
     cf = pTraits<Type>::zero;
 
-    thrust::transform
-    (
-        targetStart.begin(),
-        targetStart.end()-1,
-        targetStart.begin()+1,
-        target.begin(),
-        thrust::make_permutation_iterator
-        (
-            cf.begin(),
-            target.begin()
-        ),
-        GAMGAgglomerationRestrictFunctor<Type>
-        (
+    if (is_number<Type>::value && useAtomic())
+    {
+        const labelgpuList& fineToCoarse = faceRestrictAddressing_[fineLevelIndex];
+        if (ff.size() != fineToCoarse.size())
+        {
+            FatalErrorIn
+            (
+                "void GAMGAgglomeration::restrictFaceField"
+                "(Field<Type>& cf, const Field<Type>& ff, "
+                "const label fineLevelIndex) const"
+            )   << "field does not correspond to level " << fineLevelIndex
+                << " sizes: field = " << ff.size()
+                << " level = " << fineToCoarse.size()
+                << abort(FatalError);
+        }
+
+        Type* cfPtr = cf.data();
+        const Type* ffPtr = ff.data();
+        const label* fineToCoarsePtr = fineToCoarse.data();
+
+        auto restrictFace = GAMG::atomicFaceRestrict<Type>(
+            cf.data(),
             ff.data(),
-            sort.data()
-        ),
-        nonNegativeGAMGFunctor<label>()
-    );
+            fineToCoarse.data()
+        );
+
+        auto fineFaceStart = thrust::make_counting_iterator(0);
+        auto fineFaceEnd = fineFaceStart + fineToCoarse.size();
+
+        thrust::for_each(fineFaceStart, fineFaceEnd, restrictFace);
+    }
+    else
+    {
+        const labelgpuList& sort = faceRestrictSortAddressing_[fineLevelIndex];
+        const labelgpuList& target = faceRestrictTargetAddressing_[fineLevelIndex];
+        const labelgpuList& targetStart = faceRestrictTargetStartAddressing_[fineLevelIndex];
+
+        if (ff.size() != sort.size())
+        {
+            FatalErrorIn
+            (
+                "void GAMGAgglomeration::restrictFaceField"
+                "(Field<Type>& cf, const Field<Type>& ff, "
+                "const label fineLevelIndex) const"
+            )   << "field does not correspond to level " << fineLevelIndex
+                << " sizes: field = " << ff.size()
+                << " sort = " << sort.size()
+                << abort(FatalError);
+        }
+
+        thrust::transform
+        (
+            targetStart.begin(),
+            targetStart.end()-1,
+            targetStart.begin()+1,
+            target.begin(),
+            thrust::make_permutation_iterator
+            (
+                cf.begin(),
+                target.begin()
+            ),
+            GAMG::restrict<Type>
+            (
+                ff.data(),
+                sort.data()
+            ),
+            GAMG::nonNegative()
+        );
+    }
 }
 
 
@@ -189,23 +278,33 @@ void Foam::GAMGAgglomeration::prolongField
     const label levelIndex
 ) const
 {
-    const labelgpuList& sort = restrictSortAddressing_[levelIndex];
-    const labelgpuList& target = restrictTargetAddressing_[levelIndex];
-    const labelgpuList& targetStart = restrictTargetStartAddressing_[levelIndex];
+    if (is_number<Type>::value && useAtomic())
+    {
+        const labelgpuList& fineToCoarse = restrictAddressing_[levelIndex];
+        auto coarse = thrust::make_permutation_iterator(cf.begin(), fineToCoarse.begin());
 
-    thrust::for_each
-    (
-        thrust::make_counting_iterator(0),
-        thrust::make_counting_iterator(0)+target.size(),
-        GAMGAgglomerationProlongFunctor<Type>
+        thrust::copy(coarse, coarse+fineToCoarse.size(), ff.begin());
+    }
+    else
+    {
+        const labelgpuList& sort = restrictSortAddressing_[levelIndex];
+        const labelgpuList& target = restrictTargetAddressing_[levelIndex];
+        const labelgpuList& targetStart = restrictTargetStartAddressing_[levelIndex];
+
+        thrust::for_each
         (
-            ff.data(),
-            cf.data(),
-            sort.data(),
-            target.data(),
-            targetStart.data()
-        )
-    );
+            thrust::make_counting_iterator(0),
+            thrust::make_counting_iterator(0)+target.size(),
+            GAMG::prolong<Type>
+            (
+                ff.data(),
+                cf.data(),
+                sort.data(),
+                target.data(),
+                targetStart.data()
+            )
+        );
+    }
 }
 
 

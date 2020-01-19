@@ -56,12 +56,38 @@ struct atomicRestrict
         fineToCoarse(_fineToCoarse)
     {}
 
+    template<class T>
     __device__
-    void operator()(const label i)
+    void impl(T* cf, const T* ff, const label& i)
+    {
+        atomicAdd(cf+fineToCoarse[i], ff[i]);
+    }
+
+    __device__
+    void invoke(float* cf, const float* ff, const label& i)
+    {
+        impl(cf, ff, i);
+    }
+
+    __device__
+    void invoke(double* cf, const double* ff, const label& i)
     {
         #if __CUDA_ARCH__ >= 600
-        atomicAdd(cf+fineToCoarse[i], ff[i]);
+        impl(cf, ff, i);
         #endif
+    }
+
+    template<class T>
+    __device__
+    void invoke(T* cf, const T* ff, const label& i)
+    {
+        // nothing to do for other types
+    }
+
+    __device__
+    void operator()(const label& i)
+    {
+        invoke(cf, ff, i);
     }
 };
 
@@ -84,16 +110,42 @@ struct atomicFaceRestrict
         fineToCoarse(_fineToCoarse)
     {}
 
+    template<class T>
     __device__
-    void operator()(const label ffacei)
+    void impl(T* cf, const T* ff, const label& i)
     {
-        #if __CUDA_ARCH__ >= 600
-        label cFace = fineToCoarsePtr[ffacei];
+        label cFace = fineToCoarse[i];
         if (cFace >= 0)
         {
-            atomicAdd(cfPtr+cFace, ffPtr[ffacei]);
+            atomicAdd(cf+cFace, ff[i]);
         }
+    }
+
+    __device__
+    void invoke(float* cf, const float* ff, const label& i)
+    {
+        impl(cf, ff, i);
+    }
+
+    __device__
+    void invoke(double* cf, const double* ff, const label& i)
+    {
+        #if __CUDA_ARCH__ >= 600
+        impl(cf, ff, i);
         #endif
+    }
+
+    template<class T>
+    __device__
+    void invoke(T* cf, const T* ff, const label& i)
+    {
+        // nothing to do for other types
+    }
+
+    __device__
+    void operator()(const label& i)
+    {
+        invoke(cf, ff, i);
     }
 };
 

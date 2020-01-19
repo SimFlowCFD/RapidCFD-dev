@@ -185,15 +185,21 @@ struct symAtomicAgglomerate
     {
         label cFace = faceRestrictAddr[fineFacei];
         T fine = fineUpper[fineFacei];
+        T val;
+        T* ptr;
         if (cFace < 0)
         {
             label cell = -1 - cFace;
-            atomicAdd(coarseDiag + cell, 2*fine);
+            val = 2 * fine;
+            ptr = coarseDiag + cell;
         }
         else
         {
-            atomicAdd(coarseUpper + cFace, fine);
+            val = fine;
+            ptr = coarseUpper + cFace;
         }
+
+        atomicAdd(ptr, val);
     }
 
     __device__
@@ -257,7 +263,7 @@ struct asymAtomicAgglomerate
         if (cFace < 0)
         {
             label cell = -1 - cFace;
-            atomicAdd(coarseDiag + cell, fu + fl);
+            atomicAdd(cDiag + cell, fu + fl);
         }
         else
         {

@@ -417,19 +417,14 @@ Type maxMagSqr(const gpuList<Type>& f)
 {
     if (f.size())
     {
-        gpuList<scalar>& ms(f.size());
-
-	thrust::transform
-        (
+        auto begin = thrust::make_transform_iterator(
             f.begin(),
-            f.end(),
-            ms.begin(),
             magSqrUnaryFunctionFunctor<Type,scalar>()
         );
-	typename thrust::device_vector<scalar>::iterator iter =
-                     thrust::max_element(ms.begin(), ms.end());
 
-        unsigned int position = iter - ms.begin();
+	auto iter = thrust::max_element(begin, begin+f.size());
+
+        unsigned int position = iter - begin;
 
         return f.get(position);
     }
@@ -444,20 +439,14 @@ Type minMagSqr(const gpuList<Type>& f)
 {
     if (f.size())
     {
-        gpuList<scalar>& ms (f.size());
-
-	thrust::transform
-        (
+        auto begin = thrust::make_transform_iterator(
             f.begin(),
-            f.end(),
-            ms.begin(),
             magSqrUnaryFunctionFunctor<Type,scalar>()
         );
 
-	typename thrust::device_vector<scalar>::iterator  iter =
-                     thrust::min_element(ms.begin(), ms.end());
+	auto iter = thrust::min_element(begin, begin+f.size());
 
-        unsigned int position = iter - ms.begin();
+        unsigned int position = iter - begin;
 
         return f.get(position);
     }
@@ -472,18 +461,14 @@ scalar sumProd(const gpuList<Type>& f1, const gpuList<Type>& f2)
 {
     if (f1.size() && (f1.size() == f2.size()))
     {
+        auto iter = thrust::make_transform_iterator(
+            thrust::make_zip_iterator(thrust::make_tuple(
+                f1.begin(), f2.begin()
+            )), productFunctor<Type>()
+        );
         return thrust::reduce
         (
-            thrust::make_transform_iterator(
-                thrust::make_zip_iterator(thrust::make_tuple(
-                    f1.begin(), f2.begin()
-                )), productFunctor<Type>()
-            ),
-            thrust::make_transform_iterator(
-                thrust::make_zip_iterator(thrust::make_tuple(
-                    f1.end(), f2.end()
-                )), productFunctor<Type>()
-            ),
+            iter, iter+f1.size(),
             pTraits<scalar>::zero,
             thrust::plus<scalar>()
         );
@@ -500,18 +485,14 @@ Type sumCmptProd(const gpuList<Type>& f1, const gpuList<Type>& f2)
 {
     if (f1.size() && (f1.size() == f2.size()))
     {
+       auto iter = thrust::make_transform_iterator(
+           thrust::make_zip_iterator(thrust::make_tuple(
+               f1.begin(), f2.begin()
+           )), cmptMultiplyBinaryFunctionFunctor<Type,Type,Type>()
+       );
        return thrust::reduce
        (
-           thrust::make_transform_iterator(
-               thrust::make_zip_iterator(thrust::make_tuple(
-                   f1.begin(), f2.begin()
-               )), cmptMultiplyBinaryFunctionFunctor<Type,Type,Type>()
-           ),
-           thrust::make_transform_iterator(
-               thrust::make_zip_iterator(thrust::make_tuple(
-                   f1.end(), f2.end()
-               )), cmptMultiplyBinaryFunctionFunctor<Type,Type,Type>()
-           ),
+           iter, iter+f1.size(),
            pTraits<Type>::zero,
            thrust::plus<Type>()
        );
@@ -528,21 +509,16 @@ scalar sumSqr(const gpuList<Type>& f)
 {
     if (f.size())
     {
+        auto iter = thrust::make_transform_iterator (
+            f.begin(),
+            outerProductFunctor<Type,scalar>()
+        );
         return thrust::reduce
-               (
-                   thrust::make_transform_iterator
-                   (
-                       f.begin(),
-                       outerProductFunctor<Type,scalar>()
-                   ),
-                   thrust::make_transform_iterator
-                   (
-                       f.end(),
-                       outerProductFunctor<Type,scalar>()
-                   ),
-                   pTraits<scalar>::zero,
-                   thrust::plus<scalar>()
-                );
+        (
+            iter, iter + f.size(),
+            pTraits<scalar>::zero,
+            thrust::plus<scalar>()
+        );
     }
     else
     {
@@ -557,21 +533,16 @@ scalar sumMag(const gpuList<Type>& f)
 {
     if (f.size())
     {
+        auto iter = thrust::make_transform_iterator (
+           f.begin(),
+           magUnaryFunctionFunctor<Type,scalar>()
+        );
         return thrust::reduce
-               (
-                   thrust::make_transform_iterator
-                   (
-                       f.begin(),
-                       magUnaryFunctionFunctor<Type,scalar>()
-                   ),
-                   thrust::make_transform_iterator
-                   (
-                       f.end(),
-                       magUnaryFunctionFunctor<Type,scalar>()
-                   ),
-                   pTraits<scalar>::zero,
-                   thrust::plus<scalar>()
-               );
+        (
+            iter, iter+f.size(),
+            pTraits<scalar>::zero,
+            thrust::plus<scalar>()
+        );
     }
     else
     {
@@ -587,21 +558,17 @@ Type sumCmptMag(const gpuList<Type>& f)
 {
     if (f.size())
     {
+        auto iter = thrust::make_transform_iterator
+        (
+            f.begin(),
+            cmptMagUnaryFunctionFunctor<Type,Type>()
+        );
         return thrust::reduce
-               (
-                   thrust::make_transform_iterator
-                   (
-                       f.begin(),
-                       cmptMagUnaryFunctionFunctor<Type,Type>()
-                   ),
-                   thrust::make_transform_iterator
-                   (
-                       f.end(),
-                       cmptMagUnaryFunctionFunctor<Type,Type>()
-                   ),
-                   pTraits<Type>::zero,
-                   thrust::plus<Type>()
-               );
+        (
+            iter, iter + f.size(),
+            pTraits<Type>::zero,
+            thrust::plus<Type>()
+        );
     }
     else
     {

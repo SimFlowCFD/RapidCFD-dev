@@ -39,7 +39,6 @@ wmake $makeType genericPatchFields
 
 wmake $makeType sampling
 
-wmake $makeType dynamicMesh
 wmake $makeType dynamicFvMesh
 
 thermophysicalModels/Allwmake $*

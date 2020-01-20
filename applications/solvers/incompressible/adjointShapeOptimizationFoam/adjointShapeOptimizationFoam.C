@@ -57,14 +57,14 @@ void zeroCells
     const labelgpuList& cells
 )
 {
-    gpu_api::fill
+    thrust::fill
     (
-        gpu_api::make_permutation_iterator
+        thrust::make_permutation_iterator
         (
             vf.getField().begin(),
             cells.begin()
         ),
-        gpu_api::make_permutation_iterator
+        thrust::make_permutation_iterator
         (
             vf.getField().begin(),
             cells.end()

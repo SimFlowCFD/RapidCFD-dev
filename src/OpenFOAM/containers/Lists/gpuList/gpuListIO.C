@@ -6,7 +6,7 @@
 template<class T>
 Foam::gpuList<T>::gpuList(Istream& is)
 :
-    v_(0)
+    gpuList()
 {
     operator>>(is, *this);
 }
@@ -27,7 +27,7 @@ Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::gpuList<T>& gL)
 {
     List<T> L(gL.size());
 
-    gpu_api::copy(gL.begin(),gL.end(),L.begin());
+    thrust::copy(gL.begin(),gL.end(),L.begin());
 
     os << L;
 

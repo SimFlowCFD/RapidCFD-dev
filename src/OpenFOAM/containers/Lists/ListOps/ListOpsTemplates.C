@@ -124,65 +124,6 @@ void Foam::inplaceReorder
 
     lst.transfer(newLst);
 }
-namespace Foam
-{
-template<class Type>
-struct inplaceReorderFunctor:public std::unary_function<thrust::tuple<label,label>,label>{
-	__HOST____DEVICE__
-	label operator () (const thrust::tuple<label,label>& t){
-		label oldToNew = thrust::get<0>(t);
-		label elemI = thrust::get<1>(t);
-		if (oldToNew >= 0)
-        {
-            return oldToNew;
-        }
-        else
-        {
-            return elemI;
-        }
-	}	
-};
-}
-
-template<class Type>
-void Foam::inplaceReorder
-(
-    const labelgpuList& oldToNew,
-    gpuList<Type>& lst
-)
-{
-    // Create copy
-    gpuList<Type> newLst(lst.size());
-
-    // ensure consistent addressable size (eg, DynamicList)
-    newLst.setSize(lst.size());
-    
-    thrust::copy(lst.begin(),lst.end(),
-                 thrust::make_permutation_iterator(
-                        newLst.begin(),
-                        thrust::make_transform_iterator(
-                               thrust::make_zip_iterator(
-                                       thrust::make_tuple(
-                                       oldToNew.begin(),
-                                       thrust::make_counting_iterator(0)
-                                       )),
-                                inplaceReorderFunctor<Type>()
-                        )));
-/*
-    forAll(lst, elemI)
-    {
-        if (oldToNew[elemI] >= 0)
-        {
-            newLst[oldToNew[elemI]] = lst[elemI];
-        }
-        else
-        {
-            newLst[elemI] = lst[elemI];
-        }
-    }
-*/
-    lst.transfer(newLst);
-}
 
 
 template<class Container>

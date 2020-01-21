@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpuList.H"
+#include "DeviceConfig.H"
 
 namespace Foam
 {

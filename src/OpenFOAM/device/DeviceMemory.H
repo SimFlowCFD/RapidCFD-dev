@@ -1,42 +1,20 @@
 #pragma once
 
-#include "DeviceConfig.H"
-
 namespace Foam {
+    template<class T>
+    inline T* allocDevice(const label size);
+    template<class T>
+    inline void freeDevice(T* ptr);
 
     template<class T>
-    inline void copyHostToDevice(T* dst, const T* src, const label size)
-    {
-        CUDA_CALL(cudaMemcpy(dst, src, size*sizeof(T), cudaMemcpyHostToDevice));
-    }
-
+    inline T* allocPageLocked(const label size);
     template<class T>
-    inline void copyDeviceToHost(T* dst, const T* src, const label size)
-    {
-        CUDA_CALL(cudaMemcpy(dst, src, size*sizeof(T), cudaMemcpyDeviceToHost));
-    }
+    inline void freePageLocked(T* ptr);
 
-    template<class T>
-    inline void copyDeviceToDevice(T* dst, const T* src, const label size)
-    {
-        CUDA_CALL(cudaMemcpy(dst, src, size*sizeof(T), cudaMemcpyDeviceToDevice));
-    }
-
-    template<class T>
-    inline T* allocPageLocked(const label size)
-    {
-        T* ptr;
-        CUDA_CALL(cudaMallocHost(&ptr, size*sizeof(T)));
-        return ptr;
-    }
-
-    template<class T>
-    inline void freePageLocked(T* ptr)
-    {
-         CUDA_CALL(cudaFreeHost(ptr));
-    }
-
+    inline void copyHostToDevice(void* dst, const void* src, const label size);
+    inline void copyDeviceToHost(void* dst, const void* src, const label size);
+    inline void copyDeviceToDevice(void* dst, const void* src, const label size);
 }
 
-
+#include "DeviceMemoryI.H"
 

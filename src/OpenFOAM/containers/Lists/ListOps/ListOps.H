@@ -75,11 +75,6 @@ ListType reorder(const labelUList& oldToNew, const ListType&);
 template<class ListType>
 void inplaceReorder(const labelUList& oldToNew, ListType&);
 
-//- Inplace reorder the elements of a list.
-//  Negative ListType elements are left as is.
-template<class Type>
-void inplaceReorder(const labelgpuList& oldToNew, gpuList<Type>&);
-
 // Variants to work with iterators and sparse tables.
 // Need to have iterators and insert()
 

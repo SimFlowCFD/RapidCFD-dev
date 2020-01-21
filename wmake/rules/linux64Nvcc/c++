@@ -1,7 +1,7 @@
 .SUFFIXES: .cu .C .cxx .cc .cpp
 
 c++WARN     = -Xcompiler -Wall -Xcompiler -Wextra -Xcompiler -Wno-unused-parameter \
-              -Xcompiler -Wno-vla -Xcompiler -Wimplicit-fallthrough=0 \
+              -Xcompiler -Wno-vla \
               -Xcudafe "--diag_suppress=null_reference" -Xcudafe "--diag_suppress=subscript_out_of_range" \
               -Xcudafe "--diag_suppress=extra_semicolon" -Xcudafe "--diag_suppress=partial_override" \
               -Xcudafe "--diag_suppress=implicit_return_from_non_void_function" \

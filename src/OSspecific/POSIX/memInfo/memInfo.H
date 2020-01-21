@@ -46,6 +46,10 @@ SourceFiles
 
 namespace Foam
 {
+class memInfo;
+
+Istream& operator>>(Istream&, memInfo&);
+Ostream& operator<<(Ostream&, const memInfo&);
 
 /*---------------------------------------------------------------------------*\
                            Class memInfo Declaration

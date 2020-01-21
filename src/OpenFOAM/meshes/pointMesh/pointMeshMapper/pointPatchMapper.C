@@ -29,6 +29,9 @@ License
 #include "faceMapper.H"
 #include "demandDrivenData.H"
 
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/reduce.h>
+
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 namespace Foam

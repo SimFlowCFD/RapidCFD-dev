@@ -26,6 +26,8 @@ License
 #include "GAMGSolver.H"
 #include "vector2D.H"
 
+#include <thrust/reduce.h>
+
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 namespace Foam

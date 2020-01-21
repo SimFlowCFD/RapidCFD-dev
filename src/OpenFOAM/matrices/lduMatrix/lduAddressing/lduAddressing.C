@@ -28,7 +28,10 @@ License
 #include "scalarField.H"
 #include "DynamicList.H"
 #include "error.H"
+
 #include <thrust/iterator/discard_iterator.h>
+#include <thrust/scan.h>
+#include <thrust/unique.h>
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 

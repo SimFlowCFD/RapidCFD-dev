@@ -107,6 +107,7 @@ $(ranges)/scalarRange/scalarRanges.C
 
 
 device/DeviceConfig.C
+containers/Lists/gpuList/gpuLists.C
 
 containers/HashTables/HashTable/HashTableCore.C
 containers/HashTables/StaticHashTable/StaticHashTableCore.C
@@ -573,6 +574,7 @@ $(Fields)/transformField/transformField.C
 
 pointPatchFields = fields/pointPatchFields
 $(pointPatchFields)/pointPatchField/pointPatchFields.C
+$(pointPatchFields)/pointPatchField/pointConstraint/pointConstraint.C
 
 basicPointPatchFields = $(pointPatchFields)/basic
 $(basicPointPatchFields)/calculated/calculatedPointPatchFields.C

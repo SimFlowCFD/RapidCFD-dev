@@ -71,7 +71,9 @@ __HOST____DEVICE__
 inline bool operator==(const faceData& a, const faceData& b);
 __HOST____DEVICE__
 inline bool operator!=(const faceData& a, const faceData& b);
-inline Istream& operator>>(Istream&, face&);
+
+Istream& operator>>(Istream&, faceData&);
+Ostream& operator<<(Ostream&, const faceData&);
 
 typedef gpuList<faceData> faceDatagpuList;
 typedef List<faceData> faceDataList;
@@ -243,6 +245,9 @@ public:
         friend bool operator==(const faceData& a, const faceData& b);
         __HOST____DEVICE__
         friend bool operator!=(const faceData& a, const faceData& b);
+
+        friend Istream& operator>>(Istream&, faceData&);
+        friend Ostream& operator<<(Ostream&, const faceData&);
 
 };
 

@@ -149,6 +149,13 @@ tmp<gpuField<ReturnType> > Func                                               \
     BINARY_TYPE_FUNCTION_SF(ReturnType, Type1, Type2, Func)                   \
     BINARY_TYPE_FUNCTION_FS(ReturnType, Type1, Type2, Func)
 
+#define BINARY_FULL_FUNCTION(ReturnType, Type1, Type2, Func)                 \
+    BINARY_FUNCTION(ReturnType, Type1, Type2, Func)                          \
+    BINARY_TYPE_FUNCTION(ReturnType, Type1, Type2, Func)
+
+#define BINARY_SYM_FUNCTION(ReturnType, Type1, Type2, Func)                  \
+    BINARY_FULL_FUNCTION(ReturnType, Type1, Type2, Func)                     \
+    BINARY_FULL_FUNCTION(ReturnType, Type2, Type1, Func)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -190,7 +197,6 @@ tmp<gpuField<ReturnType> > operator Op                                        \
     const tmp<gpuField<Type2> >& tf2                                          \
 );
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #define BINARY_TYPE_OPERATOR_SF(ReturnType, Type1, Type2, Op, OpFunc)         \
@@ -207,16 +213,17 @@ TEMPLATE                                                                      \
 tmp<gpuField<ReturnType> > operator Op                                        \
 (                                                                             \
     const Type1& s1,                                                          \
-    const gpuList<Type2>& f2                                                  \
+    const tmp<gpuField<Type2> >& tf2                                          \
 );                                                                            \
+/* commented because caused user defined conversion problems
                                                                               \
 TEMPLATE                                                                      \
 tmp<gpuField<ReturnType> > operator Op                                        \
 (                                                                             \
     const Type1& s1,                                                          \
-    const tmp<gpuField<Type2> >& tf2                                          \
-);
-
+    const gpuList<Type2>& f2                                                  \
+);                                                                            \
+*/
 
 #define BINARY_TYPE_OPERATOR_FS(ReturnType, Type1, Type2, Op, OpFunc)         \
                                                                               \
@@ -247,5 +254,14 @@ tmp<gpuField<ReturnType> > operator Op                                        \
     BINARY_TYPE_OPERATOR_SF(ReturnType, Type1, Type2, Op, OpFunc)             \
     BINARY_TYPE_OPERATOR_FS(ReturnType, Type1, Type2, Op, OpFunc)
 
+
+#define BINARY_FULL_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)            \
+    BINARY_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)                     \
+    BINARY_TYPE_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)
+
+
+#define BINARY_SYM_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)             \
+    BINARY_FULL_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)                \
+    BINARY_FULL_OPERATOR(ReturnType, Type2, Type1, Op, OpFunc)
 
 // ************************************************************************* //

@@ -28,11 +28,14 @@ Description
 
 #include "edgeIOList.H"
 #include "addToRunTimeSelectionTable.H"
+#include "gpuList.C"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+
+template class gpuList<edge>;
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 

@@ -179,12 +179,14 @@ BINARY_TYPE_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
 
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
+#include "gpuList.C"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
+template class gpuList<symmTensor>;
 template class gpuField<symmTensor>;
 
 struct symmTensorRemoveComponentsFunctor 
@@ -371,16 +373,35 @@ tmp<gpuField<symmTensor> > transformFieldMask<symmTensor>
 
 UNARY_OPERATOR(vector, symmTensor, *, hdual)
 
-BINARY_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
-BINARY_TYPE_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
+BINARY_SYM_OPERATOR(symmTensor, scalar, symmTensor, *, outer)
+BINARY_SYM_FUNCTION(symmTensor, scalar, symmTensor, multiply)
+BINARY_OPERATOR(symmTensor, symmTensor, scalar, /, divide)
+BINARY_TYPE_OPERATOR_FS(symmTensor, symmTensor, scalar, /, divide)
+
+BINARY_FULL_OPERATOR(symmTensor, symmTensor, symmTensor, +, add)
+BINARY_FULL_OPERATOR(symmTensor, symmTensor, symmTensor, -, subtract)
+
+BINARY_FULL_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
+BINARY_SYM_OPERATOR(vector, vector, symmTensor, &, dot)
+BINARY_FULL_OPERATOR(scalar, symmTensor, symmTensor, &&, dotdot)
+
+BINARY_SYM_OPERATOR(symmTensor, sphericalTensor, symmTensor, +, add)
+BINARY_SYM_OPERATOR(symmTensor, sphericalTensor, symmTensor, -, subtract)
+BINARY_SYM_OPERATOR(symmTensor, sphericalTensor, symmTensor, &, dot)
+BINARY_SYM_OPERATOR(scalar, sphericalTensor, symmTensor, &&, dotdot)
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "undefgpuFieldFunctionsM.H"
 
-// ************************************************************************* //
+#include "gpuFieldCommonFunctions.C"
+// force instantiation
+#define TEMPLATE template
+#define FTYPE symmTensor
+#define NO_SQR
+#include "gpuFieldCommonFunctionsM.H"
+

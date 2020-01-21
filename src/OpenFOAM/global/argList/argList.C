@@ -33,6 +33,7 @@ License
 #include "labelList.H"
 #include "regIOobject.H"
 #include "dynamicCode.H"
+#include "DeviceConfig.H"
 
 #include <cctype>
 

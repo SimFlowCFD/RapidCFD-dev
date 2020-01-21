@@ -59,13 +59,6 @@ void component
     lf = f;
 }
 
-template<>
-void labelField::replace(const direction, const labelUList& lf)
-{
-    *this = lf;
-}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
@@ -73,5 +66,45 @@ void labelField::replace(const direction, const labelUList& lf)
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "undefFieldFunctionsM.H"
+
+#include "gpuFieldCommonFunctions.C"
+namespace Foam
+{
+
+template
+label max<label>(const gpuList<label>&);
+
+
+template<>
+void labelField::replace(const direction, const labelUList& lf)
+{
+    *this = lf;
+}
+
+template<>
+__host__ __device__
+label transposeFunctor<label>::operator()(const label& s) const
+{
+    return s;
+}
+
+
+template<>
+struct componentFunctor<label,label>
+{
+    const direction d;
+    componentFunctor(direction _d): d(_d) {}
+    __host__ __device__
+    label operator()(const label& tt)
+    {
+        return tt;
+    }
+};
+}
+
+// force instantiation
+//#define TEMPLATE template
+//#define FTYPE label
+//#include "gpuFieldCommonFunctionsM.H"
 
 // ************************************************************************* //

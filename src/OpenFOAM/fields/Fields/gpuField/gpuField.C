@@ -29,6 +29,8 @@ License
 #include "contiguous.H"
 #include "gpuField.H"
 
+#include <thrust/iterator/permutation_iterator.h>
+
 // * * * * * * * * * * * * * * * Static Members  * * * * * * * * * * * * * * //
 
 template<class Type>

@@ -27,7 +27,7 @@ License
 #include "PBiCCCG.H"
 #include "PBiCICG.H"
 #include "SmoothSolver.H"
-#include "fieldTypes.H"
+#include "primitiveFields.H"
 
 #define makeLduSolvers(Type, DType, LUType)                                   \
                                                                               \

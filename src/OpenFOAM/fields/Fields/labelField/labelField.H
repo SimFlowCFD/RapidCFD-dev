@@ -119,6 +119,10 @@ void labelgpuField::replace(const direction, const labelgpuList& lf);
 
 #include "undefgpuFieldFunctionsM.H"
 
+//#define TEMPLATE extern template
+//#define FTYPE label
+//#include "gpuFieldCommonFunctionsM.H"
+
 #endif
 
 // ************************************************************************* //

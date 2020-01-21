@@ -29,6 +29,8 @@ License
 #include "meshTools.H"
 #include "mapDistribute.H"
 
+#include <thrust/iterator/counting_iterator.h>
+
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 template<class SourcePatch, class TargetPatch>

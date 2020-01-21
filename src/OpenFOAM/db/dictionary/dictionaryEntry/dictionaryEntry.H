@@ -51,6 +51,9 @@ SourceFiles
 namespace Foam
 {
 
+class dictionaryEntry;
+Ostream& operator<<(Ostream&, const dictionaryEntry&);
+
 /*---------------------------------------------------------------------------*\
                            Class dictionaryEntry Declaration
 \*---------------------------------------------------------------------------*/

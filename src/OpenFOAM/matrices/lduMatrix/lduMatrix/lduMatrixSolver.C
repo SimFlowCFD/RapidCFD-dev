@@ -26,6 +26,9 @@ License
 #include "lduMatrix.H"
 #include "diagonalSolver.H"
 
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/reduce.h>
+
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam

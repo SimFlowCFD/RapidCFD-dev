@@ -31,6 +31,9 @@ Description
 #include "Textures.H"
 #include "lduMatrixSolutionCache.H"
 
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam

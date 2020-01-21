@@ -304,9 +304,9 @@ void Foam::UPstream::allocatePstreamCommunicator
     if (index == PstreamGlobals::MPIGroups_.size())
     {
         // Extend storage with dummy values
-        MPI_Group newGroup;
+        MPI_Group newGroup(0);
         PstreamGlobals::MPIGroups_.append(newGroup);
-        MPI_Comm newComm;
+        MPI_Comm newComm(0);
         PstreamGlobals::MPICommunicators_.append(newComm);
     }
     else if (index > PstreamGlobals::MPIGroups_.size())

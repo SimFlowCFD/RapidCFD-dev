@@ -243,7 +243,7 @@ Foam::Field<Type>::Field(const gpuList<Type>& list)
 :
     List<Type>(list.size())
 {
-    copyDeviceToHost(this->data(), list.data(), list.size());
+    thrust::copy(list.begin(), list.end(), this->begin());
 }
 
 
@@ -719,7 +719,7 @@ void Foam::Field<Type>::operator=(const gpuList<Type>& rhs)
 {
     if(this->size() != rhs.size())
         this->setSize(rhs.size());
-    copyDeviceToHost(this->data(), rhs.data(), rhs.size());
+    thrust::copy(rhs.begin(), rhs.end(), this->begin());
 }
 
 

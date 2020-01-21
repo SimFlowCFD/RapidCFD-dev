@@ -71,7 +71,7 @@ public:
     // Constructors
 
         //- Store object pointer
-        inline explicit tmp(T* = 0);
+        explicit inline tmp(T* = 0);
 
         //- Store object const reference
         inline tmp(const T&);

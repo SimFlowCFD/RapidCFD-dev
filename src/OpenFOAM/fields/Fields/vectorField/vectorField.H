@@ -40,6 +40,9 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+#define TEMPLATE
+#include "gpuFieldFunctionsM.H"
+
 namespace Foam
 {
 
@@ -48,11 +51,30 @@ namespace Foam
 typedef Field<vector> vectorField;
 typedef gpuField<vector> vectorgpuField;
 
+BINARY_SYM_OPERATOR(vector, scalar, vector, *, outer)
+BINARY_SYM_FUNCTION(vector, scalar, vector, multiply)
+BINARY_OPERATOR(vector, vector, scalar, /, divide)
+BINARY_TYPE_OPERATOR_FS(vector, vector, scalar, /, divide)
+
+BINARY_FULL_OPERATOR(vector, vector, vector, +, add)
+BINARY_FULL_OPERATOR(vector, vector, vector, -, subtract)
+
+BINARY_FULL_OPERATOR(scalar, vector, vector, &, dot)
+BINARY_FULL_OPERATOR(vector, vector, vector, ^, cross)
+
+extern template class gpuList<vector>;
+extern template class gpuField<vector>;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+#include "undefgpuFieldFunctionsM.H"
+
+#define TEMPLATE extern template
+#define FTYPE vector
+#define NO_SQR
+#include "gpuFieldCommonFunctionsM.H"
 
 #endif
 

@@ -388,7 +388,6 @@ public:
         (Ostream&, const tmp<Field<Type> >&);
 };
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

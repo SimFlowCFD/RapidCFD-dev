@@ -26,6 +26,7 @@ License
 #include "GAMGAgglomeration.H"
 #include "mapDistribute.H"
 #include "globalIndex.H"
+#include "DeviceConfig.H"
 #include "GAMGAgglomerationF.H"
 #include "GAMGAgglomerateF.H"
 

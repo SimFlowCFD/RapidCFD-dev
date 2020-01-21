@@ -27,6 +27,11 @@ License
 #include "GAMGInterface.H"
 #include "processorGAMGInterface.H"
 
+#include <thrust/iterator/discard_iterator.h>
+#include <thrust/sort.h>
+#include <thrust/scan.h>
+#include <thrust/unique.h>
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 void Foam::GAMGAgglomeration::createSort

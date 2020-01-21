@@ -24,6 +24,13 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "cellData.H"
+#include "cellDataList.H"
+#include "gpuList.C"
+
+namespace Foam
+{
+    template class gpuList<cellData>;
+}
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -32,6 +39,28 @@ const char* const Foam::cellData::typeName = "cell";
 const Foam::cellData Foam::cellData::zero(0,0);
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+namespace Foam
+{
+
+Istream& operator>>(Istream& is, cellData& cd)
+{
+    is.readBegin("cellData");
+    is >> cd.start >> cd.size;
+    is.readEnd("cellData");
+
+    return is;
+}
+
+Ostream& operator<<(Ostream& os, const cellData& cd)
+{
+    os  << token::BEGIN_LIST
+        << cd.start << token::SPACE << cd.size
+        << token::END_LIST;
+
+    return os;
+}
+
+}
 /*
 Foam::labelList Foam::cell::labels(const faceUList& f) const
 {

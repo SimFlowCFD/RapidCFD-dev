@@ -46,9 +46,12 @@ namespace Foam
 {
 
 // Forward declaration of classes
+class keyType;
 class Istream;
 class Ostream;
 
+Istream& operator>>(Istream&, keyType&);
+Ostream& operator<<(Ostream&, const keyType&);
 
 /*---------------------------------------------------------------------------*\
                            Class keyType Declaration

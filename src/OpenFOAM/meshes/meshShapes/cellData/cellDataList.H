@@ -40,6 +40,7 @@ Description
 namespace Foam
 {
     typedef gpuList<cellData> cellDatagpuList;
+    extern template class gpuList<cellData>;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

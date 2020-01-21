@@ -123,17 +123,46 @@ UNARY_FUNCTION(tensor, symmTensor, eigenVectors)
 UNARY_OPERATOR(vector, tensor, *, hdual)
 UNARY_OPERATOR(tensor, vector, *, hdual)
 
-BINARY_OPERATOR(vector, vector, tensor, /, divide)
-BINARY_TYPE_OPERATOR(vector, vector, tensor, /, divide)
+BINARY_SYM_OPERATOR(tensor, scalar, tensor, *, outer)
+BINARY_SYM_FUNCTION(tensor, scalar, tensor, multiply)
+BINARY_OPERATOR(tensor, tensor, scalar, /, divide)
+BINARY_TYPE_OPERATOR_FS(tensor, tensor, scalar, /, divide)
 
+BINARY_FULL_OPERATOR(tensor, tensor, tensor, +, add)
+BINARY_FULL_OPERATOR(tensor, tensor, tensor, -, subtract)
+
+BINARY_FULL_OPERATOR(tensor, tensor, tensor, &, dot)
+BINARY_SYM_OPERATOR(vector, vector, tensor, &, dot)
+
+BINARY_FULL_OPERATOR(tensor, vector, vector, *, outer)
+BINARY_FULL_OPERATOR(vector, vector, tensor, /, divide)
+
+BINARY_SYM_OPERATOR(tensor, sphericalTensor, tensor, +, add)
+BINARY_SYM_OPERATOR(tensor, sphericalTensor, tensor, -, subtract)
+BINARY_SYM_OPERATOR(tensor, sphericalTensor, tensor, &, dot)
+BINARY_SYM_OPERATOR(scalar, sphericalTensor, tensor, &&, dotdot)
+
+BINARY_SYM_OPERATOR(tensor, symmTensor, tensor, +, add)
+BINARY_SYM_OPERATOR(tensor, symmTensor, tensor, -, subtract)
+BINARY_SYM_OPERATOR(tensor, symmTensor, tensor, &, dot)
+BINARY_SYM_OPERATOR(scalar, symmTensor, tensor, &&, dotdot)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+extern template class gpuList<tensor>;
+extern template class gpuField<tensor>;
 
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "undefgpuFieldFunctionsM.H"
+
+// declere explicit instantiation
+#define TEMPLATE extern template
+#define FTYPE tensor
+#define NO_SQR
+#include "gpuFieldCommonFunctionsM.H"
 
 #endif
 

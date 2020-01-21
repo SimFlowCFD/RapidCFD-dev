@@ -35,6 +35,8 @@ SourceFiles
 #ifndef char_H
 #define char_H
 
+#include "pTraits.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -62,6 +64,15 @@ inline bool isspace(char c)
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+//- template specialization for pTraits<char>
+template<>
+class pTraits<char>
+{
+public:
+    static const char* const typeName;
+    static const char zero;
+};
 
 } // End namespace Foam
 

@@ -84,6 +84,8 @@ dimensionSet pos(const dimensionSet&);
 dimensionSet neg(const dimensionSet&);
 dimensionSet inv(const dimensionSet&);
 
+dimensionSet atan2(const dimensionSet&, const dimensionSet&);
+
 // Function to check the argument is dimensionless
 //  for transcendental functions
 dimensionSet trans(const dimensionSet&);

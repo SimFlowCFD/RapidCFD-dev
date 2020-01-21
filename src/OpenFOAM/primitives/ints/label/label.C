@@ -93,14 +93,14 @@ label pow(label a, label b)
         ans *= a;
     }
 
-#   ifdef FULLDEBUG
+#if defined(FULLDEBUG) && !defined(__CUDA_ARCH__)
     if (b < 0)
     {
         FatalErrorIn("pow(label a, label b)")
             << "negative value for b is not supported"
             << abort(FatalError);
     }
-#   endif
+#endif
 
     return ans;
 }

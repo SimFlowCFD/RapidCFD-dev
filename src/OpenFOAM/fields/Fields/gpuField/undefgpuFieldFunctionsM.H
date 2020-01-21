@@ -33,12 +33,31 @@ License
 #undef BINARY_TYPE_FUNCTION_FS
 #undef BINARY_TYPE_FUNCTION
 
+#undef BINARY_FULL_FUNCTION
+#undef BINARY_SYM_FUNCTION
+
 #undef BINARY_OPERATOR
+#undef BINARY_OPERATOR_FUNC
 
 #undef BINARY_TYPE_OPERATOR_SF
 #undef BINARY_TYPE_OPERATOR_FS
 #undef BINARY_TYPE_OPERATOR
 
+#undef BINARY_FULL_OPERATOR
+#undef BINARY_SYM_OPERATOR
+
+#undef NO_SQR
+#undef PSTREAM_DEFAULT
+
+#undef PRODUCT_OPERATOR
+
 #undef TEMPLATE
+#undef VS_TEMPLATE
+
+#undef FTYPE
+#undef TYPE_1
+#undef TYPE_2
+#undef VS_TYPE
+#undef FORM_TYPE
 
 // ************************************************************************* //

@@ -64,10 +64,10 @@ void Foam::processorLduInterface::resizeBuf
 
 Foam::processorLduInterface::processorLduInterface()
 :
-    sendBuf_(0),
-    receiveBuf_(0),
-    gpuSendBuf_(0),
-    gpuReceiveBuf_(0)
+    sendBuf_(),
+    receiveBuf_(),
+    gpuSendBuf_(),
+    gpuReceiveBuf_()
 {}
 
 

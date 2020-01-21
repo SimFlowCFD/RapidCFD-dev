@@ -116,6 +116,10 @@ public:
             inline Cmpt& yy();
             __HOST____DEVICE__
             inline Cmpt& zz();
+
+        //- Transpose
+        __HOST____DEVICE__
+        inline const DiagTensor<Cmpt>& T() const;
 };
 
 

@@ -42,6 +42,8 @@ namespace Foam
 
     typedef gpuList<edge> edgegpuList;
     typedef List<edgegpuList> edgegpuListList;
+
+    extern template class gpuList<edge>;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

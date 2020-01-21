@@ -44,6 +44,8 @@ namespace Foam
 {
 
 class objectRegistry;
+class lduMesh;
+Ostream& operator<<(Ostream&, const InfoProxy<lduMesh>&);
 
 /*---------------------------------------------------------------------------*\
                            Class lduMesh Declaration

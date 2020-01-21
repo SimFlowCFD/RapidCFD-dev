@@ -38,6 +38,8 @@ Description
 #include "scalarField.H"
 #include "vectorField.H"
 #include "tensorField.H"
+#include "diagTensorField.H"
+#include "symmTensorField.H"
 #include "sphericalTensorField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

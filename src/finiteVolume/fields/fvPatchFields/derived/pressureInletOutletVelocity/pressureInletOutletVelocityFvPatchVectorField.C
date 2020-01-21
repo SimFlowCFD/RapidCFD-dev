@@ -77,7 +77,7 @@ pressureInletOutletVelocityFvPatchVectorField
     directionMixedFvPatchVectorField(p, iF),
     phiName_(dict.lookupOrDefault<word>("phi", "phi"))
 {
-    fvPatchVectorField::operator=(vectorgpuField("value", dict, p.size()));
+    fvPatchVectorField::operator=(vectorField("value", dict, p.size()));
 
     if (dict.found("tangentialVelocity"))
     {

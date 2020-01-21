@@ -197,16 +197,14 @@ tmp<scalargpuField> stabilise(const tmp<scalargpuField>&, const scalar s);
 template<>
 scalar sumProd(const gpuList<scalar>& f1, const gpuList<scalar>& f2);
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-BINARY_TYPE_OPERATOR(scalar, scalar, scalar, +, add)
-BINARY_TYPE_OPERATOR(scalar, scalar, scalar, -, subtract)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, +, add)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, -, subtract)
 
-BINARY_OPERATOR(scalar, scalar, scalar, *, multiply)
-BINARY_OPERATOR(scalar, scalar, scalar, /, divide)
-
-BINARY_TYPE_OPERATOR_SF(scalar, scalar, scalar, /, divide)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, *, outer)
+BINARY_FULL_FUNCTION(scalar, scalar, scalar, multiply)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, /, divide)
 
 BINARY_FUNCTION(scalar, scalar, scalar, pow)
 BINARY_TYPE_FUNCTION(scalar, scalar, scalar, pow)
@@ -222,6 +220,7 @@ UNARY_FUNCTION(scalar, scalar, pow4)
 UNARY_FUNCTION(scalar, scalar, pow5)
 UNARY_FUNCTION(scalar, scalar, pow6)
 UNARY_FUNCTION(scalar, scalar, pow025)
+UNARY_FUNCTION(scalar, scalar, sqr)
 UNARY_FUNCTION(scalar, scalar, sqrt)
 UNARY_FUNCTION(scalar, scalar, cbrt)
 UNARY_FUNCTION(scalar, scalar, sign)
@@ -268,15 +267,16 @@ BesselFunc(yn)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace Foam
+extern template class gpuField<scalar>;
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+} 
 
 #include "undefgpuFieldFunctionsM.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
+// declere explicit instantiation
+#define TEMPLATE extern template
+#define FTYPE scalar
+#include "gpuFieldCommonFunctionsM.H"
 
 #endif
 
-// ************************************************************************* //

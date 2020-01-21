@@ -116,15 +116,12 @@ Foam::tmp<Foam::vectorgpuField> Foam::fvPatch::Cn() const
     // get reference to global cell centres
     const vectorgpuField& gcc = boundaryMesh().mesh().getCellCentres();
 
-    thrust::copy(thrust::make_permutation_iterator(gcc.begin(),faceCells.begin()),
-                 thrust::make_permutation_iterator(gcc.begin(),faceCells.end()),
-                 cc.begin());
-/*
-    forAll(faceCells, faceI)
-    {
-        cc[faceI] = gcc[faceCells[faceI]];
-    }
-*/
+    auto gccIter = thrust::make_permutation_iterator(
+        gcc.begin(),
+        faceCells.begin()
+    );
+    thrust::copy(gccIter, gccIter + faceCells.size(), cc.begin());
+
     return tcc;
 }
 
@@ -146,12 +143,51 @@ const Foam::scalargpuField& Foam::fvPatch::magSf() const
     return boundaryMesh().mesh().magSf().boundaryField()[index()];
 }
 
+namespace Foam {
+struct fvPatchDelta {
+    template<class Tuple>
+    __host__ __device__
+    vector operator()(const Tuple& t)
+    {
+        const vector& S = thrust::get<0>(t);
+        const scalar& magS = thrust::get<1>(t);
+        const vector& C = thrust::get<2>(t);
+        const vector& Cn = thrust::get<3>(t);
+
+        const vector nHat = S/magS;
+
+        return nHat*(nHat & (C - Cn));
+    }
+};
+}
 
 Foam::tmp<Foam::vectorgpuField> Foam::fvPatch::delta() const
 {
+    tmp<vectorgpuField> tout(new vectorgpuField(size()));
+    vectorgpuField& out = tout();
+
+    const vectorgpuField& S = Sf();
+    const scalargpuField& magS = magSf();
+    const vectorgpuField& C = Cf();
+
+    const vectorgpuField& gcc = boundaryMesh().mesh().getCellCentres();
+    const labelgpuList& faceCells = this->faceCells();
+
     // Use patch-normal delta for all non-coupled BCs
-    const vectorgpuField nHat(nf());
-    return nHat*(nHat & (Cf() - Cn()));
+    //const vectorgpuField nHat(nf());
+    //return nHat*(nHat & (Cf() - Cn()));
+
+    auto iter = thrust::make_zip_iterator(thrust::make_tuple(
+        S.begin(),
+        magS.begin(),
+        C.begin(),
+        thrust::make_permutation_iterator(
+            gcc.begin(),
+            faceCells.begin()
+        )
+    ));
+    thrust::transform(iter, iter+size(), out.begin(), fvPatchDelta());
+    return tout;
 }
 
 

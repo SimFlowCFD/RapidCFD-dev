@@ -202,6 +202,9 @@ BesselFunc(yn)
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
 
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/reduce.h>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -217,6 +220,19 @@ scalar transposeFunctor<scalar>::operator()(const scalar& s) const
 {
     return s;
 }
+
+
+template<>
+struct componentFunctor<scalar,scalar>
+{
+    const direction d;
+    componentFunctor(direction _d): d(_d) {}
+    __host__ __device__
+    scalar operator()(const scalar& tt)
+    {
+        return tt;
+    }
+};
 
 template<>
 tmp<scalargpuField> scalargpuField::component(const direction) const
@@ -267,18 +283,12 @@ scalar sumProd(const gpuList<scalar>& f1, const gpuList<scalar>& f2)
 {
     if (f1.size() && (f1.size() == f2.size()))
     {
-        thrust::device_vector<scalar> t(f1.size());
-
-        thrust::transform
-        (
-            f1.begin(),
-            f1.end(),
-            f2.begin(),
-            t.begin(),
-            multiplyOperatorFunctor<scalar,scalar,scalar>()
+        auto iter = thrust::make_transform_iterator(
+            thrust::make_zip_iterator(thrust::make_tuple(
+                f1.begin(), f2.begin()
+            )), multiplyOperatorFunctor<scalar,scalar,scalar>()
         );
-
-        return thrust::reduce(t.begin(),t.end());
+        return thrust::reduce(iter, iter+f1.size());
     }
     else
     {
@@ -289,13 +299,12 @@ scalar sumProd(const gpuList<scalar>& f1, const gpuList<scalar>& f2)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-BINARY_TYPE_OPERATOR(scalar, scalar, scalar, +, add)
-BINARY_TYPE_OPERATOR(scalar, scalar, scalar, -, subtract)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, +, add)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, -, subtract)
 
-BINARY_OPERATOR(scalar, scalar, scalar, *, multiply)
-BINARY_OPERATOR(scalar, scalar, scalar, /, divide)
-
-BINARY_TYPE_OPERATOR_SF(scalar, scalar, scalar, /, divide)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, *, outer)
+BINARY_FULL_FUNCTION(scalar, scalar, scalar, multiply)
+BINARY_FULL_OPERATOR(scalar, scalar, scalar, /, divide)
 
 BINARY_FUNCTION(scalar, scalar, scalar, pow)
 BINARY_TYPE_FUNCTION(scalar, scalar, scalar, pow)
@@ -310,6 +319,7 @@ UNARY_FUNCTION(scalar, scalar, pow4)
 UNARY_FUNCTION(scalar, scalar, pow5)
 UNARY_FUNCTION(scalar, scalar, pow6)
 UNARY_FUNCTION(scalar, scalar, pow025)
+UNARY_FUNCTION(scalar, scalar, sqr)
 UNARY_FUNCTION(scalar, scalar, sqrt)
 UNARY_FUNCTION(scalar, scalar, cbrt)
 UNARY_FUNCTION(scalar, scalar, sign)
@@ -388,12 +398,14 @@ BesselFunc(yn)
 #undef BesselFunc
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+}
 
 #include "undefgpuFieldFunctionsM.H"
 
-// ************************************************************************* //
+#include "gpuFieldCommonFunctions.C"
+// force instantiation
+#define TEMPLATE template
+#define FTYPE scalar
+#include "gpuFieldCommonFunctionsM.H"
+

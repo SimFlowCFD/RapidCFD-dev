@@ -54,6 +54,8 @@ inline bool operator!=(const cellData&, const cellData&);
 typedef gpuList<cellData> cellDatagpuList;
 typedef List<cellData> cellDataList;
 
+Istream& operator>>(Istream&, cellData&);
+Ostream& operator<<(Ostream&, const cellData&);
 
 /*---------------------------------------------------------------------------*\
                            Class cellData Declaration
@@ -143,6 +145,9 @@ public:
 
         friend bool operator==(const cellData&, const cellData&);
         friend bool operator!=(const cellData&, const cellData&);
+
+        friend Istream& operator>>(Istream&, cellData&);
+        friend Ostream& operator<<(Ostream&, const cellData&);
 };
 
 

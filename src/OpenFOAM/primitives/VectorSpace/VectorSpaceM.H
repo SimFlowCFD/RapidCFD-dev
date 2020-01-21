@@ -26,7 +26,10 @@ public:
     __HOST____DEVICE__
     static inline void eqOp(V1& vs1, const V2& vs2, EqOp eo)
     {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         eo(vs1[I], vs2[I]);
+        #pragma GCC diagnostic pop
         VectorSpaceOps<endLoop*N, endLoop*(I+1)>::eqOp(vs1, vs2, eo);
     }
 

@@ -119,6 +119,14 @@ inline Cmpt& DiagTensor<Cmpt>::zz()
 }
 
 
+template<class Cmpt>
+__HOST____DEVICE__
+inline const DiagTensor<Cmpt>& DiagTensor<Cmpt>::T() const
+{
+    return *this;
+}
+
+
 // * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
 
 template<class Cmpt>

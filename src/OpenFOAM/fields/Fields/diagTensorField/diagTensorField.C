@@ -67,11 +67,15 @@ BINARY_TYPE_OPERATOR(vector, vector, diagTensor, /, divide)
 
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
+#include "gpuList.C"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+
+template class gpuList<diagTensor>;
+template class gpuField<diagTensor>;
 
 // * * * * * * * * * * * * * * * global functions  * * * * * * * * * * * * * //
 
@@ -81,23 +85,31 @@ UNARY_FUNCTION(sphericalTensor, diagTensor, sph)
 UNARY_FUNCTION(scalar, diagTensor, det)
 UNARY_FUNCTION(diagTensor, diagTensor, inv)
 
+BINARY_SYM_OPERATOR(diagTensor, scalar, diagTensor, *, outer)
+BINARY_SYM_FUNCTION(diagTensor, scalar, diagTensor, multiply)
+BINARY_OPERATOR(diagTensor, diagTensor, scalar, /, divide)
+BINARY_TYPE_OPERATOR_FS(diagTensor, diagTensor, scalar, /, divide)
 
-BINARY_OPERATOR(tensor, diagTensor, tensor, +, add)
-BINARY_OPERATOR(tensor, diagTensor, tensor, -, subtract)
+BINARY_FULL_OPERATOR(diagTensor, diagTensor, diagTensor, +, add)
+BINARY_FULL_OPERATOR(diagTensor, diagTensor, diagTensor, -, subtract)
+BINARY_FULL_OPERATOR(diagTensor, diagTensor, diagTensor, &, dot)
+BINARY_FULL_OPERATOR(vector, vector, diagTensor, /, divide)
+BINARY_FULL_OPERATOR(diagTensor, scalar, diagTensor, /, divide)
 
-BINARY_TYPE_OPERATOR(tensor, diagTensor, tensor, +, add)
-BINARY_TYPE_OPERATOR(tensor, diagTensor, tensor, -, subtract)
+BINARY_SYM_OPERATOR(tensor, diagTensor, tensor, +, add)
+BINARY_SYM_OPERATOR(tensor, diagTensor, tensor, -, subtract)
+BINARY_SYM_OPERATOR(tensor, diagTensor, tensor, &, dot)
+BINARY_SYM_OPERATOR(vector, diagTensor, vector, &, dot)
 
-BINARY_OPERATOR(vector, vector, diagTensor, /, divide)
-BINARY_TYPE_OPERATOR(vector, vector, diagTensor, /, divide)
+} 
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "undefgpuFieldFunctionsM.H"
 
-// ************************************************************************* //
+#include "gpuFieldCommonFunctions.C"
+// force instantiation
+#define TEMPLATE template
+#define FTYPE diagTensor
+#define NO_SQR
+#include "gpuFieldCommonFunctionsM.H"
+

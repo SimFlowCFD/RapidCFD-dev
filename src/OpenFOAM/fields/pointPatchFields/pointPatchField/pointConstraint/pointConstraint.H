@@ -44,6 +44,7 @@ SourceFiles
 #include "vector.H"
 #include "transform.H"
 #include "Tuple2.H"
+#include "pTraits.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -210,7 +211,13 @@ inline Ostream& operator<<(Ostream& os, const pointConstraint& t2)
     return os;
 }
 
-
+template<>
+class pTraits<pointConstraint>
+{
+public:
+    static const char* const typeName;
+    static const pointConstraint zero;
+};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

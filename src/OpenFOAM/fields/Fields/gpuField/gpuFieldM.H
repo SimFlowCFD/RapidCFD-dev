@@ -293,6 +293,16 @@ GENERATE_UNARY_FUNCTION_FUNCTORS(inv)
 #undef GENERATE_BINARY_FUNCTION_FUNCTORS
 #undef GENERATE_UNARY_FUNCTION_FUNCTORS
 
+
+template<class Type1, class Type2, class RType>
+using multiplyBinaryFunctionFunctor = multiplyOperatorFunctor<Type1, Type2, RType>;
+
+template<class Type1, class Type2, class RType>
+using multiplyBinaryFunctionFSFunctor = multiplyOperatorFSFunctor<Type1, Type2, RType>;
+
+template<class Type1, class Type2, class RType>
+using multiplyBinaryFunctionSFFunctor = multiplyOperatorSFFunctor<Type1, Type2, RType>;
+
 template<class Type,class RType>
 struct assignFunctor
 {

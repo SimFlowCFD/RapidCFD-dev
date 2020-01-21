@@ -41,6 +41,8 @@ namespace Foam
     class faceData;
     typedef gpuList<faceData> facegpuList;
     typedef List<facegpuList> facegpuListList;
+
+    extern template class gpuList<faceData>;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -26,6 +26,8 @@ License
 #include "gpuFieldM.H"
 #include "gpuFieldReuseFunctions.H"
 
+#include <thrust/transform.h>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #define UNARY_FUNCTION(ReturnType, Type, Func)                                 \
@@ -266,6 +268,16 @@ tmp<gpuField<ReturnType> > Func                                                \
     BINARY_TYPE_FUNCTION_FS(ReturnType, Type1, Type2, Func)
 
 
+#define BINARY_FULL_FUNCTION(ReturnType, Type1, Type2, Func)                   \
+    BINARY_FUNCTION(ReturnType, Type1, Type2, Func)                            \
+    BINARY_TYPE_FUNCTION(ReturnType, Type1, Type2, Func)
+
+
+#define BINARY_SYM_FUNCTION(ReturnType, Type1, Type2, Func)                    \
+    BINARY_FULL_FUNCTION(ReturnType, Type1, Type2, Func)                       \
+    BINARY_FULL_FUNCTION(ReturnType, Type2, Type1, Func)
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #define BINARY_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)                  \
@@ -437,5 +449,14 @@ tmp<gpuField<ReturnType> > operator Op                                         \
     BINARY_TYPE_OPERATOR_SF(ReturnType, Type1, Type2, Op, OpFunc)              \
     BINARY_TYPE_OPERATOR_FS(ReturnType, Type1, Type2, Op, OpFunc)
 
+
+#define BINARY_FULL_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)            \
+    BINARY_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)                     \
+    BINARY_TYPE_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)
+
+
+#define BINARY_SYM_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)             \
+    BINARY_FULL_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)                \
+    BINARY_FULL_OPERATOR(ReturnType, Type2, Type1, Op, OpFunc)
 
 // ************************************************************************* //

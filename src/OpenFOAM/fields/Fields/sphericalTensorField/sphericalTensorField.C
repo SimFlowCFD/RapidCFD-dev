@@ -100,12 +100,14 @@ tmp<Field<sphericalTensor> > transformFieldMask<sphericalTensor>
 
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
+#include "gpuList.C"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
+template class gpuList<sphericalTensor>;
 template class gpuField<sphericalTensor>;
 
 // * * * * * * * * * * * * * * * global functions  * * * * * * * * * * * * * //
@@ -115,8 +117,16 @@ UNARY_FUNCTION(sphericalTensor, sphericalTensor, sph)
 UNARY_FUNCTION(scalar, sphericalTensor, det)
 UNARY_FUNCTION(sphericalTensor, sphericalTensor, inv)
 
-BINARY_OPERATOR(sphericalTensor, scalar, sphericalTensor, /, divide)
-BINARY_TYPE_OPERATOR(sphericalTensor, scalar, sphericalTensor, /, divide)
+BINARY_SYM_OPERATOR(sphericalTensor, scalar, sphericalTensor, *, outer)
+BINARY_SYM_FUNCTION(sphericalTensor, scalar, sphericalTensor, multiply)
+BINARY_SYM_OPERATOR(sphericalTensor, scalar, sphericalTensor, /, divide)
+
+BINARY_FULL_OPERATOR(sphericalTensor, sphericalTensor, sphericalTensor, +, add)
+BINARY_FULL_OPERATOR(sphericalTensor, sphericalTensor, sphericalTensor, -, subtract)
+BINARY_FULL_OPERATOR(sphericalTensor, sphericalTensor, sphericalTensor, &, dot)
+BINARY_SYM_OPERATOR(vector, vector, sphericalTensor, &, dot)
+BINARY_FULL_OPERATOR(scalar, sphericalTensor, sphericalTensor, &&, dotdot)
+
 
 
 template<>
@@ -171,5 +181,10 @@ tmp<gpuField<sphericalTensor> > transformFieldMask<sphericalTensor>
 
 #include "undefgpuFieldFunctionsM.H"
 
+#include "gpuFieldCommonFunctions.C"
+// force instantiation
+#define TEMPLATE template
+#define FTYPE sphericalTensor
+#define NO_SQR
+#include "gpuFieldCommonFunctionsM.H"
 
-// ************************************************************************* //

@@ -35,6 +35,9 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+const char* const Foam::pTraits<char>::typeName = "char";
+const char Foam::pTraits<char>::zero = 0;
+
 Foam::Istream& Foam::operator>>(Istream& is, char& c)
 {
     is.read(c);

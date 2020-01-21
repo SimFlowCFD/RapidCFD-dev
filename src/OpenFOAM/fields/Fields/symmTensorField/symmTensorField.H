@@ -113,17 +113,38 @@ UNARY_FUNCTION(symmTensor, symmTensor, inv)
 
 UNARY_OPERATOR(vector, symmTensor, *, hdual)
 
-BINARY_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
-BINARY_TYPE_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
+BINARY_SYM_OPERATOR(symmTensor, scalar, symmTensor, *, outer)
+BINARY_SYM_FUNCTION(symmTensor, scalar, symmTensor, multiply)
+BINARY_OPERATOR(symmTensor, symmTensor, scalar, /, divide)
+BINARY_TYPE_OPERATOR_FS(symmTensor, symmTensor, scalar, /, divide)
 
+BINARY_FULL_OPERATOR(symmTensor, symmTensor, symmTensor, +, add)
+BINARY_FULL_OPERATOR(symmTensor, symmTensor, symmTensor, -, subtract)
+
+BINARY_FULL_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
+BINARY_SYM_OPERATOR(vector, vector, symmTensor, &, dot)
+BINARY_FULL_OPERATOR(scalar, symmTensor, symmTensor, &&, dotdot)
+
+BINARY_SYM_OPERATOR(symmTensor, sphericalTensor, symmTensor, +, add)
+BINARY_SYM_OPERATOR(symmTensor, sphericalTensor, symmTensor, -, subtract)
+BINARY_SYM_OPERATOR(symmTensor, sphericalTensor, symmTensor, &, dot)
+BINARY_SYM_OPERATOR(scalar, sphericalTensor, symmTensor, &&, dotdot)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+extern template class gpuList<symmTensor>;
+extern template class gpuField<symmTensor>;
 
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "undefgpuFieldFunctionsM.H"
+
+#define TEMPLATE extern template
+#define FTYPE symmTensor
+#define NO_SQR
+#include "gpuFieldCommonFunctionsM.H"
 
 #endif
 

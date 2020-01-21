@@ -30,6 +30,8 @@ License
 #include "GAMGSolverAgglomerateMatrixF.H"
 #include "GAMGAgglomerateF.H"
 
+#include <thrust/reduce.h>
+
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 void Foam::GAMGSolver::agglomerateMatrix

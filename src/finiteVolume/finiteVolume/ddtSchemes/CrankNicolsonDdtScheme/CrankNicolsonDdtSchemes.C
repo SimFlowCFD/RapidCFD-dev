@@ -23,6 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "primitiveFields.H"
 #include "CrankNicolsonDdtScheme.H"
 #include "fvMesh.H"
 

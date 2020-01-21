@@ -55,6 +55,8 @@ typedef Field<sphericalTensor> sphericalTensorField;
 typedef gpuField<sphericalTensor> sphericalTensorgpuField;
 typedef Field<symmTensor> symmTensorField;
 typedef gpuField<symmTensor> symmTensorgpuField;
+typedef Field<diagTensor> diagTensorField;
+typedef gpuField<diagTensor> diagTensorgpuField;
 typedef Field<tensor> tensorField;
 typedef gpuField<tensor> tensorgpuField;
 

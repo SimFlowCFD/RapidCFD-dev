@@ -176,6 +176,7 @@ BINARY_TYPE_OPERATOR(tensor, symmTensor, symmTensor, &, dot)
 
 #include "undefFieldFunctionsM.H"
 
+#include "gpuFieldCommonFunctions.C"
 
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
@@ -398,7 +399,6 @@ BINARY_SYM_OPERATOR(scalar, sphericalTensor, symmTensor, &&, dotdot)
 
 #include "undefgpuFieldFunctionsM.H"
 
-#include "gpuFieldCommonFunctions.C"
 // force instantiation
 #define TEMPLATE template
 #define FTYPE symmTensor

@@ -198,7 +198,6 @@ Foam::tmp<Foam::tensorgpuField> Foam::EulerCoordinateRotation::transformTensor
     return tmp<tensorgpuField>(NULL);
 }
 
-__HOST____DEVICE__
 Foam::tmp<Foam::symmTensorField> Foam::EulerCoordinateRotation::
 transformVector
 (
@@ -215,7 +214,6 @@ transformVector
     return tfld;
 }
 
-__HOST____DEVICE__
 Foam::tmp<Foam::symmTensorgpuField> Foam::EulerCoordinateRotation::
 transformVector
 (

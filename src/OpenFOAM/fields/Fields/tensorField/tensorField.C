@@ -168,6 +168,7 @@ BINARY_TYPE_OPERATOR(vector, vector, tensor, /, divide)
 
 // ************************************************************************* //
 
+#include "gpuFieldCommonFunctions.C"
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
 #include "gpuList.C"
@@ -392,8 +393,6 @@ BINARY_SYM_OPERATOR(scalar, symmTensor, tensor, &&, dotdot)
 
 #include "undefgpuFieldFunctionsM.H"
 
-
-#include "gpuFieldCommonFunctions.C"
 // force instantiation
 #define TEMPLATE template
 #define FTYPE tensor

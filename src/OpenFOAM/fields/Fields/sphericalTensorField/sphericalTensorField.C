@@ -97,6 +97,7 @@ tmp<Field<sphericalTensor> > transformFieldMask<sphericalTensor>
 
 #include "undefFieldFunctionsM.H"
 
+#include "gpuFieldCommonFunctions.C"
 
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
@@ -181,7 +182,6 @@ tmp<gpuField<sphericalTensor> > transformFieldMask<sphericalTensor>
 
 #include "undefgpuFieldFunctionsM.H"
 
-#include "gpuFieldCommonFunctions.C"
 // force instantiation
 #define TEMPLATE template
 #define FTYPE sphericalTensor

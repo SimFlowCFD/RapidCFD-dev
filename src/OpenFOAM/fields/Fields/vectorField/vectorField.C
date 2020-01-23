@@ -1,6 +1,8 @@
 #include "vectorField.H"
 #include "gpuList.C"
 
+#include "gpuFieldCommonFunctions.C"
+
 #define TEMPLATE
 #include "gpuFieldFunctionsM.C"
 
@@ -10,8 +12,8 @@ namespace Foam
 template class gpuList<vector>;
 template class gpuField<vector>;
 
-template Ostream& operator<<<vector>(Ostream&, const gpuList<vector>&);
-template Istream& operator>><vector>(Istream&, gpuList<vector>&);
+template Ostream& operator<< <vector>(Ostream&, const gpuList<vector>&);
+template Istream& operator>> <vector>(Istream&, gpuList<vector>&);
 
 template<>
 __host__ __device__
@@ -36,7 +38,6 @@ BINARY_FULL_OPERATOR(vector, vector, vector, ^, cross)
 
 #include "undefgpuFieldFunctionsM.H"
 
-#include "gpuFieldCommonFunctions.C"
 // force instantiation
 #define TEMPLATE template
 #define FTYPE vector

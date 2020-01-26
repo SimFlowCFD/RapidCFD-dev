@@ -278,6 +278,26 @@ tmp<scalargpuField> stabilise(const gpuList<scalar>& sf, const scalar s)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+template<>
+scalar sumProd(const gpuList<scalar>& f1, const gpuList<scalar>& f2)
+{
+    if (f1.size() && (f1.size() == f2.size()))
+    {
+        auto iter = thrust::make_transform_iterator(
+            thrust::make_zip_iterator(thrust::make_tuple(
+                f1.begin(), f2.begin()
+            )), multiplyOperatorFunctor<scalar,scalar,scalar>()
+        );
+        return thrust::reduce(iter, iter+f1.size());
+    }
+    else
+    {
+        return 0.0;
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 BINARY_FULL_OPERATOR(scalar, scalar, scalar, +, add)
 BINARY_FULL_OPERATOR(scalar, scalar, scalar, -, subtract)
 

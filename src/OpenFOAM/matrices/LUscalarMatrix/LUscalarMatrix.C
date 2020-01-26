@@ -28,12 +28,19 @@ License
 #include "procLduMatrix.H"
 #include "procLduInterface.H"
 #include "cyclicLduInterface.H"
+#include "SubList.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
     defineTypeNameAndDebug(LUscalarMatrix, 0);
+
+    PageLockedBuffer<scalar> LUscalarMatrix::dBuffer;
+    PageLockedBuffer<scalar> LUscalarMatrix::lBuffer;
+    PageLockedBuffer<scalar> LUscalarMatrix::uBuffer;
+    DeviceStream LUscalarMatrix::stream1;
+    DeviceStream LUscalarMatrix::stream2;
 }
 
 
@@ -198,21 +205,29 @@ void Foam::LUscalarMatrix::convert
     const label* __restrict__ uPtr = ldum.lduAddr().upperAddrHost().begin();
     const label* __restrict__ lPtr = ldum.lduAddr().lowerAddrHost().begin();
 
+
     const scalargpuField& diag = ldum.diag();
     const scalargpuField& upper = ldum.upper();
     const scalargpuField& lower = ldum.lower();
-    const scalarField diagPtr(diag);
-    const scalarField upperPtr(upper);
-    const scalarField lowerPtr(lower);
 
-    const label nCells = ldum.diag().size();
-    const label nFaces = ldum.upper().size();
+    const label nCells = diag.size();
+    const label nFaces = upper.size();
 
+    Field<scalar>& diagPtr = dBuffer.buffer(nCells);
+    Field<scalar>& upperPtr = uBuffer.buffer(nFaces);
+    Field<scalar>& lowerPtr = lBuffer.buffer(nFaces);
+    
+    cudaMemcpyAsync(diagPtr.data(), diag.data(), diag.byteSize(), cudaMemcpyDeviceToHost, stream1());
+    cudaMemcpyAsync(upperPtr.data(), upper.data(), upper.byteSize(), cudaMemcpyDeviceToHost, stream2());
+    cudaMemcpyAsync(lowerPtr.data(), lower.data(), lower.byteSize(), cudaMemcpyDeviceToHost, stream2());
+
+    stream1.synchronize();
     for (label cell=0; cell<nCells; cell++)
     {
         operator[](cell)[cell] = diagPtr[cell];
     }
 
+    stream2.synchronize();
     for (label face=0; face<nFaces; face++)
     {
         label uCell = uPtr[face];

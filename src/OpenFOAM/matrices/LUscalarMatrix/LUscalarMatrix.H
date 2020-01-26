@@ -39,6 +39,8 @@ SourceFiles
 #include "labelList.H"
 #include "FieldField.H"
 #include "lduInterfaceFieldPtrsList.H"
+#include "PageLockedBuffer.H"
+#include "DeviceStream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -84,6 +86,12 @@ class LUscalarMatrix
         //  to the mag-diagonal
         void printDiagonalDominance() const;
 
+        static PageLockedBuffer<scalar> dBuffer;
+        static PageLockedBuffer<scalar> lBuffer;
+        static PageLockedBuffer<scalar> uBuffer;
+
+        static DeviceStream stream1;
+        static DeviceStream stream2;
 
 public:
 

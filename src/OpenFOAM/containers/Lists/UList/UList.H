@@ -53,6 +53,7 @@ namespace Foam
 {
 
 // Forward declaration of friend classes
+template<class T> class UList;
 template<class T> class List;
 template<class T> class gpuList;
 template<class T> class SubList;
@@ -61,6 +62,7 @@ template<class T> class SubList;
 template<class T> class UList;
 template<class T> Ostream& operator<<(Ostream&, const UList<T>&);
 template<class T> Istream& operator>>(Istream&, UList<T>&);
+template<class T> void transferData(UList<T>& src, UList<T>& tgt);
 
 typedef UList<label> labelUList;
 
@@ -209,7 +211,6 @@ public:
 
         //- Assign elements to those from UList.
         void assign(const UList<T>&);
-
 
     // Member operators
 
@@ -363,6 +364,8 @@ public:
             Istream&,
             UList<T>&
         );
+
+        friend void transferData<T>(UList<T>& src, UList<T>& tgt);
 };
 
 template<class T>

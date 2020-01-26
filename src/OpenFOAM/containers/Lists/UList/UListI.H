@@ -318,6 +318,18 @@ inline bool Foam::UList<T>::empty() const
 
 // * * * * * * * * * * * * * * * Global Functions  * * * * * * * * * * * * * //
 
+// Transfer the memory pointer without dealocation
+template<class T>
+inline void Foam::transferData(UList<T>& src, UList<T>& tgt)
+{
+    tgt.size_ = src.size_;
+    tgt.v_ = src.v_;
+
+    src.size_ = 0;
+    src.v_ = nullptr;
+}
+
+
 template<class T>
 inline void Foam::reverse(UList<T>& ul, const label n)
 {

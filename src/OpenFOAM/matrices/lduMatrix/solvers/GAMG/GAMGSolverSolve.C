@@ -146,8 +146,13 @@ Foam::solverPerformance Foam::GAMGSolver::solve
 
             // Calculate finest level residual field
             matrix_.Amul(Apsi, psi, interfaceBouCoeffs_, interfaces_, cmpt);
-            finestResidual = source;
-            finestResidual -= Apsi;
+            thrust::transform
+            (
+                source.begin(), source.end(),
+                Apsi.begin(),
+                finestResidual.begin(),
+                thrust::minus<scalar>()
+            );
 
             solverPerf.finalResidual() = gSumMag
             (

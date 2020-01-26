@@ -59,7 +59,7 @@ Foam::Istream& Foam::operator>>(Istream& is, long long& l)
 
 long long Foam::readLongLong(Istream& is)
 {
-    register long long result = 0;
+    long long result = 0;
 
     char c = 0;
 

@@ -43,8 +43,10 @@ PrimitivePatch
 :
     FaceList<Face>(faces),
     points_(points),
-    gpuEdgesPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     edgesPtr_(NULL),
+    gpuEdgesPtr_(NULL),
     nInternalEdges_(-1),
     boundaryPointsPtr_(NULL),
     faceFacesPtr_(NULL),
@@ -65,8 +67,6 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -87,8 +87,10 @@ PrimitivePatch
 :
     FaceList<Face>(faces),
     points_(points),
-    gpuEdgesPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     edgesPtr_(NULL),
+    gpuEdgesPtr_(NULL),
     nInternalEdges_(-1),
     boundaryPointsPtr_(NULL),
     faceFacesPtr_(NULL),
@@ -109,8 +111,6 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -132,8 +132,10 @@ PrimitivePatch
 :
     FaceList<Face>(faces, reUse),
     points_(points, reUse),
-    gpuEdgesPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     edgesPtr_(NULL),
+    gpuEdgesPtr_(NULL),
     nInternalEdges_(-1),
     boundaryPointsPtr_(NULL),
     faceFacesPtr_(NULL),
@@ -154,8 +156,6 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -176,8 +176,10 @@ PrimitivePatch
     PrimitivePatchName(),
     FaceList<Face>(pp),
     points_(pp.points_),
-    gpuEdgesPtr_(NULL),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     edgesPtr_(NULL),
+    gpuEdgesPtr_(NULL),
     nInternalEdges_(-1),
     boundaryPointsPtr_(NULL),
     faceFacesPtr_(NULL),
@@ -198,8 +200,6 @@ PrimitivePatch
     faceCentresPtr_(NULL),
     faceNormalsPtr_(NULL),
     pointNormalsPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
     gpuPointNormalsPtr_(NULL)
 {}
 
@@ -234,6 +234,31 @@ Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
 movePoints
 (
     const gpuField<PointType>&
+)
+{
+    if (debug)
+    {
+        Pout<< "PrimitivePatch<Face, FaceList, PointField, PointType>::"
+            << "movePoints() : "
+            << "recalculating PrimitivePatch geometry following mesh motion"
+            << endl;
+    }
+
+    clearGeom();
+}
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+void
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+movePoints
+(
+    const Field<PointType>&
 )
 {
     if (debug)

@@ -10,7 +10,7 @@ template<class T>
 class textureBind;
 
 template<class T>
-struct textures
+class textures
 {
     cudaTextureObject_t tex;
     const T* data;
@@ -27,7 +27,7 @@ public:
 
 
 template<class T>
-struct textureBind
+class textureBind
 {
 private:
     cudaTextureObject_t tex;
@@ -65,7 +65,6 @@ public:
         return textures<T>(tex, data);
     }
 };
-
 
 }
 

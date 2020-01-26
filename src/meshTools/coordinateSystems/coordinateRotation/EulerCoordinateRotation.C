@@ -50,12 +50,13 @@ namespace Foam
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
+__host__ __device__
 Foam::vector Foam::EulerCoordinateRotation::transform(const vector& st) const
 {
     return (R_ & st);
 }
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::vector Foam::EulerCoordinateRotation::invTransform
 (
     const vector& st
@@ -127,7 +128,7 @@ const Foam::tensorField& Foam::EulerCoordinateRotation::Tr() const
     (
         "const tensorField& EulerCoordinateRotation::Tr() const"
     );
-    return *reinterpret_cast<const tensorField*>(0);
+    return NullObjectRef<tensorField>();
 }
 
 
@@ -144,7 +145,7 @@ Foam::tmp<Foam::tensorField> Foam::EulerCoordinateRotation::transformTensor
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::tensor Foam::EulerCoordinateRotation::transformTensor
 (
     const tensor& st
@@ -235,7 +236,7 @@ transformVector
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::symmTensor Foam::EulerCoordinateRotation::transformVector
 (
     const vector& st
@@ -247,7 +248,7 @@ Foam::symmTensor Foam::EulerCoordinateRotation::transformVector
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 void Foam::EulerCoordinateRotation::calcTransform
 (
     const scalar phiAngle,

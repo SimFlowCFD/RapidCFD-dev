@@ -46,9 +46,9 @@ namespace Foam
 // Forward declaration of friend functions and operators
 
 class cellData;
-__HOST____DEVICE__
+__host__ __device__
 bool operator==(const cellData&, const cellData&);
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator!=(const cellData&, const cellData&);
 
 typedef gpuList<cellData> cellDatagpuList;
@@ -78,23 +78,23 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline cellData();
 
         //- Construct given size
-        __HOST____DEVICE__
+        __host__ __device__
         explicit inline cellData(label,label);
 
     // Member Functions
 
         //- Return number of faces
-        __HOST____DEVICE__
+        __host__ __device__
         inline label nFaces() const
         {
             return size;
         }
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline label getStart() const
         {
             return start;
@@ -133,17 +133,19 @@ public:
         // future.
 
         //- Returns cell centre
-//        __HOST____DEVICE__
+//        __host__ __device__
 //        point centre(const pointField&, const faceUList&) const;
 
         //- Returns cell volume
-//        __HOST____DEVICE__
+//        __host__ __device__
 //        scalar mag(const pointField&, const faceUList&) const;
 
 
     // Friend Operators
 
+        __host__ __device__
         friend bool operator==(const cellData&, const cellData&);
+        __host__ __device__
         friend bool operator!=(const cellData&, const cellData&);
 
         friend Istream& operator>>(Istream&, cellData&);

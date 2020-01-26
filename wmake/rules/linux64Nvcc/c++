@@ -13,7 +13,7 @@ include $(RULES)/c++$(WM_COMPILE_OPTION)
 
 
 cuFLAGS     = -x cu -D__HOST____DEVICE__='__host__ __device__'
-ptFLAGS     = -DNoRepository -D__RESTRICT__='__restrict__'
+ptFLAGS     = -DNoRepository
 
 c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++OPT) $(c++DBUG) $(ptFLAGS) $(LIB_HEADER_DIRS) -Xcompiler -fPIC
 

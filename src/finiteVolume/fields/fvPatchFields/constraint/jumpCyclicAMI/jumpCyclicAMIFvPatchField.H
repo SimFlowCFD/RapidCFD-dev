@@ -134,7 +134,8 @@ public:
                 const scalargpuField& psiInternal,
                 const scalargpuField& coeffs,
                 const direction cmpt,
-                const Pstream::commsTypes commsType
+                const Pstream::commsTypes commsType,
+                const bool negate = false
             ) const;
 
             //- Update result field based on interface functionality
@@ -156,7 +157,8 @@ void jumpCyclicAMIFvPatchField<scalar>::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes commsType
+    const Pstream::commsTypes commsType,
+    const bool negate
 ) const;
 
 

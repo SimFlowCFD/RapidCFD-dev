@@ -2,6 +2,7 @@
 
 #include "error.H"
 #include "Xfer.H"
+#include "nullObject.H"
 #include <thrust/device_ptr.h>
 
 namespace Foam

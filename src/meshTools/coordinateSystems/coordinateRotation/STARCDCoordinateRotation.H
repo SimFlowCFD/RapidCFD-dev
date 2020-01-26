@@ -75,7 +75,7 @@ class STARCDCoordinateRotation
     // Private Member Functions
 
         //- Calculate transformation tensor
-        __HOST____DEVICE__
+        __host__ __device__
         void calcTransform
         (
             const scalar rotZ,
@@ -134,35 +134,35 @@ public:
         }
 
         //- Return local-to-global transformation tensor
-        __HOST____DEVICE__
+        __host__ __device__
         virtual const tensor& R() const
         {
             return R_;
         }
 
         //- Return global-to-local transformation tensor
-        __HOST____DEVICE__
+        __host__ __device__
         virtual const tensor& Rtr() const
         {
             return Rtr_;
         };
 
         //- Return local Cartesian x-axis
-        __HOST____DEVICE__
+        __host__ __device__
         virtual const vector e1() const
         {
             return R_.x();
         }
 
         //- Return local Cartesian y-axis
-        __HOST____DEVICE__
+        __host__ __device__
         virtual const vector e2() const
         {
             return R_.y();
         }
 
         //- Return local Cartesian z-axis
-        __HOST____DEVICE__
+        __host__ __device__
         virtual const vector e3() const
         {
             return R_.z();
@@ -178,7 +178,7 @@ public:
         virtual tmp<vectorgpuField> transform(const vectorgpuField& st) const;
 
         //- Transform vector using transformation tensor
-        __HOST____DEVICE__
+        __host__ __device__
         virtual vector transform(const vector& st) const;
 
         //- Inverse transform vectorField using transformation tensor field
@@ -188,14 +188,14 @@ public:
         virtual tmp<vectorgpuField> invTransform(const vectorgpuField& st) const;
 
         //- Inverse transform vector using transformation tensor
-        __HOST____DEVICE__
+        __host__ __device__
         virtual vector invTransform(const vector& st) const;
 
         //- Transform tensor field using transformation tensorField
         virtual tmp<tensorField> transformTensor(const tensorField& st) const;
 
         //- Transform tensor using transformation tensorField
-        __HOST____DEVICE__
+        __host__ __device__
         virtual tensor transformTensor(const tensor& st) const;
 
         //- Transform tensor sub-field using transformation tensorField
@@ -233,7 +233,7 @@ public:
 
         //- Transform vector using transformation tensor and return
         // symmetrical tensor
-        __HOST____DEVICE__
+        __host__ __device__
         virtual symmTensor transformVector(const vector& st) const;
 
 

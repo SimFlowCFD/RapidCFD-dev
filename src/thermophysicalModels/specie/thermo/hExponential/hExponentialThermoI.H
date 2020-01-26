@@ -29,12 +29,17 @@ License
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 template<class EquationOfState>
+__host__ __device__
 inline void Foam::hExponentialThermo<EquationOfState>::checkT
 (
     const scalar T
 ) const
 {
-    if (T < 0.0)
+    int temperature_is_positive = T >= 0.0;
+    #ifdef __CUDA__ARCH__
+    assert(temperature_is_positive);
+    #else
+    if (!temperature_is_positive)
     {
         FatalErrorIn
         (
@@ -44,11 +49,12 @@ inline void Foam::hExponentialThermo<EquationOfState>::checkT
             << T
             << abort(FatalError);
     }
+    #endif
 }
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::integrateCp
 (
     const scalar T
@@ -131,7 +137,7 @@ Foam::hExponentialThermo<EquationOfState>::New(const dictionary& dict)
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::limit
 (
     const scalar T
@@ -142,7 +148,7 @@ inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::limit
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::cp
 (
     const scalar p, const scalar T
@@ -153,7 +159,7 @@ inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::cp
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::ha
 (
     const scalar p, const scalar T
@@ -169,7 +175,7 @@ inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::ha
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::hs
 (
     const scalar p, const scalar T
@@ -181,7 +187,7 @@ inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::hs
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::hc() const
 {
     return Hf_;
@@ -189,7 +195,7 @@ inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::hc() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::hExponentialThermo<EquationOfState>::s
 (
     const scalar p, const scalar T

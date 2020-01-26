@@ -62,7 +62,7 @@ Foam::PCICG<Type, DType, LUType>::solve(gpuField<Type>& psi) const
         this->fieldName_
     );
 
-    register label nCells = psi.size();
+    label nCells = psi.size();
 
 
     gpuField<Type> pA(nCells);

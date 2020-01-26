@@ -123,6 +123,7 @@ public:
 
         // Direct write functionality
 
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
             //- Write point
             Ostream& write(const point&);
 
@@ -161,6 +162,7 @@ public:
                 const pointField&,
                 const bool lines = true
             );
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 
 };
 

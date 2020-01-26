@@ -153,6 +153,7 @@ Foam::polyMesh::polyMesh(const IOobject& io)
             IOobject::NO_WRITE
         )
     ),
+    gpuPointsPtr_(NULL),
     faces_
     (
         IOobject
@@ -165,6 +166,8 @@ Foam::polyMesh::polyMesh(const IOobject& io)
             IOobject::NO_WRITE
         )
     ),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     owner_
     (
         IOobject
@@ -177,6 +180,7 @@ Foam::polyMesh::polyMesh(const IOobject& io)
             IOobject::NO_WRITE
         )
     ),
+    gpuOwner_(owner_.size()),
     neighbour_
     (
         IOobject
@@ -189,6 +193,7 @@ Foam::polyMesh::polyMesh(const IOobject& io)
             IOobject::NO_WRITE
         )
     ),
+    gpuNeighbour_(neighbour_.size()),
     clearedPrimitives_(false),
     boundary_
     (
@@ -267,13 +272,8 @@ Foam::polyMesh::polyMesh(const IOobject& io)
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuOwner_(owner_.size()),
-    gpuNeighbour_(neighbour_.size()),
-    gpuPointsPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuOldPointsPtr_(NULL),
-    oldPointsPtr_(NULL)
+    oldPointsPtr_(NULL),
+    gpuOldPointsPtr_(NULL)
 {
     if (exists(owner_.objectPath()))
     {
@@ -351,6 +351,7 @@ Foam::polyMesh::polyMesh
         ),
         points
     ),
+    gpuPointsPtr_(NULL),
     faces_
     (
         IOobject
@@ -364,6 +365,8 @@ Foam::polyMesh::polyMesh
         ),
         faces
     ),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     owner_
     (
         IOobject
@@ -377,6 +380,7 @@ Foam::polyMesh::polyMesh
         ),
         owner
     ),
+    gpuOwner_(owner_.size()),
     neighbour_
     (
         IOobject
@@ -390,6 +394,7 @@ Foam::polyMesh::polyMesh
         ),
         neighbour
     ),
+    gpuNeighbour_(neighbour_.size()),
     clearedPrimitives_(false),
     boundary_
     (
@@ -457,13 +462,8 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuOwner_(owner_.size()),
-    gpuNeighbour_(neighbour_.size()),
-    gpuPointsPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuOldPointsPtr_(NULL),
-    oldPointsPtr_(NULL)
+    oldPointsPtr_(NULL),
+    gpuOldPointsPtr_(NULL)
 {
     // Check if the faces and cells are valid
     forAll(faces_, faceI)
@@ -518,6 +518,7 @@ Foam::polyMesh::polyMesh
         ),
         points
     ),
+    gpuPointsPtr_(NULL),
     faces_
     (
         IOobject
@@ -531,6 +532,8 @@ Foam::polyMesh::polyMesh
         ),
         faces
     ),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     owner_
     (
         IOobject
@@ -544,6 +547,7 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuOwner_(owner_.size()),
     neighbour_
     (
         IOobject
@@ -557,6 +561,7 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuNeighbour_(neighbour_.size()),
     clearedPrimitives_(false),
     boundary_
     (
@@ -624,13 +629,8 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuOwner_(owner_.size()),
-    gpuNeighbour_(neighbour_.size()),
-    gpuPointsPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    gpuOldPointsPtr_(NULL),
-    oldPointsPtr_(NULL)
+    oldPointsPtr_(NULL),
+    gpuOldPointsPtr_(NULL)
 {
     // Check if faces are valid
     forAll(faces_, faceI)
@@ -703,19 +703,23 @@ void Foam::polyMesh::resetPrimitives
     // Take over new primitive data.
     // Optimized to avoid overwriting data at all
 
+    if (notNull(points))
     {
         points_.transfer(points());
         bounds_ = boundBox(points_, validBoundary);
     }
 
+    if (notNull(faces))
     {
         faces_.transfer(faces());
     }
 
+    if (notNull(owner))
     {
         owner_.transfer(owner());
     }
 
+    if (notNull(neighbour))
     {
         neighbour_.transfer(neighbour());
     }

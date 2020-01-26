@@ -25,25 +25,25 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion::septernion()
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion::septernion(const vector& t, const quaternion& r)
 :
     t_(t),
     r_(r)
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion::septernion(const vector& t)
 :
     t_(t),
     r_(1, vector(0, 0, 0))
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion::septernion(const quaternion& r)
 :
     t_(0,0,0),
@@ -53,48 +53,48 @@ inline Foam::septernion::septernion(const quaternion& r)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline const Foam::vector& Foam::septernion::t() const
 {
     return t_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline const Foam::quaternion& Foam::septernion::r() const
 {
     return r_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector& Foam::septernion::t()
 {
     return t_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion& Foam::septernion::r()
 {
     return r_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector Foam::septernion::transform(const vector& v) const
 {
     return t() + r().transform(v);
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector Foam::septernion::invTransform(const vector& v) const
 {
     return r().invTransform(v - t());
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::slerp
 (
     const septernion& qa,
@@ -107,14 +107,14 @@ inline Foam::septernion Foam::slerp
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator=(const septernion& tr)
 {
     t_ = tr.t_;
     r_ = tr.r_;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator*=(const septernion& tr)
 {
     t_ += r().transform(tr.t());
@@ -122,52 +122,52 @@ inline void Foam::septernion::operator*=(const septernion& tr)
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator=(const vector& t)
 {
     t_ = t;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator+=(const vector& t)
 {
     t_ += t;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator-=(const vector& t)
 {
     t_ -= t;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator=(const quaternion& r)
 {
     r_ = r;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator*=(const quaternion& r)
 {
     r_ *= r;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator/=(const quaternion& r)
 {
     r_ /= r;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator*=(const scalar s)
 {
     t_ *= s;
     r_ *= s;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::septernion::operator/=(const scalar s)
 {
     t_ /= s;
@@ -177,7 +177,7 @@ inline void Foam::septernion::operator/=(const scalar s)
 
 // * * * * * * * * * * * * * * * Global Functions  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::inv(const septernion& tr)
 {
     return septernion(-tr.r().invTransform(tr.t()), conjugate(tr.r()));
@@ -186,21 +186,21 @@ inline Foam::septernion Foam::inv(const septernion& tr)
 
 // * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool Foam::operator==(const septernion& tr1, const septernion& tr2)
 {
     return (tr1.t() == tr2.t() && tr1.r() == tr2.r());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool Foam::operator!=(const septernion& tr1, const septernion& tr2)
 {
     return !operator==(tr1, tr2);
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator+
 (
     const septernion& tr,
@@ -211,7 +211,7 @@ inline Foam::septernion Foam::operator+
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator+
 (
     const vector& t,
@@ -222,7 +222,7 @@ inline Foam::septernion Foam::operator+
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator-
 (
     const septernion& tr,
@@ -233,7 +233,7 @@ inline Foam::septernion Foam::operator-
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator*
 (
     const quaternion& r,
@@ -244,7 +244,7 @@ inline Foam::septernion Foam::operator*
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator*
 (
     const septernion& tr,
@@ -255,7 +255,7 @@ inline Foam::septernion Foam::operator*
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator/
 (
     const septernion& tr,
@@ -266,7 +266,7 @@ inline Foam::septernion Foam::operator/
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator*
 (
     const septernion& tr1,
@@ -281,7 +281,7 @@ inline Foam::septernion Foam::operator*
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator/
 (
     const septernion& tr1,
@@ -292,21 +292,21 @@ inline Foam::septernion Foam::operator/
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator*(const scalar s, const septernion& tr)
 {
     return septernion(s*tr.t(), s*tr.r());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator*(const septernion& tr, const scalar s)
 {
     return septernion(s*tr.t(), s*tr.r());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::septernion Foam::operator/(const septernion& tr, const scalar s)
 {
     return septernion(tr.t()/s, tr.r()/s);

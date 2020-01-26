@@ -107,11 +107,11 @@ class hExponentialThermo
     // Private Member Functions
 
         //- Check given temperature is within the range of the fitted coeffs
-        __HOST____DEVICE__
+        __host__ __device__
         inline void checkT(const scalar T) const;
 
         //- Integrate Cp expression
-        __HOST____DEVICE__
+        __host__ __device__
         inline scalar integrateCp(const scalar T) const;
 
         //- Construct from components
@@ -160,30 +160,30 @@ public:
         }
 
         //- Limit the temperature to be in the range Tlow_ to Thigh_
-        __HOST____DEVICE__
+        __host__ __device__
         inline scalar limit(const scalar T) const;
 
 
         // Fundamental properties
 
             //- Heat capacity at constant pressure [J/(kg K)]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar cp(const scalar p, const scalar T) const;
 
             //- Absolute enthalpy [J/kmol]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar ha(const scalar p, const scalar T) const;
 
             //- Sensible enthalpy [J/kg]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar hs(const scalar p, const scalar T) const;
 
             //- chemical enthalpy [J/kg]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar hc() const;
 
             //- Entropy [J/(kmol K)]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar s(const scalar p, const scalar T) const;
 
 

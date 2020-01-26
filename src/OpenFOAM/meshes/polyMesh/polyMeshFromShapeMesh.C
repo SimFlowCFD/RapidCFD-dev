@@ -81,7 +81,7 @@ Foam::labelList Foam::polyMesh::facePatchFaceCells
     const label patchID
 ) const
 {
-    register bool found;
+    bool found;
 
     labelList FaceCells(patchFaces.size());
 
@@ -451,6 +451,7 @@ Foam::polyMesh::polyMesh
         ),
         points
     ),
+    gpuPointsPtr_(NULL),
     faces_
     (
         IOobject
@@ -464,6 +465,8 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     owner_
     (
         IOobject
@@ -477,6 +480,7 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuOwner_(owner_.size()),
     neighbour_
     (
         IOobject
@@ -490,6 +494,7 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuNeighbour_(neighbour_.size()),
     clearedPrimitives_(false),
     boundary_
     (
@@ -557,12 +562,8 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuOwner_(owner_.size()),
-    gpuNeighbour_(neighbour_.size()),
-    gpuPointsPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    oldPointsPtr_(NULL)
+    oldPointsPtr_(NULL),
+    gpuOldPointsPtr_(NULL)
 {
     if (debug)
     {
@@ -741,6 +742,7 @@ Foam::polyMesh::polyMesh
         ),
         points
     ),
+    gpuPointsPtr_(NULL),
     faces_
     (
         IOobject
@@ -754,6 +756,8 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuFacesPtr_(NULL),
+    gpuFaceNodesPtr_(NULL),
     owner_
     (
         IOobject
@@ -767,6 +771,7 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuOwner_(owner_.size()),
     neighbour_
     (
         IOobject
@@ -780,6 +785,7 @@ Foam::polyMesh::polyMesh
         ),
         0
     ),
+    gpuNeighbour_(neighbour_.size()),
     clearedPrimitives_(false),
     boundary_
     (
@@ -847,12 +853,8 @@ Foam::polyMesh::polyMesh
     moving_(false),
     topoChanging_(false),
     curMotionTimeIndex_(time().timeIndex()),
-    gpuOwner_(owner_.size()),
-    gpuNeighbour_(neighbour_.size()),
-    gpuPointsPtr_(NULL),
-    gpuFaceNodesPtr_(NULL),
-    gpuFacesPtr_(NULL),
-    oldPointsPtr_(NULL)
+    oldPointsPtr_(NULL),
+    gpuOldPointsPtr_(NULL)
 {
     if (debug)
     {

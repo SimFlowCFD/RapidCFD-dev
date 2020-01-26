@@ -69,27 +69,27 @@ inline const Foam::gpuList<Foam::label>& Foam::gpuIndirectList<T>::addressing() 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin()
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin()
 {
 	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
 }
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin() const
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::begin() const
 {
 	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
 }
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end()
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end()
 {
-	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
+	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.end());
 }
 
 template<class T>
-inline const Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end() const
+inline const typename Foam::gpuIndirectList<T>::iterator Foam::gpuIndirectList<T>::end() const
 {
-	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.begin());
+	 return thrust::make_permutation_iterator(completeList_.begin(),addressing_.end());
 }
 
 template<class T>

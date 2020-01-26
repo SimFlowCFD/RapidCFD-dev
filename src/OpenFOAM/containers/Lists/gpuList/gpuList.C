@@ -115,7 +115,7 @@ Foam::gpuList<T>::gpuList()
 template<class T>
 const Foam::gpuList<T>& Foam::gpuList<T>::null()
 {
-    return *reinterpret_cast< gpuList<T>* >(0);
+    return NullObjectRef<gpuList<T>>();
 }
 
 

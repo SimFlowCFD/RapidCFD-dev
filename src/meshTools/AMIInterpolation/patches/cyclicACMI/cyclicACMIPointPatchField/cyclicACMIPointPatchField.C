@@ -155,8 +155,8 @@ void Foam::cyclicACMIPointPatchField<Type>::swapAddSeparated
             );
 
 
-        Field<Type> ptFld = this->patchInternalField(pField)().asField();
-        Field<Type> nbrPtFld = nbr.patchInternalField(pField)().asField();
+        Field<Type> ptFld(this->patchInternalField(pField));
+        Field<Type> nbrPtFld(nbr.patchInternalField(pField));
 
 
         if (doTransform())

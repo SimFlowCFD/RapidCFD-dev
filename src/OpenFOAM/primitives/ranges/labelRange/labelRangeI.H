@@ -23,6 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "nullObject.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -50,7 +51,7 @@ inline Foam::labelRange::labelRange(const label start, const label size)
 
 inline Foam::labelRange::const_iterator::const_iterator()
 :
-   range_(*reinterpret_cast< Foam::labelRange* >(0)),
+   range_(NullObjectRef<Foam::labelRange>()),
    index_(-1)
 {}
 

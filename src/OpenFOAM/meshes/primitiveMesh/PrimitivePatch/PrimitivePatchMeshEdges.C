@@ -60,7 +60,7 @@ meshEdges
     // create the storage
     labelList meshEdges(PatchEdges.size());
 
-    register bool found = false;
+    bool found = false;
 
     // get reference to the points on the patch
     const labelList& pp = meshPoints();

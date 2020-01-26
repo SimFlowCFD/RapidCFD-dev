@@ -330,6 +330,32 @@ OpenFOAM | ThirdParty)
     unset clang_version clangDir
     ;;
 system)
+    case "$WM_COMPILER" in
+    Clang)
+        export WM_CC='clang'
+        export WM_CXX='clang++'
+        clang_version=llvm-9.0.0
+
+        cudaHome="$(dirname $(dirname $(which nvcc)))"
+        [ -d "$cudaHome" ] || {
+            echo 1>&2
+            echo "Error in $WM_PROJECT_DIR/etc/config/settings.sh:" 1>&2
+            echo "    Cannot find CUDA installation." 1>&2
+            echo "    Found only $cudaHome." 1>&2
+            echo 1>&2
+            exit 1
+        }
+        export CUDA_HOME=$cudaHome
+        #an option to override thrust
+        if [ -d "$THRUST_HOME" ]
+        then
+            export THRUST_INCLUDE=-I$THRUST_HOME
+        else
+            export THRUST_INCLUDE=
+        fi
+        unset cudaHome
+        ;;
+    esac
     # okay, use system compiler
     ;;
 *)
@@ -374,7 +400,7 @@ SYSTEMOPENMPI)
     ;;
 
 OPENMPI)
-    export FOAM_MPI=openmpi-1.8.4
+    export FOAM_MPI=openmpi-4.0.2
     # optional configuration tweaks:
     _foamSource `$WM_PROJECT_DIR/bin/foamEtcFile config/openmpi.sh`
 
@@ -393,7 +419,7 @@ OPENMPI)
     ;;
 
 MVAPICH2)
-    export FOAM_MPI=mvapich2-2.1
+    export FOAM_MPI=mvapich2-2.3.2
     export MPI_HOME=$WM_THIRD_PARTY_DIR/$FOAM_MPI
     export MPI_ARCH_PATH=$WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/$FOAM_MPI
     export MV2_USE_CUDA=1

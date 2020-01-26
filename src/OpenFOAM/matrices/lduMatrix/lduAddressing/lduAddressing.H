@@ -174,10 +174,10 @@ public:
     lduAddressing(const label nEqns)
     :
         size_(nEqns),
-        losortPtr_(NULL),
-        ownerSortAddrPtr_(NULL),
-        ownerStartPtr_(NULL),
-        losortStartPtr_(NULL)
+        losortPtr_(nullptr),
+        ownerStartPtr_(nullptr),
+        ownerSortAddrPtr_(nullptr),
+        losortStartPtr_(nullptr)
     {}
 
 

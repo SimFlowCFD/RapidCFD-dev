@@ -38,7 +38,7 @@ inline Foam::species::thermo<Thermo, Type>::thermo
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::T
 (
     scalar f,
@@ -114,7 +114,7 @@ Foam::species::thermo<Thermo, Type>::heName()
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::he(const scalar p, const scalar T) const
 {
@@ -123,7 +123,7 @@ Foam::species::thermo<Thermo, Type>::he(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::cv(const scalar p, const scalar T) const
 {
@@ -132,7 +132,7 @@ Foam::species::thermo<Thermo, Type>::cv(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::cpv(const scalar p, const scalar T) const
 {
@@ -141,7 +141,7 @@ Foam::species::thermo<Thermo, Type>::cpv(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::gamma(const scalar p, const scalar T) const
 {
@@ -151,7 +151,7 @@ Foam::species::thermo<Thermo, Type>::gamma(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::cpBycpv
 (
@@ -164,7 +164,7 @@ Foam::species::thermo<Thermo, Type>::cpBycpv
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::es(const scalar p, const scalar T) const
 {
@@ -173,7 +173,7 @@ Foam::species::thermo<Thermo, Type>::es(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::ea(const scalar p, const scalar T) const
 {
@@ -182,7 +182,7 @@ Foam::species::thermo<Thermo, Type>::ea(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::g(const scalar p, const scalar T) const
 {
@@ -191,7 +191,7 @@ Foam::species::thermo<Thermo, Type>::g(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::a(const scalar p, const scalar T) const
 {
@@ -200,7 +200,7 @@ Foam::species::thermo<Thermo, Type>::a(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Cpv(const scalar p, const scalar T) const
 {
@@ -209,7 +209,7 @@ Foam::species::thermo<Thermo, Type>::Cpv(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Cp(const scalar p, const scalar T) const
 {
@@ -218,7 +218,7 @@ Foam::species::thermo<Thermo, Type>::Cp(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Cv(const scalar p, const scalar T) const
 {
@@ -227,7 +227,7 @@ Foam::species::thermo<Thermo, Type>::Cv(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::HE(const scalar p, const scalar T) const
 {
@@ -236,7 +236,7 @@ Foam::species::thermo<Thermo, Type>::HE(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Hs(const scalar p, const scalar T) const
 {
@@ -245,7 +245,7 @@ Foam::species::thermo<Thermo, Type>::Hs(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Hc() const
 {
@@ -254,6 +254,7 @@ Foam::species::thermo<Thermo, Type>::Hc() const
 
 
 template<class Thermo, template<class> class Type>
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Ha(const scalar p, const scalar T) const
 {
@@ -262,6 +263,7 @@ Foam::species::thermo<Thermo, Type>::Ha(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::S(const scalar p, const scalar T) const
 {
@@ -270,7 +272,7 @@ Foam::species::thermo<Thermo, Type>::S(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::E(const scalar p, const scalar T) const
 {
@@ -279,7 +281,7 @@ Foam::species::thermo<Thermo, Type>::E(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Es(const scalar p, const scalar T) const
 {
@@ -287,7 +289,7 @@ Foam::species::thermo<Thermo, Type>::Es(const scalar p, const scalar T) const
 }
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Ea(const scalar p, const scalar T) const
 {
@@ -296,7 +298,7 @@ Foam::species::thermo<Thermo, Type>::Ea(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::G(const scalar p, const scalar T) const
 {
@@ -305,7 +307,7 @@ Foam::species::thermo<Thermo, Type>::G(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::A(const scalar p, const scalar T) const
 {
@@ -314,7 +316,7 @@ Foam::species::thermo<Thermo, Type>::A(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::K(const scalar p, const scalar T) const
 {
@@ -332,7 +334,7 @@ Foam::species::thermo<Thermo, Type>::K(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Kp(const scalar p, const scalar T) const
 {
@@ -341,7 +343,7 @@ Foam::species::thermo<Thermo, Type>::Kp(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::Kc(const scalar p, const scalar T) const
 {
@@ -357,7 +359,7 @@ Foam::species::thermo<Thermo, Type>::Kc(const scalar p, const scalar T) const
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::Kx
 (
     const scalar p,
@@ -376,7 +378,7 @@ inline Foam::scalar Foam::species::thermo<Thermo, Type>::Kx
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::Kn
 (
     const scalar p,
@@ -396,7 +398,7 @@ inline Foam::scalar Foam::species::thermo<Thermo, Type>::Kn
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::THE
 (
     const scalar he,
@@ -409,7 +411,7 @@ inline Foam::scalar Foam::species::thermo<Thermo, Type>::THE
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::THs
 (
     const scalar hs,
@@ -430,7 +432,7 @@ inline Foam::scalar Foam::species::thermo<Thermo, Type>::THs
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::THa
 (
     const scalar ha,
@@ -451,7 +453,7 @@ inline Foam::scalar Foam::species::thermo<Thermo, Type>::THa
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::TEs
 (
     const scalar es,
@@ -472,7 +474,7 @@ inline Foam::scalar Foam::species::thermo<Thermo, Type>::TEs
 
 
 template<class Thermo, template<class> class Type>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::species::thermo<Thermo, Type>::TEa
 (
     const scalar ea,

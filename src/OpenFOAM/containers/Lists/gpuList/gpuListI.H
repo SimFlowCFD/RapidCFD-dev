@@ -15,28 +15,28 @@ inline const T* Foam::gpuList<T>::data() const
 
 
 template<class T>
-inline Foam::gpuList<T>::iterator Foam::gpuList<T>::begin()
+inline typename Foam::gpuList<T>::iterator Foam::gpuList<T>::begin()
 {
     return iterator(v_);
 }
 
 
 template<class T>
-inline Foam::gpuList<T>::iterator Foam::gpuList<T>::end()
+inline typename Foam::gpuList<T>::iterator Foam::gpuList<T>::end()
 {
     return iterator(v_+size_);
 }
 
 
 template<class T>
-inline Foam::gpuList<T>::const_iterator Foam::gpuList<T>::begin() const
+inline typename Foam::gpuList<T>::const_iterator Foam::gpuList<T>::begin() const
 {
     return const_iterator(v_);
 }
 
 
 template<class T>
-inline Foam::gpuList<T>::const_iterator Foam::gpuList<T>::end() const
+inline typename Foam::gpuList<T>::const_iterator Foam::gpuList<T>::end() const
 {
     return const_iterator(v_+size_);
 }

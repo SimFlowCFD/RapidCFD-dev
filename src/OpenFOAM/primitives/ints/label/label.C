@@ -87,8 +87,8 @@ pTraits<int>::pTraits(Istream& is)
 __HOST____DEVICE__   
 label pow(label a, label b)
 {
-    register label ans = 1;
-    for (register label i=0; i<b; i++)
+    label ans = 1;
+    for (label i=0; i<b; i++)
     {
         ans *= a;
     }

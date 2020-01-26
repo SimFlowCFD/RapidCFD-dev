@@ -38,6 +38,8 @@ Description
 #include <climits>
 #include <cstdlib>
 
+#include "compiler.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 

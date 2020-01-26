@@ -81,15 +81,15 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline Vector2D();
 
         //- Construct given VectorSpace
-        __HOST____DEVICE__
+        __host__ __device__
         inline Vector2D(const VectorSpace<Vector2D<Cmpt>, Cmpt, 2>&);
 
         //- Construct given two components
-        __HOST____DEVICE__
+        __host__ __device__
         inline Vector2D(const Cmpt& vx, const Cmpt& vy);
 
         //- Construct from Istream
@@ -100,21 +100,21 @@ public:
 
         // Access
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& x() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& y() const;
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& x();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& y();
 
 
         // Operators
 
             //- perp dot product (dot product with perpendicular vector)
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar perp(const Vector2D<Cmpt>& b) const;
 };
 

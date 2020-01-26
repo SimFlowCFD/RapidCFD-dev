@@ -316,6 +316,7 @@ public:
                 const labelHashSet& include
             ) const;
 
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
             //- Transfer components (points, faces, zone ids).
             virtual void reset
             (
@@ -331,6 +332,7 @@ public:
                 const Xfer<List<Face> >&,
                 const Xfer<List<label> >& zoneIds
             );
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 
             //- Transfer the contents of the argument and annul the argument
             void transfer(UnsortedMeshedSurface<Face>&);

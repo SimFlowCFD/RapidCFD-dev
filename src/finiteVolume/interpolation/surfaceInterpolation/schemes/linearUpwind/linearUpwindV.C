@@ -45,7 +45,7 @@ struct linearUpwindVSfCorrFunctor
     {}
 
     template<class Tuple>
-    __HOST____DEVICE__
+    __host__ __device__
     Type operator()(const scalar& faceFlux, const Tuple& t)
     {
         const scalar& w = thrust::get<0>(t);
@@ -98,6 +98,7 @@ struct linearUpwindVSfCorrFunctor
                 return sfCorr * maxCorrs/(sfCorrs - VSMALL);
             }
         }
+        return zero;
     }
 };
 
@@ -114,7 +115,7 @@ struct linearUpwindVPatchSfCorrFunctor
     {}
 
     template<class Tuple>
-    __HOST____DEVICE__
+    __host__ __device__
     Type operator()(const scalar& pFaceFlux, const Tuple& t)
     {
         const scalar& pW = thrust::get<0>(t);
@@ -167,6 +168,7 @@ struct linearUpwindVPatchSfCorrFunctor
                 return pSfCorr * maxCorrs/(pSfCorrs - VSMALL);
             }
         }
+        return zero;
     }
 };
 

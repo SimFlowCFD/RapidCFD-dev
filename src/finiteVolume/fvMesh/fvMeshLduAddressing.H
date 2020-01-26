@@ -62,9 +62,6 @@ class fvMeshLduAddressing
         //- Patch addressing as a list of sublists
         List<const labelgpuList*> patchAddr_;
 
-        //- Patch field evaluation schedule
-        const lduSchedule& patchSchedule_;
-
         //- Lower as a subList of allOwner
         labelList::subList lowerAddrHost_;
 
@@ -74,6 +71,8 @@ class fvMeshLduAddressing
         //- Patch addressing as a list of sublists
         List<const labelList*> patchAddrHost_;
 
+        //- Patch field evaluation schedule
+        const lduSchedule& patchSchedule_;
 
     // Private Member Functions
 

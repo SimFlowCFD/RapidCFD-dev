@@ -220,7 +220,6 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
         pnf = cyclicAMIPatch_.interpolate(pnf);
     }
 
-
     coupledFvPatchField<Type>::updateInterfaceMatrix(result, coeffs, pnf, negate);
 }
 

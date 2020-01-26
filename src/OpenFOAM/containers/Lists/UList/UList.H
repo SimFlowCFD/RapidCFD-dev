@@ -45,6 +45,7 @@ SourceFiles
 #include "bool.H"
 #include "label.H"
 #include "uLabel.H"
+#include "nullObject.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -76,7 +77,7 @@ class UList
         label size_;
 
         //- Vector of values of type T.
-        T* __RESTRICT__ v_;
+        T* __restrict__ v_;
 
 
 public:
@@ -142,7 +143,7 @@ public:
         inline UList();
 
         //- Construct from components
-        inline UList(T* __RESTRICT__ v, label size);
+        inline UList(T* __restrict__ v, label size);
 
 
     // Member Functions

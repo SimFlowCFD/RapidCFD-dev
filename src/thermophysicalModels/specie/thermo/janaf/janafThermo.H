@@ -119,7 +119,7 @@ private:
         void checkInputData() const;
 
         //- Return the coefficients corresponding to the given temperature
-        __HOST____DEVICE__
+        __host__ __device__
         inline const coeffArray& coeffs(const scalar T) const;
 
 
@@ -148,7 +148,7 @@ public:
         inline janafThermo(const word&, const janafThermo&);
 
         //- Construct as a named copy
-        __HOST____DEVICE__
+        __host__ __device__
         inline janafThermo(const janafThermo&);
 
     // Member Functions
@@ -160,53 +160,53 @@ public:
         }
 
         //- Limit the temperature to be in the range Tlow_ to Thigh_
-        __HOST____DEVICE__
+        __host__ __device__
         inline scalar limit(const scalar T) const;
 
 
         // Access
 
             //- Return const access to the low temperature limit
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Tlow() const;
 
             //- Return const access to the high temperature limit
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Thigh() const;
 
             //- Return const access to the common temperature
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Tcommon() const;
 
             //- Return const access to the high temperature poly coefficients
-            __HOST____DEVICE__
+            __host__ __device__
             inline const coeffArray& highCpCoeffs() const;
 
             //- Return const access to the low temperature poly coefficients
-            __HOST____DEVICE__
+            __host__ __device__
             inline const coeffArray& lowCpCoeffs() const;
 
 
         // Fundamental properties
 
             //- Heat capacity at constant pressure [J/(kmol K)]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar cp(const scalar p, const scalar T) const;
 
             //- Absolute Enthalpy [J/kmol]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar ha(const scalar p, const scalar T) const;
 
             //- Sensible enthalpy [J/kmol]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar hs(const scalar p, const scalar T) const;
 
             //- Chemical enthalpy [J/kmol]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar hc() const;
 
             //- Entropy [J/(kmol K)]
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar s(const scalar p, const scalar T) const;
 
 

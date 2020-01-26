@@ -120,7 +120,7 @@ struct faceSweptVolFunctor
         point centreOldPoint = oldCentre(face);
         point centreNewPoint = newCentre(face);
 
-        for (register label pi=0; pi<nPoints-1; ++pi)
+        for (label pi=0; pi<nPoints-1; ++pi)
         {
             // Note: for best accuracy, centre point always comes last
             sv += triPointRef

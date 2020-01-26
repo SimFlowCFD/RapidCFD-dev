@@ -182,12 +182,12 @@ void Foam::edgeMesh::reset
 {
     // Take over new primitive data.
     // Optimized to avoid overwriting data at all
-    if (&pointLst)
+    if (notNull(pointLst))
     {
         points_.transfer(pointLst());
     }
 
-    if (&edgeLst)
+    if (notNull(edgeLst))
     {
         edges_.transfer(edgeLst());
 

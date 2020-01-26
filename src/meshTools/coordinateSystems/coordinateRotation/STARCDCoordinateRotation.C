@@ -51,14 +51,14 @@ namespace Foam
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::vector Foam::STARCDCoordinateRotation::transform(const vector& st) const
 {
     return (R_ & st);
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::vector Foam::STARCDCoordinateRotation::invTransform
 (
     const vector& st
@@ -130,7 +130,7 @@ const Foam::tensorField& Foam::STARCDCoordinateRotation::Tr() const
     (
         "const tensorField& STARCDCoordinateRotatio::Tr() const"
     );
-     return *reinterpret_cast<const tensorField*>(0);
+     return NullObjectRef<tensorField>();
 }
 
 
@@ -147,7 +147,7 @@ Foam::tmp<Foam::tensorField> Foam::STARCDCoordinateRotation::transformTensor
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::tensor Foam::STARCDCoordinateRotation::transformTensor
 (
     const tensor& st
@@ -239,7 +239,7 @@ transformVector
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 Foam::symmTensor Foam::STARCDCoordinateRotation::transformVector
 (
     const vector& st
@@ -250,7 +250,7 @@ Foam::symmTensor Foam::STARCDCoordinateRotation::transformVector
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 void Foam::STARCDCoordinateRotation::calcTransform
 (
     const scalar rotZ,

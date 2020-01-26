@@ -25,25 +25,25 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion()
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion(const scalar w, const vector& v)
 :
     w_(w),
     v_(v)
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion(const vector& d, const scalar theta)
 :
     w_(cos(0.5*theta)),
     v_((sin(0.5*theta)/mag(d))*d)
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion
 (
     const vector& d,
@@ -64,21 +64,21 @@ inline Foam::quaternion::quaternion
     }
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion(const scalar w)
 :
     w_(w),
     v_(0,0,0)
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion(const vector& v)
 :
     w_(0),
     v_(v)
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion
 (
     const scalar angleX,
@@ -91,7 +91,7 @@ inline Foam::quaternion::quaternion
     operator*=(quaternion(vector(0, 0, 1), angleZ));
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion::quaternion
 (
     const tensor& rotationTensor
@@ -171,77 +171,77 @@ inline Foam::quaternion::quaternion
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::quaternion::w() const
 {
     return w_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline const Foam::vector& Foam::quaternion::v() const
 {
     return v_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar& Foam::quaternion::w()
 {
     return w_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector& Foam::quaternion::v()
 {
     return v_;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::quaternion::normalized() const
 {
     return *this/mag(*this);
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::normalize()
 {
     operator/=(mag(*this));
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::quaternion::mulq0v(const vector& u) const
 {
     return quaternion(-(v() & u), w()*u + (v() ^ u));
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector Foam::quaternion::transform(const vector& u) const
 {
     return (mulq0v(u)*conjugate(*this)).v();
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector Foam::quaternion::invTransform(const vector& u) const
 {
     return (conjugate(*this).mulq0v(u)*(*this)).v();
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::quaternion::transform(const quaternion& q) const
 {
     return Foam::normalize((*this)*q);
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::quaternion::invTransform
 (
     const quaternion& q
@@ -251,7 +251,7 @@ inline Foam::quaternion Foam::quaternion::invTransform
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::tensor Foam::quaternion::R() const
 {
     scalar w2 = sqr(w());
@@ -275,7 +275,7 @@ inline Foam::tensor Foam::quaternion::R() const
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector Foam::quaternion::eulerAngles(const quaternion& q) const
 {
     vector angles(vector::zero);
@@ -305,7 +305,7 @@ inline Foam::vector Foam::quaternion::eulerAngles(const quaternion& q) const
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::slerp
 (
     const quaternion& qa,
@@ -323,7 +323,7 @@ inline Foam::quaternion Foam::slerp
     return qa*pow((inv(qa)*sign*qb), t);
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::exp(const quaternion& q)
 {
     const scalar magV = mag(q.v());
@@ -342,7 +342,7 @@ inline Foam::quaternion Foam::exp(const quaternion& q)
     );
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::pow(const quaternion& q, const label power)
 {
     const scalar magQ = mag(q);
@@ -359,7 +359,7 @@ inline Foam::quaternion Foam::pow(const quaternion& q, const label power)
     return pow(magQ, power)*exp(powq);
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::pow(const quaternion& q, const scalar power)
 {
     const scalar magQ = mag(q);
@@ -378,28 +378,28 @@ inline Foam::quaternion Foam::pow(const quaternion& q, const scalar power)
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator=(const quaternion& q)
 {
     w_ = q.w_;
     v_ = q.v_;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator+=(const quaternion& q)
 {
     w_ += q.w_;
     v_ += q.v_;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator-=(const quaternion& q)
 {
     w_ -= q.w_;
     v_ -= q.v_;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator*=(const quaternion& q)
 {
     scalar w0 = w();
@@ -407,34 +407,35 @@ inline void Foam::quaternion::operator*=(const quaternion& q)
     v() = w0*q.v() + q.w()*v() + (v() ^ q.v());
 }
 
+__host__ __device__
 inline void Foam::quaternion::operator/=(const quaternion& q)
 {
     return operator*=(inv(q));
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator=(const scalar s)
 {
     w_ = s;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator=(const vector& v)
 {
     v_ = v;
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator*=(const scalar s)
 {
     w_ *= s;
     v_ *= s;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline void Foam::quaternion::operator/=(const scalar s)
 {
     w_ /= s;
@@ -444,28 +445,28 @@ inline void Foam::quaternion::operator/=(const scalar s)
 
 // * * * * * * * * * * * * * * * Global Functions  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::magSqr(const quaternion& q)
 {
     return magSqr(q.w()) + magSqr(q.v());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::mag(const quaternion& q)
 {
     return sqrt(magSqr(q));
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::conjugate(const quaternion& q)
 {
     return quaternion(q.w(), -q.v());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::inv(const quaternion& q)
 {
     scalar magSqrq = magSqr(q);
@@ -473,7 +474,7 @@ inline Foam::quaternion Foam::inv(const quaternion& q)
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::normalize(const quaternion& q)
 {
     return q/mag(q);
@@ -482,21 +483,21 @@ inline Foam::quaternion Foam::normalize(const quaternion& q)
 
 // * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool Foam::operator==(const quaternion& q1, const quaternion& q2)
 {
     return (equal(q1.w(), q2.w()) && equal(q1.v(), q2.v()));
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool Foam::operator!=(const quaternion& q1, const quaternion& q2)
 {
     return !operator==(q1, q2);
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator+
 (
     const quaternion& q1,
@@ -507,14 +508,14 @@ inline Foam::quaternion Foam::operator+
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator-(const quaternion& q)
 {
     return quaternion(-q.w(), -q.v());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator-
 (
     const quaternion& q1,
@@ -525,14 +526,14 @@ inline Foam::quaternion Foam::operator-
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::operator&(const quaternion& q1, const quaternion& q2)
 {
     return q1.w()*q2.w() + (q1.v() & q2.v());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator*
 (
     const quaternion& q1,
@@ -547,7 +548,7 @@ inline Foam::quaternion Foam::operator*
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator/
 (
     const quaternion& q1,
@@ -558,21 +559,21 @@ inline Foam::quaternion Foam::operator/
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator*(const scalar s, const quaternion& q)
 {
     return quaternion(s*q.w(), s*q.v());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator*(const quaternion& q, const scalar s)
 {
     return quaternion(s*q.w(), s*q.v());
 }
 
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::quaternion Foam::operator/(const quaternion& q, const scalar s)
 {
     return quaternion(q.w()/s, q.v()/s);

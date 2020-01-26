@@ -92,10 +92,10 @@ private:
         //- Reference to mesh
         const Mesh& mesh_;
 
+        gpuField<Type> field_;
+
         //- Dimension set for this field
         dimensionSet dimensions_;
-
-        gpuField<Type> field_;
 
 
     // Private Member Functions

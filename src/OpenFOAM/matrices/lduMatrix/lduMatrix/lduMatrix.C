@@ -84,24 +84,24 @@ namespace Foam
 Foam::lduMatrix::lduMatrix(const lduMesh& mesh)
 :
     lduMesh_(mesh),
-    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
     lowerSortPtr_(NULL),
-    upperSortPtr_(NULL)
+    upperSortPtr_(NULL),
+    coarsestLevel_(false)
 {}
 
 
 Foam::lduMatrix::lduMatrix(const lduMatrix& A)
 :
     lduMesh_(A.lduMesh_),
-    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
     lowerSortPtr_(NULL),
-    upperSortPtr_(NULL)
+    upperSortPtr_(NULL),
+    coarsestLevel_(false)
 {
     if (A.lowerPtr_)
     {
@@ -123,12 +123,12 @@ Foam::lduMatrix::lduMatrix(const lduMatrix& A)
 Foam::lduMatrix::lduMatrix(lduMatrix& A, bool reUse)
 :
     lduMesh_(A.lduMesh_),
-    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
     lowerSortPtr_(NULL),
-    upperSortPtr_(NULL)
+    upperSortPtr_(NULL),
+    coarsestLevel_(false)
 {
     if (reUse)
     {
@@ -173,12 +173,12 @@ Foam::lduMatrix::lduMatrix(lduMatrix& A, bool reUse)
 Foam::lduMatrix::lduMatrix(const lduMesh& mesh, Istream& is)
 :
     lduMesh_(mesh),
-    coarsestLevel_(false),
     lowerPtr_(NULL),
     diagPtr_(NULL),
     upperPtr_(NULL),
     lowerSortPtr_(NULL),
-    upperSortPtr_(NULL)
+    upperSortPtr_(NULL),
+    coarsestLevel_(false)
 {
     Switch hasLow(is);
     Switch hasDiag(is);

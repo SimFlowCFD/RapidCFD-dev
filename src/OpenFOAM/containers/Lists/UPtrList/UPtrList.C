@@ -77,7 +77,7 @@ void Foam::UPtrList<T>::setSize(const label newSize)
         ptrs_.setSize(newSize);
 
         // set new elements to NULL
-        for (register label i=oldSize; i<newSize; i++)
+        for (label i=oldSize; i<newSize; i++)
         {
             ptrs_[i] = NULL;
         }

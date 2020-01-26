@@ -467,7 +467,7 @@ void Foam::Field<Type>::map
     if
     (
         mapper.direct()
-     && &mapper.directAddressing()
+     && notNull(mapper.directAddressing())
      && mapper.directAddressing().size()
     )
     {
@@ -502,7 +502,7 @@ void Foam::Field<Type>::autoMap
     (
         (
             mapper.direct()
-         && &mapper.directAddressing()
+         && notNull(mapper.directAddressing())
          && mapper.directAddressing().size()
         )
      || (!mapper.direct() && mapper.addressing().size())

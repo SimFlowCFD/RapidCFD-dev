@@ -91,10 +91,10 @@ protected:
         }
 
         //- Initialise the patches for moving points
-        void initMovePoints(PstreamBuffers&, const pointField&);
+        void initMovePoints(PstreamBuffers&, const pointgpuField&);
 
         //- Correct patches after moving points
-        void movePoints(PstreamBuffers&, const pointField&);
+        void movePoints(PstreamBuffers&, const pointgpuField&);
 
         //- Initialise the update of the patch topology
         virtual void initUpdateMesh(PstreamBuffers&);

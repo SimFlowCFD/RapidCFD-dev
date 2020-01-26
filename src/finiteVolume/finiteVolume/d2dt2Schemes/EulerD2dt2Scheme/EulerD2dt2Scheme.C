@@ -69,8 +69,8 @@ EulerD2dt2Scheme<Type>::fvcD2dt2
     {
         scalar halfRdeltaT2 = rDeltaT2.value()/2.0;
 
-        scalargpuField VV0 = mesh().V().getField() + mesh().V0().getField();
-        scalargpuField V0V00 = mesh().V0().getField() + mesh().V00().getField();
+        scalargpuField VV0(mesh().V().getField() + mesh().V0().getField());
+        scalargpuField V0V00(mesh().V0().getField() + mesh().V00().getField());
 
         return tmp<GeometricField<Type, fvPatchField, volMesh> >
         (

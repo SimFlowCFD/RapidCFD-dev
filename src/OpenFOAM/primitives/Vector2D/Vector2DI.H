@@ -32,14 +32,14 @@ namespace Foam
 
 // Construct null
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline Vector2D<Cmpt>::Vector2D()
 {}
 
 
 // Construct given VectorSpace
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline Vector2D<Cmpt>::Vector2D(const VectorSpace<Vector2D<Cmpt>, Cmpt, 2>& vs)
 :
     VectorSpace<Vector2D<Cmpt>, Cmpt, 2>(vs)
@@ -48,7 +48,7 @@ inline Vector2D<Cmpt>::Vector2D(const VectorSpace<Vector2D<Cmpt>, Cmpt, 2>& vs)
 
 // Construct given three Cmpts
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline Vector2D<Cmpt>::Vector2D(const Cmpt& vx, const Cmpt& vy)
 {
     this->v_[X] = vx;
@@ -67,13 +67,14 @@ inline Vector2D<Cmpt>::Vector2D(Istream& is)
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Cmpt>
+__host__ __device__
 inline const Cmpt&  Vector2D<Cmpt>::x() const
 {
     return this->v_[X];
 }
 
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline const Cmpt&  Vector2D<Cmpt>::y() const
 {
     return this->v_[Y];
@@ -81,14 +82,14 @@ inline const Cmpt&  Vector2D<Cmpt>::y() const
 
 
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline Cmpt& Vector2D<Cmpt>::x()
 {
     return this->v_[X];
 }
 
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline Cmpt& Vector2D<Cmpt>::y()
 {
     return this->v_[Y];
@@ -98,7 +99,7 @@ inline Cmpt& Vector2D<Cmpt>::y()
 // * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
 
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline typename innerProduct<Vector2D<Cmpt>, Vector2D<Cmpt> >::type
 operator&(const Vector2D<Cmpt>& v1, const Vector2D<Cmpt>& v2)
 {
@@ -107,7 +108,7 @@ operator&(const Vector2D<Cmpt>& v1, const Vector2D<Cmpt>& v2)
 
 
 template<class Cmpt>
-__HOST____DEVICE__
+__host__ __device__
 inline scalar Vector2D<Cmpt>::perp(const Vector2D<Cmpt>& b) const
 {
     return x()*b.y()-y()*b.x();

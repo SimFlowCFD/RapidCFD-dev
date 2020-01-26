@@ -50,8 +50,8 @@ Foam::primitiveMesh::primitiveMesh()
     nCells_(0),
 
     cellShapesPtr_(NULL),
-    gpuEdgesPtr_(NULL),
     edgesPtr_(NULL),
+    gpuEdgesPtr_(NULL),
     ccPtr_(NULL),
     ecPtr_(NULL),
     pcPtr_(NULL),
@@ -59,6 +59,8 @@ Foam::primitiveMesh::primitiveMesh()
     pcgpuStartPtr_(NULL),
 
     cfPtr_(NULL),
+    gpuCellDataPtr_(NULL),
+    gpuCellFacesPtr_(NULL),
     efPtr_(NULL),
     pfPtr_(NULL),
 
@@ -69,19 +71,15 @@ Foam::primitiveMesh::primitiveMesh()
     cpPtr_(NULL),
 
     labels_(0),
- 
-    gpuCellDataPtr_(NULL),
-    gpuCellFacesPtr_(NULL),
-
-    gpuCellCentresPtr_(NULL),
-    gpuFaceCentresPtr_(NULL),
-    gpuCellVolumesPtr_(NULL),
-    gpuFaceAreasPtr_(NULL),
 
     cellCentresPtr_(NULL),
+    gpuCellCentresPtr_(NULL),
     faceCentresPtr_(NULL),
+    gpuFaceCentresPtr_(NULL),
     cellVolumesPtr_(NULL),
-    faceAreasPtr_(NULL)
+    gpuCellVolumesPtr_(NULL),
+    faceAreasPtr_(NULL),
+    gpuFaceAreasPtr_(NULL)
 {}
 
 
@@ -103,8 +101,8 @@ Foam::primitiveMesh::primitiveMesh
     nCells_(nCells),
 
     cellShapesPtr_(NULL),
-    gpuEdgesPtr_(NULL),
     edgesPtr_(NULL),
+    gpuEdgesPtr_(NULL),
     ccPtr_(NULL),
     ecPtr_(NULL),
     pcPtr_(NULL),
@@ -112,6 +110,8 @@ Foam::primitiveMesh::primitiveMesh
     pcgpuStartPtr_(NULL),
 
     cfPtr_(NULL),
+    gpuCellDataPtr_(NULL),
+    gpuCellFacesPtr_(NULL),
     efPtr_(NULL),
     pfPtr_(NULL),
 
@@ -123,18 +123,14 @@ Foam::primitiveMesh::primitiveMesh
 
     labels_(0),
 
-    gpuCellDataPtr_(NULL),
-    gpuCellFacesPtr_(NULL),
-
-    gpuCellCentresPtr_(NULL),
-    gpuFaceCentresPtr_(NULL),
-    gpuCellVolumesPtr_(NULL),
-    gpuFaceAreasPtr_(NULL),
-
     cellCentresPtr_(NULL),
+    gpuCellCentresPtr_(NULL),
     faceCentresPtr_(NULL),
+    gpuFaceCentresPtr_(NULL),
     cellVolumesPtr_(NULL),
-    faceAreasPtr_(NULL)
+    gpuCellVolumesPtr_(NULL),
+    faceAreasPtr_(NULL),
+    gpuFaceAreasPtr_(NULL)
 {}
 
 

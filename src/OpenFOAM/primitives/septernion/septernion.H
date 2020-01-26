@@ -86,19 +86,19 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline septernion();
 
         //- Construct given a translation vector and rotation quaternion
-        __HOST____DEVICE__
+        __host__ __device__
         inline septernion(const vector& t, const quaternion& r);
 
         //- Construct a pure translation septernion given a translation vector
-        __HOST____DEVICE__
+        __host__ __device__
         inline explicit septernion(const vector& t);
 
         //- Construct a pure rotation septernion given a rotation quaternion
-        __HOST____DEVICE__
+        __host__ __device__
         inline explicit septernion(const quaternion& r);
 
         //- Construct from Istream
@@ -109,55 +109,55 @@ public:
 
            // Access
 
-               __HOST____DEVICE__
+               __host__ __device__
                inline const vector& t() const;
-               __HOST____DEVICE__
+               __host__ __device__
                inline const quaternion& r() const;
 
 
            // Edit
 
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector& t();
-               __HOST____DEVICE__
+               __host__ __device__
                inline quaternion& r();
 
 
            // Transform
 
                //- Transform the given vector
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector transform(const vector& v) const;
 
                //- Inverse Transform the given vector
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector invTransform(const vector& v) const;
 
 
     // Member operators
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const septernion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator*=(const septernion&);
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const vector&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator+=(const vector&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator-=(const vector&);
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const quaternion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator*=(const quaternion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator/=(const quaternion&);
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator*=(const scalar);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator/=(const scalar);
 
 
@@ -171,7 +171,7 @@ public:
 // * * * * * * * * * * * * * * * Global Functions  * * * * * * * * * * * * * //
 
 //- Return the inverse of the given septernion
-__HOST____DEVICE__
+__host__ __device__
 inline septernion inv(const septernion& tr);
 
 
@@ -179,7 +179,7 @@ inline septernion inv(const septernion& tr);
 word name(const septernion&);
 
 //- Spherical linear interpolation of septernions. 0 for qa, 1 for qb
-__HOST____DEVICE__
+__host__ __device__
 inline septernion slerp
 (
     const septernion& qa,
@@ -189,37 +189,36 @@ inline septernion slerp
 
 //- Data associated with septernion type are contiguous
 template<>
-__HOST____DEVICE__
 inline bool contiguous<septernion>() {return true;}
 
 
 // * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator==(const septernion& tr1, const septernion& tr2);
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator!=(const septernion& tr1, const septernion& tr2);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator+(const septernion& tr, const vector& t);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator+(const vector& t, const septernion& tr);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator-(const septernion& tr, const vector& t);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator*(const quaternion& r, const septernion& tr);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator*(const septernion& tr, const quaternion& r);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator/(const septernion& tr, const quaternion& r);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator*(const septernion& q1, const septernion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator/(const septernion& q1, const septernion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator*(const scalar s, const septernion& tr);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator*(const septernion& tr, const scalar s);
-__HOST____DEVICE__
+__host__ __device__
 inline septernion operator/(const septernion& tr, const scalar s);
 
 

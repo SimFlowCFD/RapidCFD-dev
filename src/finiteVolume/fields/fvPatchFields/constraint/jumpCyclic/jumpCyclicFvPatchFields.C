@@ -28,17 +28,11 @@ License
 #include "volFields.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
-
 namespace Foam
 {
-    makePatchFieldsTypeName(jumpCyclic);
 
-    struct jumpCyclicCoeffsFunctor{
-        __HOST____DEVICE__
-        scalar operator()(const scalar& r, const thrust::tuple<scalar,scalar>& t){
-            return r - thrust::get<0>(t)*thrust::get<1>(t);
-        }
-    };
+makePatchFieldsTypeName(jumpCyclic);
+
 }
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -50,13 +44,17 @@ void Foam::jumpCyclicFvPatchField<Foam::scalar>::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes
+    const Pstream::commsTypes,
+    const bool negate
 ) const
 {
     scalargpuField pnf(this->size());
 
     const labelgpuList& nbrFaceCells =
         this->cyclicPatch().neighbFvPatch().faceCells();
+
+    auto nbrInternalValuesStart = thrust::make_permutation_iterator(
+        psiInternal.begin(),nbrFaceCells.begin());
 
     // only apply jump to original field
     if (&psiInternal == &this->internalField())
@@ -67,44 +65,47 @@ void Foam::jumpCyclicFvPatchField<Foam::scalar>::updateInterfaceMatrix
         {
             jf *= -1.0;
         }
-/*
+        /*
         forAll(*this, facei)
         {
             pnf[facei] = psiInternal[nbrFaceCells[facei]] - jf[facei];
         }
-*/
-        thrust::transform(thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.begin()),
-                          thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.end()),
-                          jf.begin(),
-                          pnf.begin(),
-                          subtractOperatorFunctor<scalar,scalar,scalar>());
+        */
+        thrust::transform
+        (
+            nbrInternalValuesStart,
+            nbrInternalValuesStart + nbrFaceCells.size(),
+            jf.begin(),
+            pnf.begin(),
+            subtractOperatorFunctor<scalar,scalar,scalar>()
+        );
     }
     else
     {
-        thrust::copy(thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.begin()),
-                     thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.end()),
-                     pnf.begin());
-/*        forAll(*this, facei)
+        thrust::copy
+        (
+            nbrInternalValuesStart,
+            nbrInternalValuesStart + nbrFaceCells.size(),
+            pnf.begin()
+        );
+        /*
+        forAll(*this, facei)
         {
             pnf[facei] = psiInternal[nbrFaceCells[facei]];
-        }*/
+        }
+        */
     }
 
     // Transform according to the transformation tensors
     this->transformCoupleField(pnf, cmpt);
 
     // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = this->cyclicPatch().faceCells();
-/*    forAll(faceCells, elemI)
+    /*    forAll(faceCells, elemI)
     {
         result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }*/
-
-    thrust::transform(thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.end()),
-                      thrust::make_zip_iterator(thrust::make_tuple(coeffs.begin(),pnf.begin())),
-                      thrust::make_permutation_iterator(result.begin(),faceCells.begin()),
-                      jumpCyclicCoeffsFunctor());
+    }
+    */
+    coupledFvPatchField<scalar>::updateInterfaceMatrix(result, coeffs, pnf, negate);
 }
 
 

@@ -150,7 +150,6 @@ public:
     // Member functions
 
         //- Calculate the Y+ at the edge of the laminar sublayer
-        __HOST____DEVICE__
         static scalar yPlusLam(const scalar kappa, const scalar E);
 
         //- Calculate and return the yPlus at the boundary

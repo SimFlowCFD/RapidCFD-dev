@@ -27,14 +27,14 @@ License
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::faceData::faceData()
 :
    start_(0),
    size_(0)
 {}
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::faceData::faceData(label start, label size)
 :
    start_(start),
@@ -44,14 +44,14 @@ inline Foam::faceData::faceData(label start, label size)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::faceData::mag(const label* labels,const point* p) const
 {
     return ::Foam::mag(normal(labels,p));
 }
 
 // Next vertex on faceData
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::label Foam::faceData::nextLabel(const label* labels,const label i) const
 {
     return labels[start()+i+1];
@@ -59,26 +59,26 @@ inline Foam::label Foam::faceData::nextLabel(const label* labels,const label i) 
 
 
 // Previous vertex on faceData
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::label Foam::faceData::prevLabel(const label* labels,const label i) const
 {
     return labels[start()+i-1];
 }
 
 // * * * * * * * * * * * * * * * Friend Operators  * * * * * * * * * * * * * //
-__HOST____DEVICE__
+__host__ __device__
 inline bool Foam::operator==(const faceData& a, const faceData& b)
 {
     return a.size() == b.size() && a.start() == b.start();
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool Foam::operator!=(const faceData& a, const faceData& b)
 {
     return ! operator==(a,b);
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::point Foam::faceData::centre(const label* labels, const point* points) const
 {
     // Calculate the centre by breaking the faceData into triangles and
@@ -100,7 +100,7 @@ inline Foam::point Foam::faceData::centre(const label* labels, const point* poin
 
 
     point centrePoint(0,0,0);
-    for (register label pI=0; pI<nPoints; ++pI)
+    for (label pI=0; pI<nPoints; ++pI)
     {
         centrePoint += points[labels[pI]];
     }
@@ -109,7 +109,7 @@ inline Foam::point Foam::faceData::centre(const label* labels, const point* poin
     scalar sumA = 0;
     vector sumAc(0,0,0);
 
-    for (register label pI=0; pI<nPoints; ++pI)
+    for (label pI=0; pI<nPoints; ++pI)
     {
         const point& nextPoint = points[labels[(pI + 1) % nPoints]];
 
@@ -142,7 +142,7 @@ inline Foam::point Foam::faceData::centre(const label* labels, const point* poin
     }
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::vector Foam::faceData::normal(const label* labels, const point* p) const
 {
     const label nPoints = size();
@@ -164,7 +164,7 @@ inline Foam::vector Foam::faceData::normal(const label* labels, const point* p) 
         ).normal();
     }
 
-    register label pI;
+    label pI;
 
     point centrePoint(0,0,0);
     for (pI = 0; pI < nPoints; ++pI)
@@ -201,7 +201,7 @@ inline Foam::vector Foam::faceData::normal(const label* labels, const point* p) 
     return n;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::faceData::sweptVol
 (
     const label* labels,
@@ -244,7 +244,7 @@ inline Foam::scalar Foam::faceData::sweptVol
 
     label nPoints = size();
 
-    for (register label pi=0; pi<nPoints-1; ++pi)
+    for (label pi=0; pi<nPoints-1; ++pi)
     {
         // Note: for best accuracy, centre point always comes last
         sv += triPointRef
@@ -281,7 +281,7 @@ inline Foam::scalar Foam::faceData::sweptVol
     return sv;
 }
 
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::faceData::contactSphereDiameter
 (
     const label* labels,

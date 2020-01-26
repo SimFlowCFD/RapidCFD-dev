@@ -428,8 +428,8 @@ Foam::Istream& Foam::ISstream::read(word& str)
     static const int errLen = 80; // truncate error message for readability
     static char buf[maxLen];
 
-    register int nChar = 0;
-    register int listDepth = 0;
+    int nChar = 0;
+    int listDepth = 0;
     char c;
 
     while (get(c) && word::valid(c))
@@ -520,7 +520,7 @@ Foam::Istream& Foam::ISstream::read(string& str)
         return *this;
     }
 
-    register int nChar = 0;
+    int nChar = 0;
     bool escaped = false;
 
     while (get(c))
@@ -601,8 +601,8 @@ Foam::Istream& Foam::ISstream::readVariable(string& str)
     static const int errLen = 80; // truncate error message for readability
     static char buf[maxLen];
 
-    register int nChar = 0;
-    register int blockCount = 0;
+    int nChar = 0;
+    int blockCount = 0;
     char c;
 
     if (!get(c) || c != '$')
@@ -723,7 +723,7 @@ Foam::Istream& Foam::ISstream::readVerbatim(string& str)
 
     char c;
 
-    register int nChar = 0;
+    int nChar = 0;
 
     while (get(c))
     {

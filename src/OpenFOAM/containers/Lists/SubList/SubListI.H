@@ -74,7 +74,7 @@ inline Foam::SubList<T>::SubList
 template<class T>
 inline const Foam::SubList<T>& Foam::SubList<T>::null()
 {
-    return *reinterpret_cast< SubList<T>* >(0);
+    return NullObjectRef<SubList<T>>();
 }
 
 

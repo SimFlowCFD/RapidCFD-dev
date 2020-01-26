@@ -329,7 +329,7 @@ void Foam::processorLduInterface::compressedSend
         resizeBuf(sendBuf_, nBytes);
         float *fArray = reinterpret_cast<float*>(sendBuf_.begin());
 
-        for (register label i=0; i<nm1; i++)
+        for (label i=0; i<nm1; i++)
         {
             fArray[i] = sArray[i] - slast[i%nCmpts];
         }
@@ -541,7 +541,7 @@ void Foam::processorLduInterface::compressedReceive
         scalar *sArray = reinterpret_cast<scalar*>(f.begin());
         const scalar *slast = &sArray[nm1];
 
-        for (register label i=0; i<nm1; i++)
+        for (label i=0; i<nm1; i++)
         {
             sArray[i] = fArray[i] + slast[i%nCmpts];
         }

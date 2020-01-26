@@ -96,7 +96,7 @@ public:
         //- Return a null field
         inline static const gpuField<Type>& null()
         {
-            return *reinterpret_cast< gpuField<Type>* >(0);
+            return NullObjectRef<gpuField<Type>>();
         }
 
 

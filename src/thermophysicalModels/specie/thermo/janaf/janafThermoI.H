@@ -44,7 +44,7 @@ inline Foam::janafThermo<EquationOfState>::janafThermo
     Thigh_(Thigh),
     Tcommon_(Tcommon)
 {
-    for (register label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
+    for (label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
     {
         highCpCoeffs_[coefLabel] = highCpCoeffs[coefLabel];
         lowCpCoeffs_[coefLabel] = lowCpCoeffs[coefLabel];
@@ -53,7 +53,7 @@ inline Foam::janafThermo<EquationOfState>::janafThermo
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline const typename Foam::janafThermo<EquationOfState>::coeffArray&
 Foam::janafThermo<EquationOfState>::coeffs
 (
@@ -85,7 +85,7 @@ inline Foam::janafThermo<EquationOfState>::janafThermo
     Thigh_(jt.Thigh_),
     Tcommon_(jt.Tcommon_)
 {
-    for (register label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
+    for (label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
     {
         highCpCoeffs_[coefLabel] = jt.highCpCoeffs_[coefLabel];
         lowCpCoeffs_[coefLabel] = jt.lowCpCoeffs_[coefLabel];
@@ -93,7 +93,7 @@ inline Foam::janafThermo<EquationOfState>::janafThermo
 }
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::janafThermo<EquationOfState>::janafThermo
 (
     const janafThermo& jt
@@ -104,7 +104,7 @@ inline Foam::janafThermo<EquationOfState>::janafThermo
     Thigh_(jt.Thigh_),
     Tcommon_(jt.Tcommon_)
 {
-    for (register label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
+    for (label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
     {
         highCpCoeffs_[coefLabel] = jt.highCpCoeffs_[coefLabel];
         lowCpCoeffs_[coefLabel] = jt.lowCpCoeffs_[coefLabel];
@@ -115,7 +115,7 @@ inline Foam::janafThermo<EquationOfState>::janafThermo
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::limit
 (
     const scalar T
@@ -142,7 +142,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::limit
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::Tlow() const
 {
     return Tlow_;
@@ -150,7 +150,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::Tlow() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::Thigh() const
 {
     return Thigh_;
@@ -158,7 +158,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::Thigh() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::Tcommon() const
 {
     return Tcommon_;
@@ -166,7 +166,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::Tcommon() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline const typename Foam::janafThermo<EquationOfState>::coeffArray&
 Foam::janafThermo<EquationOfState>::highCpCoeffs() const
 {
@@ -175,7 +175,7 @@ Foam::janafThermo<EquationOfState>::highCpCoeffs() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline const typename Foam::janafThermo<EquationOfState>::coeffArray&
 Foam::janafThermo<EquationOfState>::lowCpCoeffs() const
 {
@@ -184,7 +184,7 @@ Foam::janafThermo<EquationOfState>::lowCpCoeffs() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::cp
 (
     const scalar p,
@@ -197,7 +197,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::cp
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::ha
 (
     const scalar p,
@@ -214,7 +214,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::ha
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::hs
 (
     const scalar p,
@@ -226,7 +226,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::hs
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::hc() const
 {
     const coeffArray& a = lowCpCoeffs_;
@@ -242,7 +242,7 @@ inline Foam::scalar Foam::janafThermo<EquationOfState>::hc() const
 
 
 template<class EquationOfState>
-__HOST____DEVICE__
+__host__ __device__
 inline Foam::scalar Foam::janafThermo<EquationOfState>::s
 (
     const scalar p,
@@ -292,7 +292,7 @@ inline void Foam::janafThermo<EquationOfState>::operator+=
 
     for
     (
-        register label coefLabel=0;
+        label coefLabel=0;
         coefLabel<janafThermo<EquationOfState>::nCoeffs_;
         coefLabel++
     )
@@ -339,7 +339,7 @@ inline void Foam::janafThermo<EquationOfState>::operator-=
 
     for
     (
-        register label coefLabel=0;
+        label coefLabel=0;
         coefLabel<janafThermo<EquationOfState>::nCoeffs_;
         coefLabel++
     )
@@ -375,7 +375,7 @@ inline Foam::janafThermo<EquationOfState> Foam::operator+
 
     for
     (
-        register label coefLabel=0;
+        label coefLabel=0;
         coefLabel<janafThermo<EquationOfState>::nCoeffs_;
         coefLabel++
     )
@@ -437,7 +437,7 @@ inline Foam::janafThermo<EquationOfState> Foam::operator-
 
     for
     (
-        register label coefLabel=0;
+        label coefLabel=0;
         coefLabel<janafThermo<EquationOfState>::nCoeffs_;
         coefLabel++
     )

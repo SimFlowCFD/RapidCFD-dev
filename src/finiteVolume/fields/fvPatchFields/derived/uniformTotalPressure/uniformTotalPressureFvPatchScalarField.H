@@ -213,13 +213,14 @@ public:
 
 
         // Evaluation functions
-
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
             //- Update the coefficients associated with the patch field
             //  using the given patch velocity field
             virtual void updateCoeffs(const vectorgpuField& Up);
 
             //- Update the coefficients associated with the patch field
             virtual void updateCoeffs();
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 
 
         //- Write

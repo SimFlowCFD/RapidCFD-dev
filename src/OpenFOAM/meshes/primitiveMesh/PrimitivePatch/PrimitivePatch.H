@@ -488,6 +488,7 @@ public:
 
         //- Correct patch after moving points
         virtual void movePoints(const gpuField<PointType>&);
+        virtual void movePoints(const Field<PointType>&);
 
 
     // Member operators

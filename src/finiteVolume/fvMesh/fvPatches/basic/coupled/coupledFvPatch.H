@@ -139,7 +139,7 @@ public:
             virtual void initInternalFieldTransfer
             (
                 const Pstream::commsTypes commsType,
-                labelUList& iF
+                const labelUList& iF
             ) const
             {}
 

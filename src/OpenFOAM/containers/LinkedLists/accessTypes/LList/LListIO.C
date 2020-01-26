@@ -64,7 +64,7 @@ Foam::Istream& Foam::operator>>(Istream& is, LList<LListBase, T>& L)
         {
             if (delimiter == token::BEGIN_LIST)
             {
-                for (register label i=0; i<s; ++i)
+                for (label i=0; i<s; ++i)
                 {
                     T element;
                     is >> element;
@@ -76,7 +76,7 @@ Foam::Istream& Foam::operator>>(Istream& is, LList<LListBase, T>& L)
                 T element;
                 is >> element;
 
-                for (register label i=0; i<s; ++i)
+                for (label i=0; i<s; ++i)
                 {
                     L.append(element);
                 }

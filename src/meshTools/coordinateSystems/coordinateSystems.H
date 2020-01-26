@@ -132,8 +132,10 @@ public:
         //- Return the table of contents (list of all keywords)
         wordList toc() const;
 
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
         //- write data
         bool writeData(Ostream&, bool subDict=true) const;
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 };
 
 

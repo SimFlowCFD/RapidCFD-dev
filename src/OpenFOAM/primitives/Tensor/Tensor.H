@@ -92,28 +92,28 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor();
 
         //- Construct given VectorSpace of the same rank
         template<class Cmpt2>
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor(const VectorSpace<Tensor<Cmpt2>, Cmpt2, 9>&);
 
         //- Construct given SphericalTensor
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor(const SphericalTensor<Cmpt>&);
 
         //- Construct given SymmTensor
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor(const SymmTensor<Cmpt>&);
 
         //- Construct given triad
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor(const Vector<Vector<Cmpt> >&);
 
         //- Construct given the three vector components
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor
         (
             const Vector<Cmpt>& x,
@@ -122,7 +122,7 @@ public:
         );
 
         //- Construct given the nine components
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor
         (
             const Cmpt txx, const Cmpt txy, const Cmpt txz,
@@ -138,72 +138,72 @@ public:
 
         // Access
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& xx() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& xy() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& xz() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& yx() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& yy() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& yz() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& zx() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& zy() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& zz() const;
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& xx();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& xy();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& xz();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& yx();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& yy();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& yz();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& zx();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& zy();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& zz();
 
             // Access vector components.
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline Vector<Cmpt> x() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline Vector<Cmpt> y() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline Vector<Cmpt> z() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline Vector<Cmpt> vectorComponent(const direction) const;
 
         //- Transpose
-            __HOST____DEVICE__
+            __host__ __device__
         inline Tensor<Cmpt> T() const;
 
 
     // Member Operators
 
         //- Assign to a SphericalTensor
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const SphericalTensor<Cmpt>&);
 
         //- Assign to a SymmTensor
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const SymmTensor<Cmpt>&);
 
         //- Assign to a triad
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const Vector<Vector<Cmpt> >&);
 };
 

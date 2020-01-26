@@ -42,7 +42,7 @@ inline Foam::labelRanges::labelRanges(const label nElem)
 
 inline Foam::labelRanges::const_iterator::const_iterator()
 :
-   list_(*reinterpret_cast< Foam::labelRanges* >(0)),
+   list_(NullObjectRef<labelRanges>()),
    index_(-1),
    subIndex_(-1)
 {}

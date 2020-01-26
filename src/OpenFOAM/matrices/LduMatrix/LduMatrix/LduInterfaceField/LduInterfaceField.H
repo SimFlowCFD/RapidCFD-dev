@@ -88,7 +88,7 @@ public:
     // Member Functions
 
         // Coupled interface functionality
-
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
             //- Initialise neighbour matrix update
             virtual void initInterfaceMatrixUpdate
             (
@@ -107,6 +107,7 @@ public:
                 const scalargpuField&,
                 const Pstream::commsTypes commsType
             ) const = 0;
+            RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 };
 
 

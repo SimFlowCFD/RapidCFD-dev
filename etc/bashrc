@@ -62,7 +62,7 @@ foamInstall=$HOME/$WM_PROJECT
 foamCompiler=system
 
 #- Compiler:
-#    WM_COMPILER = Nvcc | ???
+#    WM_COMPILER = Nvcc | Clang
 export WM_COMPILER=Nvcc
 unset WM_COMPILER_ARCH WM_COMPILER_LIB_ARCH
 

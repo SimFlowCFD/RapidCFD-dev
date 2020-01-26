@@ -67,9 +67,9 @@ template<class T> class List;
 
 template<class T, unsigned SizeInc, unsigned SizeMult, unsigned SizeDiv>
 class DynamicList;
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator==(const faceData& a, const faceData& b);
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator!=(const faceData& a, const faceData& b);
 
 Istream& operator>>(Istream&, faceData&);
@@ -99,57 +99,57 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline faceData();
 
         //- Construct given size
-        __HOST____DEVICE__
+        __host__ __device__
         explicit inline faceData(label,label);
 
     // Member Functions
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline label size() const
         {
              return size_;
         }
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline label start() const
         {
              return start_;
         }
 
         //- Centre point of face
-        __HOST____DEVICE__
+        __host__ __device__
         point centre(const label*, const point*) const;
 
         //- Calculate average value at centroid of face
         template<class Type>
-        __HOST____DEVICE__
+        __host__ __device__
         Type average(const label*,const point*, const Type*,Type) const;
 
         //- Magnitude of face area
-        __HOST____DEVICE__
+        __host__ __device__
         inline scalar mag(const label*,const point*) const;
 
         //- Vector normal; magnitude is equal to area of face
-        __HOST____DEVICE__
+        __host__ __device__
         vector normal(const label*,const point*) const;
 
         //- Navigation through face vertices
 
             //- Next vertex on face
-            __HOST____DEVICE__
+            __host__ __device__
             inline label nextLabel(const label*,const label i) const;
 
             //- Previous vertex on face
-            __HOST____DEVICE__
+            __host__ __device__
             inline label prevLabel(const label*,const label i) const;
 
 
         //- Return the volume swept out by the face when its points move
-        __HOST____DEVICE__
+        __host__ __device__
         inline scalar sweptVol
         (
             const label* indeces,
@@ -169,7 +169,7 @@ public:
         //  The half-ray or full-ray intersection and the contact
         //  sphere adjustment of the projection vector is set by the
         //  intersection parameters
-        __HOST____DEVICE__
+        __host__ __device__
         pointHit ray
         (
             const scalar* indeces,
@@ -183,7 +183,7 @@ public:
         //- Fast intersection with a ray.
         //  Does face-centre decomposition and returns triangle intersection
         //  point closest to p. See triangle::intersection for details.
-        __HOST____DEVICE__
+        __host__ __device__
         pointHit intersection
         (
             const label*,
@@ -196,7 +196,7 @@ public:
         ) const;
 
         //- Return nearest point to face
-        __HOST____DEVICE__
+        __host__ __device__
         pointHit nearestPoint
         (
             const label*,
@@ -210,7 +210,7 @@ public:
         //    Note: edges are counted from starting vertex so
         //    e.g. edge n is from f[n] to f[0], where the face has n + 1
         //    points
-        __HOST____DEVICE__
+        __host__ __device__
         pointHit nearestPointClassify
         (
             const label*,
@@ -221,7 +221,7 @@ public:
         ) const;
 */
         //- Return contact sphere diameter
-        __HOST____DEVICE__
+        __host__ __device__
         scalar contactSphereDiameter
         (
             const label*,
@@ -231,7 +231,7 @@ public:
         ) const;
 /*
         //- Return area in contact, given the displacement in vertices
-        __HOST____DEVICE__
+        __host__ __device__
         scalar areaInContact
         (
             const label*,
@@ -241,9 +241,9 @@ public:
 */
     // Friend Operators
 
-        __HOST____DEVICE__
+        __host__ __device__
         friend bool operator==(const faceData& a, const faceData& b);
-        __HOST____DEVICE__
+        __host__ __device__
         friend bool operator!=(const faceData& a, const faceData& b);
 
         friend Istream& operator>>(Istream&, faceData&);

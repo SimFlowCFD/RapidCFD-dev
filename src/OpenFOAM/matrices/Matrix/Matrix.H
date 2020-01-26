@@ -79,7 +79,7 @@ class Matrix
         label n_, m_;
 
         //- Row pointers
-        Type** __RESTRICT__ v_;
+        Type** __restrict__ v_;
 
         //- Allocate the storage for the row-pointers and the data
         //  and set the row pointers

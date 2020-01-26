@@ -34,7 +34,7 @@ template<class Type, class GeoMesh>
 inline const DimensionedField<Type, GeoMesh>&
 DimensionedField<Type, GeoMesh>::null()
 {
-    return *reinterpret_cast< DimensionedField<Type, GeoMesh>* >(0);
+    return NullObjectRef<DimensionedField<Type, GeoMesh>>();
 }
 
 

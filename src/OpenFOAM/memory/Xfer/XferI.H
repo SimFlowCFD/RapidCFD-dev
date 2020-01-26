@@ -23,12 +23,14 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "nullObject.H"
+
 // * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * * //
 
 template<class T>
 inline const Foam::Xfer<T>& Foam::Xfer<T>::null()
 {
-    return *reinterpret_cast< Xfer<T>* >(0);
+    return NullObjectRef<Xfer<T>>();
 }
 
 

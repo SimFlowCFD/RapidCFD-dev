@@ -469,7 +469,7 @@ inline label MeshedSurface<triFace>::triangulate()
 template<>
 inline label MeshedSurface<triFace>::triangulate(List<label>& faceMap)
 {
-    if (&faceMap)
+    if (notNull(faceMap))
     {
         faceMap.clear();
     }

@@ -253,7 +253,7 @@ void Foam::processorCyclicPolyPatch::calcGeometry(PstreamBuffers& pBufs)
 void Foam::processorCyclicPolyPatch::initMovePoints
 (
     PstreamBuffers& pBufs,
-    const pointField& p
+    const pointgpuField& p
 )
 {
     // Recalculate geometry
@@ -264,7 +264,7 @@ void Foam::processorCyclicPolyPatch::initMovePoints
 void Foam::processorCyclicPolyPatch::movePoints
 (
     PstreamBuffers& pBufs,
-    const pointField&
+    const pointgpuField&
 )
 {
     calcGeometry(pBufs);

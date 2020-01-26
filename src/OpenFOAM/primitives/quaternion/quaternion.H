@@ -70,7 +70,7 @@ class quaternion
 
 
         //- Multiply vector v by quaternion as if v is a pure quaternion
-        __HOST____DEVICE__
+        __host__ __device__
         inline quaternion mulq0v(const vector& v) const;
 
 
@@ -98,21 +98,21 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline quaternion();
 
         //- Construct given scalar and vector parts
-        __HOST____DEVICE__
+        __host__ __device__
         inline quaternion(const scalar w, const vector& v);
 
         //- Construct a rotation quaternion given the direction d
         //  and angle theta
-        __HOST____DEVICE__
+        __host__ __device__
         inline quaternion(const vector& d, const scalar theta);
 
         //- Construct a rotation quaternion given the direction d
         //  and cosine angle cosTheta and a if d is normalized
-        __HOST____DEVICE__
+        __host__ __device__
         inline quaternion
         (
             const vector& d,
@@ -121,15 +121,15 @@ public:
         );
 
         //- Construct given scalar part, the vector part = vector::zero
-        __HOST____DEVICE__
+        __host__ __device__
         inline explicit quaternion(const scalar w);
 
         //- Construct a pure quaternion given the vector part, scalar part = 0
-        __HOST____DEVICE__
+        __host__ __device__
         inline explicit quaternion(const vector& v);
 
         //- Construct a quaternion given the three Euler angles
-        __HOST____DEVICE__
+        __host__ __device__
         inline quaternion
         (
             const scalar angleX,
@@ -138,7 +138,7 @@ public:
         );
 
         //- Construct a quaternion from a rotation tensor
-        __HOST____DEVICE__
+        __host__ __device__
         inline explicit quaternion(const tensor& rotationTensor);
 
         //- Construct from Istream
@@ -150,81 +150,81 @@ public:
            // Access
 
                //- Scalar part of the quaternion ( = cos(theta/2) for rotation)
-               __HOST____DEVICE__
+               __host__ __device__
                inline scalar w() const;
 
                //- Vector part of the quaternion ( = axis of rotation)
-               __HOST____DEVICE__
+               __host__ __device__
                inline const vector& v() const;
 
                //- The rotation tensor corresponding the quaternion
-               __HOST____DEVICE__
+               __host__ __device__
                inline tensor R() const;
 
                //- Return a vector of euler angles (rotations in radians about
                //  the x, y and z axes.
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector eulerAngles(const quaternion& q) const;
 
-               __HOST____DEVICE__
+               __host__ __device__
                inline quaternion normalized() const;
 
 
            // Edit
 
                //- Scalar part of the quaternion ( = cos(theta/2) for rotation)
-               __HOST____DEVICE__
+               __host__ __device__
                inline scalar& w();
 
                //- Vector part of the quaternion ( = axis of rotation)
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector& v();
 
-               __HOST____DEVICE__
+               __host__ __device__
                inline void normalize();
 
 
            // Transform
 
                //- Rotate the given vector
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector transform(const vector& v) const;
 
                //- Rotate the given vector anti-clockwise
-               __HOST____DEVICE__
+               __host__ __device__
                inline vector invTransform(const vector& v) const;
 
                //- Rotate the given quaternion (and normalize)
-               __HOST____DEVICE__
+               __host__ __device__
                inline quaternion transform(const quaternion& q) const;
 
                //- Rotate the given quaternion anti-clockwise (and normalize)
-               __HOST____DEVICE__
+               __host__ __device__
                inline quaternion invTransform(const quaternion& q) const;
 
 
     // Member operators
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const quaternion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator+=(const quaternion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator-=(const quaternion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator*=(const quaternion&);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator/=(const quaternion&);
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const scalar);
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const vector&);
 
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator*=(const scalar);
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator/=(const scalar);
 
 
@@ -237,28 +237,28 @@ public:
 
 // * * * * * * * * * * * * * * * Global Functions  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline scalar magSqr(const quaternion& q);
-__HOST____DEVICE__
+__host__ __device__
 inline scalar mag(const quaternion& q);
 
 //- Return the conjugate of the given quaternion
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion conjugate(const quaternion& q);
 
 //- Return the normalized (unit) quaternion of the given quaternion
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion normalize(const quaternion& q);
 
 //- Return the inverse of the given quaternion
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion inv(const quaternion& q);
 
 //- Return a string representation of a quaternion
 word name(const quaternion&);
 
 //- Spherical linear interpolation of quaternions
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion slerp
 (
     const quaternion& qa,
@@ -267,46 +267,45 @@ inline quaternion slerp
 );
 
 //- Exponent of a quaternion
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion exp(const quaternion& q);
 
 //- Power of a quaternion
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion pow(const quaternion& q, const label power);
 
 //- Power of a quaternion
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion pow(const quaternion& q, const scalar power);
 
 //- Data associated with quaternion type are contiguous
 template<>
-__HOST____DEVICE__
 inline bool contiguous<quaternion>() {return true;}
 
 
 // * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
 
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator==(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline bool operator!=(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator+(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator-(const quaternion& q);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator-(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline scalar operator&(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator*(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator/(const quaternion& q1, const quaternion& q2);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator*(const scalar s, const quaternion& q);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator*(const quaternion& q, const scalar s);
-__HOST____DEVICE__
+__host__ __device__
 inline quaternion operator/(const quaternion& q, const scalar s);
 
 

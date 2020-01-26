@@ -79,7 +79,7 @@ Foam::solverPerformance Foam::PCG::solve
         fieldName_
     );
 
-    register label nCells = psi.size();
+    label nCells = psi.size();
 
 
     scalargpuField pA(PCGCache::pA(matrix_.level(),nCells),nCells);

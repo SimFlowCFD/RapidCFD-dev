@@ -45,7 +45,7 @@ T Foam::ReadHex(ISstream& is)
     while (is.get(c) && isspace(c))
     {}
 
-    register T result = 0;
+    T result = 0;
     do
     {
         if (isspace(c) || c == 0) break;

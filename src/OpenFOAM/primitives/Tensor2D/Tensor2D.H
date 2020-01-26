@@ -88,23 +88,23 @@ public:
     // Constructors
 
         //- Construct null
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D();
 
         //- Construct given VectorSpace
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D(const VectorSpace<Tensor2D<Cmpt>, Cmpt, 4>&);
 
         //- Construct given SymmTensor2D
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D(const SymmTensor2D<Cmpt>&);
 
         //- Construct given SphericalTensor2D
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D(const SphericalTensor2D<Cmpt>&);
 
         //- Construct given the two vectors
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D
         (
             const Vector2D<Cmpt>& x,
@@ -112,7 +112,7 @@ public:
         );
 
         //- Construct given the four components
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D
         (
             const Cmpt txx, const Cmpt txy,
@@ -127,44 +127,44 @@ public:
 
         // Access
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& xx() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& xy() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& yx() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline const Cmpt& yy() const;
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& xx();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& xy();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& yx();
-            __HOST____DEVICE__
+            __host__ __device__
             inline Cmpt& yy();
 
             // Access vector components.
 
-            __HOST____DEVICE__
+            __host__ __device__
             inline Vector2D<Cmpt> x() const;
-            __HOST____DEVICE__
+            __host__ __device__
             inline Vector2D<Cmpt> y() const;
 
         //- Transpose
-        __HOST____DEVICE__
+        __host__ __device__
         inline Tensor2D<Cmpt> T() const;
 
 
     // Member Operators
 
         //- Copy SymmTensor2D
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const SymmTensor2D<Cmpt>&);
 
         //- Copy SphericalTensor2D
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const SphericalTensor2D<Cmpt>&);
 };
 

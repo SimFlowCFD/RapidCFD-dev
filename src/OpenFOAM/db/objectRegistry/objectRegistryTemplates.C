@@ -204,7 +204,7 @@ const Type& Foam::objectRegistry::lookupObject(const word& name) const
             << abort(FatalError);
     }
 
-    return *reinterpret_cast< const Type* >(0);
+    return NullObjectRef<Type>();
 }
 
 

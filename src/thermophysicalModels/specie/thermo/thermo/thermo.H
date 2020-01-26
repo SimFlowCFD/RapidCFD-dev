@@ -109,7 +109,7 @@ class thermo
         //- Return the temperature corresponding to the value of the
         //  thermodynamic property f, given the function f = F(p, T)
         //  and dF(p, T)/dT
-        __HOST____DEVICE__
+        __host__ __device__
         inline scalar T
         (
             scalar f,
@@ -180,95 +180,95 @@ public:
                 static inline word heName();
 
                 //- Enthalpy/Internal energy [J/kmol]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar he(const scalar p, const scalar T) const;
 
                 //- Heat capacity at constant volume [J/(kmol K)]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar cv(const scalar p, const scalar T) const;
 
                 //- Heat capacity at constant pressure/volume [J/(kmol K)]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar cpv(const scalar p, const scalar T) const;
 
                 //- gamma = cp/cv []
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar gamma(const scalar p, const scalar T) const;
 
                 //- Ratio of heat capacity at constant pressure to that at
                 //  constant pressure/volume []
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar cpBycpv(const scalar p, const scalar T) const;
 
                 //- Sensible internal energy [J/kmol]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar es(const scalar p, const scalar T) const;
 
                 //- Absolute internal energy [J/kmol]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar ea(const scalar p, const scalar T) const;
 
                 //- Gibbs free energy [J/kmol]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar g(const scalar p, const scalar T) const;
 
                 //- Helmholtz free energy [J/kmol]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar a(const scalar p, const scalar T) const;
 
 
             // Mass specific properties
 
                 //- Heat capacity at constant pressure [J/(kg K)]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Cp(const scalar p, const scalar T) const;
 
                 //- Heat capacity at constant volume [J/(kg K)]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Cv(const scalar p, const scalar T) const;
 
                 //- Heat capacity at constant pressure/volume [J/(kg K)]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Cpv(const scalar p, const scalar T) const;
 
                 //- Enthalpy/Internal energy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar HE(const scalar p, const scalar T) const;
 
                 //- Sensible enthalpy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Hs(const scalar p, const scalar T) const;
 
                 //- Chemical enthalpy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Hc() const;
 
                 //- Absolute Enthalpy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Ha(const scalar p, const scalar T) const;
 
                 //- Entropy [J/(kg K)]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar S(const scalar p, const scalar T) const;
 
                 //- Internal energy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar E(const scalar p, const scalar T) const;
 
                 //- Sensible internal energy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Es(const scalar p, const scalar T) const;
 
                 //- Absolute internal energy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar Ea(const scalar p, const scalar T) const;
 
                 //- Gibbs free energy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar G(const scalar p, const scalar T) const;
 
                 //- Helmholtz free energy [J/kg]
-                __HOST____DEVICE__
+                __host__ __device__
                 inline scalar A(const scalar p, const scalar T) const;
 
 
@@ -276,26 +276,26 @@ public:
 
             //- Equilibrium constant [] i.t.o fugacities
             //  = PIi(fi/Pstd)^nui
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar K(const scalar p, const scalar T) const;
 
             //- Equilibrium constant [] i.t.o. partial pressures
             //  = PIi(pi/Pstd)^nui
             //  For low pressures (where the gas mixture is near perfect) Kp = K
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Kp(const scalar p, const scalar T) const;
 
             //- Equilibrium constant i.t.o. molar concentration
             //  = PIi(ci/cstd)^nui
             //  For low pressures (where the gas mixture is near perfect)
             //  Kc = Kp(pstd/(RR*T))^nu
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Kc(const scalar p, const scalar T) const;
 
             //- Equilibrium constant [] i.t.o. mole-fractions
             //  For low pressures (where the gas mixture is near perfect)
             //  Kx = Kp(pstd/p)^nui
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Kx
             (
                 const scalar p,
@@ -305,7 +305,7 @@ public:
             //- Equilibrium constant [] i.t.o. number of moles
             //  For low pressures (where the gas mixture is near perfect)
             //  Kn = Kp(n*pstd/p)^nui where n = number of moles in mixture
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar Kn
             (
                 const scalar p,
@@ -318,7 +318,7 @@ public:
 
             //- Temperature from enthalpy or internal energy
             //  given an initial temperature T0
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar THE
             (
                 const scalar H,
@@ -327,7 +327,7 @@ public:
             ) const;
 
             //- Temperature from sensible enthalpy given an initial T0
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar THs
             (
                 const scalar Hs,
@@ -337,7 +337,7 @@ public:
 
             //- Temperature from absolute enthalpy
             //  given an initial temperature T0
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar THa
             (
                 const scalar H,
@@ -347,7 +347,7 @@ public:
 
             //- Temperature from sensible internal energy
             //  given an initial temperature T0
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar TEs
             (
                 const scalar E,
@@ -357,7 +357,7 @@ public:
 
             //- Temperature from absolute internal energy
             //  given an initial temperature T0
-            __HOST____DEVICE__
+            __host__ __device__
             inline scalar TEa
             (
                 const scalar E,

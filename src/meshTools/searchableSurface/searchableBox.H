@@ -71,6 +71,7 @@ private:
             pointIndexHit& info
         ) const;
 
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
         //- Returns miss or hit with face (0..5)
         pointIndexHit findNearest
         (
@@ -261,6 +262,8 @@ public:
                 notImplemented("searchableBox::writeData(Ostream&) const");
                 return false;
             }
+
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 };
 
 

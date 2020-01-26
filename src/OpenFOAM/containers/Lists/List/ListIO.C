@@ -81,7 +81,7 @@ Foam::Istream& Foam::operator>>(Istream& is, List<T>& L)
             {
                 if (delimiter == token::BEGIN_LIST)
                 {
-                    for (register label i=0; i<s; i++)
+                    for (label i=0; i<s; i++)
                     {
                         is >> L[i];
 
@@ -102,7 +102,7 @@ Foam::Istream& Foam::operator>>(Istream& is, List<T>& L)
                         "reading the single entry"
                     );
 
-                    for (register label i=0; i<s; i++)
+                    for (label i=0; i<s; i++)
                     {
                         L[i] = element;
                     }

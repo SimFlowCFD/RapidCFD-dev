@@ -37,8 +37,8 @@ Description
 // Element access looping using [] for vector machines
 
 #define List_FOR_ALL(f, i)                      \
-        register const label _n##i = (f).size();\
-        for (register label i=0; i<_n##i; i++)  \
+        const label _n##i = (f).size();         \
+        for (label i=0; i<_n##i; i++)           \
         {
 
 #define List_END_FOR_ALL  }
@@ -46,17 +46,17 @@ Description
 #define List_ELEM(f, fp, i)  (fp[i])
 
 #define List_ACCESS(type, f, fp) \
-    type* const __RESTRICT__ fp = (f).begin()
+    type* const __restrict__ fp = (f).begin()
 
 #define List_CONST_ACCESS(type, f, fp) \
-    const type* const __RESTRICT__ fp = (f).begin()
+    const type* const __restrict__ fp = (f).begin()
 
 #else
 
 // Pointer looping for scalar machines
 
 #define List_FOR_ALL(f, i)                      \
-        register label i = (f).size();          \
+        label i = (f).size();                   \
         while (i--)                             \
         {                                       \
 
@@ -65,10 +65,10 @@ Description
 #define List_ELEM(f, fp, i)  (*fp++)
 
 #define List_ACCESS(type, f, fp) \
-    register type* __RESTRICT__ fp = (f).begin()
+    type* __restrict__ fp = (f).begin()
 
 #define List_CONST_ACCESS(type, f, fp) \
-    register const type* __RESTRICT__ fp = (f).begin()
+    const type* __restrict__ fp = (f).begin()
 
 #endif
 

@@ -106,15 +106,15 @@ public:
     // Constructors
 
         //- Null constructor.
-        __HOST____DEVICE__
+        __host__ __device__
         inline FixedList();
 
         //- Construct from C-array.
-        __HOST____DEVICE__
+        __host__ __device__
         explicit inline FixedList(const T v[Size]);
 
         //- Construct from value
-        __HOST____DEVICE__
+        __host__ __device__
         explicit inline FixedList(const T&);
 
         //- Construct from UList.
@@ -124,7 +124,7 @@ public:
         explicit inline FixedList(const SLList<T>&);
 
         //- Copy constructor.
-        __HOST____DEVICE__
+        __host__ __device__
         inline FixedList(const FixedList<T, Size>&);
 
         //- Construct from Istream.
@@ -206,15 +206,15 @@ public:
     // Member operators
 
         //- Return element of FixedList.
-        __HOST____DEVICE__
+        __host__ __device__
         inline T& operator[](const label);
 
         //- Return element of constant FixedList.
-        __HOST____DEVICE__
+        __host__ __device__
         inline const T& operator[](const label) const;
 
         //- Assignment from array operator. Takes linear time.
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const T v[Size]);
 
         //- Assignment from UList operator. Takes linear time.
@@ -224,7 +224,7 @@ public:
         inline void operator=(const SLList<T>&);
 
         //- Assignment of all entries to the given value
-        __HOST____DEVICE__
+        __host__ __device__
         inline void operator=(const T&);
 
 
@@ -312,15 +312,15 @@ public:
     // STL member functions
 
         //- Return the number of elements in the FixedList.
-        __HOST____DEVICE__
+        __host__ __device__
         inline label size() const;
 
         //- Return size of the largest possible FixedList.
-        __HOST____DEVICE__
+        __host__ __device__
         inline label max_size() const;
 
         //- Return true if the FixedList is empty (ie, size() is zero).
-        __HOST____DEVICE__
+        __host__ __device__
         inline bool empty() const;
 
         //- Swap two FixedLists of the same type in constant time.

@@ -140,7 +140,7 @@ public:
             (
                 const scalar x1,
                 const scalar x2
-            )
+            ) const
             {
                 return TableBase<Type>::dimIntegrate(x1, x2);
             }

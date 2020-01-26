@@ -109,7 +109,9 @@ protected:
         {}
 
         //- Correct patches after moving points
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
         virtual void movePoints(PstreamBuffers&, const pointgpuField& p);
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 
         //- Initialise the update of the patch topology
         virtual void initUpdateMesh(PstreamBuffers&)

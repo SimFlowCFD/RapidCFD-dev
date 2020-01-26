@@ -79,7 +79,7 @@ template<class T, class Container>
 inline const Foam::CompactListList<T, Container>&
 Foam::CompactListList<T, Container>::null()
 {
-    return *reinterpret_cast< CompactListList<T, Container>* >(0);
+    return NullObjectRef<CompactListList<T, Container>>();
 }
 
 

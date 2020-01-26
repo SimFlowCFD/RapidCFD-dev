@@ -191,12 +191,6 @@ void stabilise(scalargpuField& Res, const gpuList<scalar>& sf, const scalar s);
 tmp<scalargpuField> stabilise(const gpuList<scalar>&, const scalar s);
 tmp<scalargpuField> stabilise(const tmp<scalargpuField>&, const scalar s);
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-template<>
-scalar sumProd(const gpuList<scalar>& f1, const gpuList<scalar>& f2);
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 BINARY_FULL_OPERATOR(scalar, scalar, scalar, +, add)

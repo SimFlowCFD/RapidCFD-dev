@@ -134,7 +134,7 @@ public:
             //- Reverse map the given fvsPatchField onto this fvsPatchField
             virtual void rmap
             (
-                const fvPatchField<Type>&,
+                const fvsPatchField<Type>&,
                 const labelgpuList&
             )
             {}

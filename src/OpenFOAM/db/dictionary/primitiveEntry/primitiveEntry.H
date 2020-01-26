@@ -163,7 +163,9 @@ public:
         dictionary& dict();
 
         //- Read tokens from the given stream
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_BEGIN
         bool read(const dictionary&, Istream&);
+        RC_DISABLE_CLANG_VIRTUAL_OVERLOAD_WARNING_END
 
         //- Write
         void write(Ostream&) const;

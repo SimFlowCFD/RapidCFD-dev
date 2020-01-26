@@ -424,7 +424,7 @@ void Foam::gpuField<Type>::map
     if
     (
         mapper.direct()
-     && &mapper.directAddressing()
+     && notNull(mapper.directAddressing())
      && mapper.directAddressing().size()
     )
     {
@@ -459,7 +459,7 @@ void Foam::gpuField<Type>::autoMap
     (
         (
             mapper.direct()
-         && &mapper.directAddressing()
+         && notNull(mapper.directAddressing())
          && mapper.directAddressing().size()
         )
      || (!mapper.direct() && mapper.addressing().size())

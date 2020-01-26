@@ -180,7 +180,6 @@ void Foam::GAMGAgglomeration::restrictFaceField
 
         Type* cfPtr = cf.data();
         const Type* ffPtr = ff.data();
-        const label* fineToCoarsePtr = fineToCoarse.data();
 
         auto restrictFace = GAMG::atomicFaceRestrict<Type>(
             cf.data(),

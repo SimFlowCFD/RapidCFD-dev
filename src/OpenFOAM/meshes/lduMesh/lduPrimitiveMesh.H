@@ -55,13 +55,14 @@ class lduPrimitiveMesh
     // Private data
         label level_;
 
+        labelList lowerAddrHost_;
+        labelList upperAddrHost_;
+
         //- Lower addressing
         labelgpuList lowerAddr_;
-        labelList lowerAddrHost_;
 
         //- Upper addressing
         labelgpuList upperAddr_;
-        labelList upperAddrHost_;
 
         //- List of pointers for each patch
         //  with only those pointing to interfaces being set

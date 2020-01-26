@@ -65,17 +65,17 @@ protected:
         const lduInterfacePtrsList& coarseInterfaces_;
 
         //- Face-cell addressing
+        labelList faceCellsHost_;
         labelgpuList faceCells_;
         labelgpuList sortCells_;
         labelgpuList cellFaces_;
         labelgpuList cellFacesStart_;
-        labelList faceCellsHost_;
 
         //- Face restrict addressing
+        labelList faceRestrictAddressingHost_;
         labelgpuList faceRestrictSortAddressing_;
         labelgpuList faceRestrictTargetAddressing_;
         labelgpuList faceRestrictTargetStartAddressing_;
-        labelList faceRestrictAddressingHost_;
 
         void updateAddressing();
 

@@ -28,7 +28,7 @@ License
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
-__HOST____DEVICE__
+__host__ __device__
 Type Foam::faceData::average
 (
     const label* labels,
@@ -57,7 +57,7 @@ Type Foam::faceData::average
     point centrePoint(0,0,0);
     Type cf = zero;
 
-    for (register label pI=0; pI<nPoints; pI++)
+    for (label pI=0; pI<nPoints; pI++)
     {
         centrePoint += meshPoints[labels[pI]];
         cf += fld[labels[pI]];
@@ -69,7 +69,7 @@ Type Foam::faceData::average
     scalar sumA = 0;
     Type sumAf = zero;
 
-    for (register label pI=0; pI<nPoints; pI++)
+    for (label pI=0; pI<nPoints; pI++)
     {
         // Calculate 3*triangle centre field value
         Type ttcf  =

@@ -1,0 +1,35 @@
+.SUFFIXES: .C .cxx .cc .cpp
+
+# -Woverloaded-virtual may produce spurious warnings, disable for now
+c++WARN     = \
+    -Wall -Wextra -Wold-style-cast \
+    -Wnon-virtual-dtor -Wno-unused-parameter -Wno-invalid-offsetof \
+    -Wno-undefined-var-template \
+    -Wno-unknown-warning-option
+
+c++LESSWARN = \
+    -Wno-old-style-cast -Wno-unused-local-typedefs \
+    -Wno-tautological-undefined-compare -Wno-shift-negative-value \
+    -Wno-null-pointer-arithmetic
+
+# Suppress CGAL warnings
+c++CGALWARN = -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-mismatched-tags
+
+CC          = clang++ -std=c++11 -m64
+
+include $(RULES)/c++$(WM_COMPILE_OPTION)
+
+cuFLAGS     = -x cuda --cuda-path=$(CUDA_HOME) $(THRUST_INCLUDE) -I$(CUDA_HOME)/include --cuda-gpu-arch=sm_30
+ptFLAGS     = -DNoRepository -ftemplate-depth-100 -D__HOST____DEVICE__='__host__ __device__'
+
+c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++LESSWARN) $(c++OPT) $(c++DBUG) $(ptFLAGS)  $(LIB_HEADER_DIRS) -fPIC
+
+Ctoo        = $(WM_SCHEDULER) $(CC) $(c++FLAGS) $(cuFLAGS) $ -c $$SOURCE -o $@
+cxxtoo      = $(Ctoo)
+cctoo       = $(Ctoo)
+cpptoo      = $(Ctoo)
+
+LINK_LIBS   = $(c++DBUG)
+
+LINKLIBSO   = $(CC) $(c++FLAGS) -shared -L$(CUDA_HOME)/lib64 -lcudart
+LINKEXE     = $(CC) $(c++FLAGS) -Xlinker --add-needed -L$(CUDA_HOME)/lib64 -lcudart

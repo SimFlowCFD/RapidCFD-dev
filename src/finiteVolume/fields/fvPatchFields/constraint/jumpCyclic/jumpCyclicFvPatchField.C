@@ -91,15 +91,15 @@ Foam::jumpCyclicFvPatchField<Type>::jumpCyclicFvPatchField
 
 namespace Foam
 {
-	template<class Type>
-	struct jumpCyclicTransformFunctor{
-		const tensor t;
-		jumpCyclicTransformFunctor(tensor _t): t(_t){}
-		__HOST____DEVICE__
-		Type operator()(const Type& iF, const Type& jF){
-			return transform(t,iF) - jF;
-		}
-	};
+    template<class Type>
+    struct jumpCyclicTransformFunctor{
+	    const tensor t;
+	    jumpCyclicTransformFunctor(tensor _t): t(_t){}
+	    __host__ __device__
+	    Type operator()(const Type& iF, const Type& jF){
+		    return transform(t,iF) - jF;
+	    }
+    };
 }
 
 template<class Type>
@@ -119,15 +119,22 @@ Foam::jumpCyclicFvPatchField<Type>::patchNeighbourField() const
         jf *= -1.0;
     }
 
+    auto nbrInternalValuesStart = thrust::make_permutation_iterator(
+        iField.begin(),nbrFaceCells.begin());
+
     if (this->doTransform())
     {
         tensor t = this->forwardT().first();
         
-        thrust::transform(thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.begin()),
-                          thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.begin()+this->size()),
-                          jf.begin(),
-                          pnf.begin(),
-                          jumpCyclicTransformFunctor<Type>(t));
+        thrust::transform
+        (
+            nbrInternalValuesStart,
+            nbrInternalValuesStart + this->size(),
+            jf.begin(),
+            pnf.begin(),
+            jumpCyclicTransformFunctor<Type>(t)
+        );
+
         /*
         forAll(*this, facei)
         {
@@ -140,11 +147,15 @@ Foam::jumpCyclicFvPatchField<Type>::patchNeighbourField() const
     }
     else
     {
-		thrust::transform(thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.begin()),
-		                  thrust::make_permutation_iterator(iField.begin(),nbrFaceCells.end()),
-		                  jf.begin(),
-		                  pnf.begin(),
-		                  subtractOperatorFunctor<Type,Type,Type>());
+        thrust::transform
+        (
+            nbrInternalValuesStart,
+            nbrInternalValuesStart + this->size(),
+            jf.begin(),
+            pnf.begin(),
+            subtractOperatorFunctor<Type,Type,Type>()
+        );
+
 		/*
         forAll(*this, facei)
         {
@@ -164,7 +175,8 @@ void Foam::jumpCyclicFvPatchField<Type>::updateInterfaceMatrix
     const scalargpuField& psiInternal,
     const scalargpuField& coeffs,
     const direction cmpt,
-    const Pstream::commsTypes
+    const Pstream::commsTypes,
+    const bool negate
 ) const
 {
     notImplemented
@@ -180,40 +192,7 @@ void Foam::jumpCyclicFvPatchField<Type>::updateInterfaceMatrix
     );
 }
 
-namespace Foam
-{
-	template<class Type>
-	struct jumpCyclicUpdateInterfaceMatrixFunctor : public std::binary_function<label,Type,Type>{
-        const scalar* coeff;
-        const Type* pnf;
-        const label* neiStart;
-        const label* losort;
-        jumpCyclicUpdateInterfaceMatrixFunctor(const scalar* _coeff,
-                                 const Type* _pnf,
-                                 const label* _neiStart,
-                                 const label* _losort):
-             coeff(_coeff),
-             pnf(_pnf),
-             neiStart(_neiStart),
-             losort(_losort)
-        {}
-        __HOST____DEVICE__
-        Type operator()(const label& id,const Type& s){
-            Type out = s;
 
-            label nStart = neiStart[id];
-            label nSize = neiStart[id+1] - nStart;
-
-            for(label i = 0; i<nSize; i++)
-            {
-                label face = losort[nStart + i];
-                out -= coeff[face]*pnf[face];
-            }
-
-            return out;
-        }
-    };
-}
 template<class Type>
 void Foam::jumpCyclicFvPatchField<Type>::updateInterfaceMatrix
 (
@@ -237,12 +216,18 @@ void Foam::jumpCyclicFvPatchField<Type>::updateInterfaceMatrix
         {
             jf *= -1.0;
         }
+
+        auto nbrInternalValuesStart = thrust::make_permutation_iterator(
+            psiInternal.begin(),nbrFaceCells.begin());
         
-        thrust::transform(thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.begin()),
-		                  thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.begin()+this->size()),
-		                  jf.begin(),
-		                  pnf.begin(),
-		                  subtractOperatorFunctor<Type,Type,Type>());
+        thrust::transform
+        (
+            nbrInternalValuesStart,
+            nbrInternalValuesStart + +this->size(),
+            jf.begin(),
+            pnf.begin(),
+            subtractOperatorFunctor<Type,Type,Type>()
+        );
         /*
         forAll(*this, facei)
         {
@@ -252,10 +237,16 @@ void Foam::jumpCyclicFvPatchField<Type>::updateInterfaceMatrix
     }
     else
     {
-		thrust::copy(thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.begin()),
-		             thrust::make_permutation_iterator(psiInternal.begin(),nbrFaceCells.begin()+this->size()),
-		             pnf.begin());
-		/*
+        auto nbrInternalValuesStart = thrust::make_permutation_iterator(
+            psiInternal.begin(),nbrFaceCells.begin());
+
+        thrust::copy
+        (
+            nbrInternalValuesStart,
+            nbrInternalValuesStart + this->size(),
+            pnf.begin()
+        );
+        /*
         forAll(*this, facei)
         {
             pnf[facei] = psiInternal[nbrFaceCells[facei]];
@@ -265,30 +256,18 @@ void Foam::jumpCyclicFvPatchField<Type>::updateInterfaceMatrix
 
     // Transform according to the transformation tensors
     this->transformCoupleField(pnf);
-
-/*
-    // Multiply the field by coefficients and add into the result
-    const labelgpuList& faceCells = this->cyclicPatch().faceCells();
-    forAll(faceCells, elemI)
-    {
-        result[faceCells[elemI]] -= coeffs[elemI]*pnf[elemI];
-    }
-    */
-    label patchI = this->patch().index();
     
-    const labelgpuList& pcells = this->patch().boundaryMesh().mesh().lduAddr().patchSortCells(patchI);
-
-	const labelgpuList& losort = this->patch().boundaryMesh().mesh().lduAddr().patchSortAddr(patchI);
-	const labelgpuList& losortStart = this->patch().boundaryMesh().mesh().lduAddr().patchSortStartAddr(patchI);
-    
-    thrust::transform(thrust::make_counting_iterator(0),thrust::make_counting_iterator(0)+pcells.size(),
-					  thrust::make_permutation_iterator(result.begin(),pcells.begin()),
-					  thrust::make_permutation_iterator(result.begin(),pcells.begin()),
-                      jumpCyclicUpdateInterfaceMatrixFunctor<Type>(coeffs.data(),
-                                               pnf.data(),
-                                               losortStart.data(),
-                                               losort.data()
-                                               ));
+    matrixPatchOperation
+    (
+        this->patch().index(),
+        result,
+        this->patch().boundaryMesh().mesh().lduAddr(),
+        matrixInterfaceFunctor<Type,false>
+        (
+            coeffs.data(),
+            pnf.data()
+        )
+    );
 }
 
 

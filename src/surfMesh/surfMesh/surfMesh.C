@@ -209,7 +209,7 @@ Foam::surfMesh::surfMesh
     }
 
     // We can also send Xfer<..>::null just to initialize without allocating
-    if (&surf)
+    if (notNull(surf))
     {
         transfer(surf());
     }

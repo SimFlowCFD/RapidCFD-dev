@@ -58,6 +58,7 @@ SourceFiles
 #include "labelField.H"
 #include "primitiveFields.H"
 #include "LUscalarMatrix.H"
+#include "PageLockedBuffer.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -131,7 +132,7 @@ class GAMGSolver
         autoPtr<LUscalarMatrix> coarsestLUMatrixPtr_;
 
         //- Coarsest matrix result buffer
-        mutable autoPtr<scalarField> coarsestBufferPtr_;
+        mutable scalarField* coarsestBufferPtr_;
 
 
     // Private Member Functions
@@ -261,6 +262,7 @@ class GAMGSolver
             const scalargpuField& coarsestSource
         ) const;
 
+    static PageLockedBuffer<scalar> coarseBuffer;
 
 public:
 

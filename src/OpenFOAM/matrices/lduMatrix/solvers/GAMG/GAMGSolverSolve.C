@@ -558,7 +558,7 @@ void Foam::GAMGSolver::solveCoarsestLevel
 
     if (directSolveCoarsest_)
     {
-        scalarField& coarsestBuffer = coarsestBufferPtr_();
+        scalarField& coarsestBuffer = *coarsestBufferPtr_;
         cudaMemcpy(coarsestBuffer.data(), coarsestSource.data(), coarsestSource.byteSize(), cudaMemcpyDeviceToHost);
         coarsestLUMatrixPtr_->solve(coarsestBuffer);
         cudaMemcpy(coarsestCorrField.data(), coarsestBuffer.data(), coarsestSource.byteSize(), cudaMemcpyHostToDevice);

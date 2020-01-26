@@ -37,6 +37,8 @@ namespace Foam
 
     lduMatrix::solver::addasymMatrixConstructorToTable<GAMGSolver>
         addGAMGAsymSolverMatrixConstructorToTable_;
+
+    PageLockedBuffer<scalar> GAMGSolver::coarseBuffer;
 }
 
 
@@ -162,11 +164,8 @@ Foam::GAMGSolver::GAMGSolver
                         interfaceLevels_[coarsestLevel]
                     )
                 );
-
-                coarsestBufferPtr_.set
-                (
-                    new scalarField(coarsestMatrix.lduAddr().size())
-                );
+                label coarseSize = coarsestMatrix.lduAddr().size();
+                coarsestBufferPtr_ = &coarseBuffer.buffer(coarseSize);
 
                 UPstream::warnComm = oldWarn;
             }

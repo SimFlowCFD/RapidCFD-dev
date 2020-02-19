@@ -8,6 +8,6 @@ namespace Foam
         debug::optimisationSwitch("favourSpeedOverMemory")
     );
 
-    scalargpuField lduMatrixSolutionCache::first_(0);
-    scalargpuField lduMatrixSolutionCache::second_(0);
+    scalargpuField lduMatrixSolutionCache::first_;
+    scalargpuField lduMatrixSolutionCache::second_;
 }

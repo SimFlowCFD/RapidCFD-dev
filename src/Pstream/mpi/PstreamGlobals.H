@@ -51,7 +51,7 @@ namespace Foam
 
 namespace PstreamGlobals
 {
-
+extern MPI_Comm MPI_COMM_FOAM;
 extern DynamicList<MPI_Request> outstandingRequests_;
 
 //extern int nRequests_;

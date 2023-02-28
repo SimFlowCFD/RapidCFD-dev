@@ -7,20 +7,16 @@
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
-
     OpenFOAM is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
-
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
 \*---------------------------------------------------------------------------*/
 
 #include "supersonicFreestreamFvPatchVectorField.H"
@@ -241,7 +237,8 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
                 sqrt(sqr(MachInf) - 1)
                /(gamma_*sqr(MachInf))*mag(Ut[facei])*log(pp[facei]/pInf_);
 
-            Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+            //Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+            Up.set(facei, Ut[facei] + fpp*nHatInf[facei]);
 
             // Calculate the Mach number of the boundary velocity
             scalar Mach = mag(Up[facei])/sqrt(gamma_/ppsi[facei]);
@@ -250,8 +247,10 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
             {
                 // Zero-gradient subsonic outflow
 
-                Up[facei] = U[facei];
-                valueFraction()[facei] = 0;
+                //Up[facei] = U[facei];
+                Up.set(facei, U[facei]);
+                //valueFraction()[facei] = 0;
+                valueFraction().set(facei, 0);
             }
         }
         else // if inflow
@@ -279,7 +278,8 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
 
                 scalar fpp = (nuMachInf - nuMachf)*mag(Ut[facei]);
 
-                Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+                //Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+                Up.set(facei, Ut[facei] + fpp*nHatInf[facei]);
             }
             else // If subsonic
             {

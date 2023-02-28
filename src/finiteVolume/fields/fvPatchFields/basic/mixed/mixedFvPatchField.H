@@ -207,6 +207,12 @@ public:
                 return valueFraction_;
             }
 
+            virtual scalargpuField& valueFractionModif()
+            {
+                return valueFraction_;
+            }
+            
+
             virtual const scalargpuField& valueFraction() const
             {
                 return valueFraction_;

@@ -73,10 +73,6 @@ public:
         void operator=(const UList<T>&);
         void operator=(const List<T>&);
 
-        
-
-        
-
         inline label size() const;
         inline bool empty() const;
         inline std::streamsize byteSize() const;
@@ -95,13 +91,6 @@ public:
         T first() const;
 
         T get(const label n) const;
-
-
-        inline const T& operator[](const label n) const
-        {
-            return *const_iterator(v_+n);
-        }
-
         void set(const label n, const T val);
 
         void clear();

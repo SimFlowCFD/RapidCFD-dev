@@ -206,20 +206,6 @@ T Foam::gpuList<T>::get(const label n) const
     }
 }
 
-// template<class T>
-// T Foam::gpuList<T>::operator[](const label n) const;
-// {
-//     if(v_ && n < size_)
-//     {
-//         return *const_iterator(v_+n);
-//     }
-//     else
-//     {
-//         //maybe exception??
-//         return pTraits<T>::zero;
-//     }
-// }
-
 
 template<class T>
 void Foam::gpuList<T>::set(const label n, const T val)

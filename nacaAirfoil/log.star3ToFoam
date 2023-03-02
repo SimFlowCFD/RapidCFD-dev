@@ -1,0 +1,59 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : star3ToFoam prostar/nacaAirfoil
+Date   : Feb 28 2023
+Time   : 15:57:07
+Host   : "09dc74a9615f"
+PID    : 167
+Case   : /home/ofuser/nacaAirfoil
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Number of points = 80860
+
+Number of cells = 40000
+
+Star region 1 with type INLE is now Foam patch 0
+Star region 2 with type OUTL is now Foam patch 1
+Star region 3 with type SYMP is now Foam patch 2
+Star region 10 with type WALL is now Foam patch 3
+
+Setting size of boundary to 4
+
+Foam patch 0 is of type patch with name INLE1
+Foam patch 1 is of type patch with name OUTL2
+Foam patch 2 is of type symmetry with name SYMP3
+Foam patch 3 is of type wall with name WALL10
+
+Default patch type set to empty
+
+No couple matches defined.
+
+Creating merge sets
+Finished creating merge sets.  Number of merge sets: 0.
+Total number of points: 80860
+Number of used points: 80860
+Renumbering all faces
+Renumbering all cell shapes
+Renumbering STAR point lookup
+Collecting boundary faces
+Finished collecting boundary faces
+Writing mesh
+This is a shapeMesh.
+Default patch type set to empty
+Clearing extra storage
+Writing polyMesh
+
+End
+

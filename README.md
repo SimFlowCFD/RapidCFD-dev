@@ -1,4 +1,8 @@
 # RapidCFD
+
+Developed by SimFlow CFD  
+https://sim-flow.com
+
 ### CFD toolbox running on CUDA
 
 OpenFOAM solvers ported to Nvidia CUDA. All the calculations are done on the GPU giving a huge speed-up.

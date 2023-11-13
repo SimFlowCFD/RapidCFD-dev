@@ -7,12 +7,12 @@ c++WARN     = -Xcompiler -Wall -Xcompiler -Wextra -Xcompiler -Wno-unused-paramet
               -Xcudafe "--diag_suppress=implicit_return_from_non_void_function" \
               -Xcudafe "--diag_suppress=virtual_function_decl_hidden"
 
-CC          = nvcc -Xptxas -dlcm=cg -std=c++11 -m64 -arch=sm_30
+CC          = nvcc -ccbin /usr/bin/g++ -Xptxas -dlcm=cg -std=c++11 -m64 -arch=sm_30
 
 include $(RULES)/c++$(WM_COMPILE_OPTION)
 
 
-cuFLAGS     = -x cu -D__HOST____DEVICE__='__host__ __device__'
+cuFLAGS     = -x cu -D__HOST____DEVICE__='__host__ __device__' -DCUB_IGNORE_DEPRECATED_CPP_DIALECT -DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT
 ptFLAGS     = -DNoRepository
 
 c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++OPT) $(c++DBUG) $(ptFLAGS) $(LIB_HEADER_DIRS) -Xcompiler -fPIC

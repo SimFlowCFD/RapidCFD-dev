@@ -45,9 +45,10 @@ Foam::AINVPreconditioner::~AINVPreconditioner()
 {
 }
 
-template<bool normalMult>
+
 void Foam::AINVPreconditioner::preconditionImpl
 (
+    bool normalMult,
     scalargpuField& w,
     const scalargpuField& r,
     const direction d

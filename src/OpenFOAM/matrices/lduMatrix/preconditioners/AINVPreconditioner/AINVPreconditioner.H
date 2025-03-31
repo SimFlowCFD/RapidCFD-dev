@@ -29,9 +29,8 @@ class AINVPreconditioner
 
         void operator=(const AINVPreconditioner&);
 
-        template<bool normalMult>
         void preconditionImpl
-        (
+        (   bool normalMult,
             scalargpuField& w,
             const scalargpuField& r,
             const direction cmpt
@@ -56,7 +55,7 @@ public:
             const direction cmpt=0
         ) const
         {
-            preconditionImpl<true>(wA, rA, cmpt);
+            preconditionImpl(true, wA, rA, cmpt);
         }
 
         virtual void preconditionT
@@ -66,11 +65,11 @@ public:
             const direction cmpt=0
         ) const
         {
-            preconditionImpl<false>(wT, rT, cmpt);
+            preconditionImpl(false, wT, rT, cmpt);
         }
 };
 
 
-} 
+}
 
 #endif

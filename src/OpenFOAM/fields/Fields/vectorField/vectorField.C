@@ -13,6 +13,9 @@ template class gpuList<vector>;
 template class gpuField<vector>;
 
 template Ostream& operator<< <vector>(Ostream&, const gpuList<vector>&);
+template Ostream& operator<< <int>(Ostream&, const gpuList<int>&);
+template Ostream& operator<< <double>(Ostream&, const gpuList<double>&);
+
 template Istream& operator>> <vector>(Istream&, gpuList<vector>&);
 
 template<>

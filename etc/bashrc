@@ -46,7 +46,8 @@ foamInstall=$HOME/$WM_PROJECT
 # foamInstall=~/$WM_PROJECT
 # foamInstall=/opt/$WM_PROJECT
 # foamInstall=/usr/local/$WM_PROJECT
-#
+# Target GPU architecture
+export WM_GPU_ARCH=sm_89
 # END OF (NORMAL) USER EDITABLE PART
 ################################################################################
 

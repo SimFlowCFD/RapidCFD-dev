@@ -2,7 +2,7 @@
 
 cWARN        = -Xcompiler -Wall
 
-cc          = nvcc -m64 -arch=sm_30 
+cc          = nvcc -m64 -arch=$(WM_GPU_ARCH)
 
 include $(RULES)/c$(WM_COMPILE_OPTION)
 

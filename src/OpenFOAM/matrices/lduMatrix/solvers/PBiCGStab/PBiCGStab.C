@@ -82,7 +82,7 @@ Foam::solverPerformance Foam::PBiCGStab::solve
 
     scalargpuField pA(PCGCache::pA(matrix_.level(),nCells),nCells);
 
-    scalargpuField yA(PCGCache::yA(matrix_.level(),nCells),nCells);
+    scalargpuField yA(PCGCache::wA(matrix_.level(),nCells),nCells); //yA reuse wA cache field
 
     // --- Calculate A.psi
     matrix_.Amul(yA, psi, interfaceBouCoeffs_, interfaces_, cmpt);
@@ -118,9 +118,9 @@ Foam::solverPerformance Foam::PBiCGStab::solve
      || !solverPerf.checkConvergence(tolerance_, relTol_)
     )
     {
-        scalargpuField AyA(PCGCache::AyA(matrix_.level(),nCells),nCells);
-        scalargpuField sA(PCGCache::sA(matrix_.level(),nCells),nCells);
-        scalargpuField zA(PCGCache::zA(matrix_.level(),nCells),nCells);
+        scalargpuField AyA(PCGCache::pT(matrix_.level(),nCells),nCells); //AyA reuse pT cache field
+        scalargpuField sA(PCGCache::wT(matrix_.level(),nCells),nCells); //sA reuse wT cache field
+        scalargpuField zA(PCGCache::rT(matrix_.level(),nCells),nCells); //zA reuse rT cache field
         scalargpuField tA(PCGCache::tA(matrix_.level(),nCells),nCells);
         scalargpuField result1(PCGCache::result1(matrix_.level(),nCells),nCells);
  

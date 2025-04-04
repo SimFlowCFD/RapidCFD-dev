@@ -3,7 +3,7 @@
 
 namespace Foam
 {
-	struct lduMatrixDiagonalFunctor : public std::unary_function<thrust::tuple<scalar,scalar>,scalar>{
+    struct lduMatrixDiagonalFunctor : public std::unary_function<thrust::tuple<scalar,scalar>,scalar>{
         __host__ __device__
         scalar operator()(const thrust::tuple<scalar,scalar>& c){
             return thrust::get<0>(c) * thrust::get<1>(c); 
@@ -155,7 +155,6 @@ namespace Foam
         }
     };
 
-
     struct lduMatrixPatchSubtractFunctor : public std::binary_function<label,scalar,scalar>{
         const scalar* coeff;
         const label* neiStart;
@@ -183,124 +182,123 @@ namespace Foam
             return out;
         }
     };
-    
-    
+
     struct psiPlusAlphaYAFunctor
-	{
-		const scalar alpha;
+    {
+        const scalar alpha;
 
-		psiPlusAlphaYAFunctor(scalar _alpha): alpha(_alpha) {}
+        psiPlusAlphaYAFunctor(scalar _alpha): alpha(_alpha) {}
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& psi, const scalar& yA)
-		{
-				return psi + alpha*yA;
-		}
-	};
-	
-	struct rAPlusAlphaPAFunctor
-	{
-		const scalar alpha;
+        __HOST____DEVICE__
+        scalar operator()(const scalar& psi, const scalar& yA)
+        {
+                return psi + alpha*yA;
+        }
+    };
 
-		rAPlusAlphaPAFunctor(scalar _alpha): alpha(_alpha) {}
+    struct rAPlusAlphaPAFunctor
+    {
+        const scalar alpha;
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& rA, const scalar& pA)
-		{
-				return rA + alpha*pA;
-		}
-	};
-	
-	struct rAMinusAlphaPAFunctor
-	{
-		const scalar alpha;
+        rAPlusAlphaPAFunctor(scalar _alpha): alpha(_alpha) {}
 
-		rAMinusAlphaPAFunctor(scalar _alpha): alpha(_alpha) {}
+        __HOST____DEVICE__
+        scalar operator()(const scalar& rA, const scalar& pA)
+        {
+                return rA + alpha*pA;
+        }
+    };
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& rA, const scalar& pA)
-		{
-				return rA - alpha*pA;
-		}
-	};
-	
-	struct rAPlusBetaPAFunctor
-	{
-		const scalar beta;
+    struct rAMinusAlphaPAFunctor
+    {
+        const scalar alpha;
 
-		rAPlusBetaPAFunctor(scalar _beta): beta(_beta) {}
+        rAMinusAlphaPAFunctor(scalar _alpha): alpha(_alpha) {}
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& rA, const scalar& pA)
-		{
-				return rA + beta*pA;
-		}
-	};
-	
-	struct rAMinusAlphaAYAFunctor
-	{
-		const scalar alpha;
+        __HOST____DEVICE__
+        scalar operator()(const scalar& rA, const scalar& pA)
+        {
+                return rA - alpha*pA;
+        }
+    };
 
-		rAMinusAlphaAYAFunctor(scalar _alpha): alpha(_alpha) {}
+    struct rAPlusBetaPAFunctor
+    {
+        const scalar beta;
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& rA, const scalar& AyA)
-		{
-				return rA - alpha*AyA;
-		}
-	};
-	
-	struct sAMinusOmegaTAFunctor
-	{
-		const scalar omega;
+        rAPlusBetaPAFunctor(scalar _beta): beta(_beta) {}
 
-		sAMinusOmegaTAFunctor(scalar _omega): omega(_omega) {}
+        __HOST____DEVICE__
+        scalar operator()(const scalar& rA, const scalar& pA)
+        {
+                return rA + beta*pA;
+        }
+    };
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& sA, const scalar& tA)
-		{
-				return sA - omega*tA;
-		}
-	};
-	
-	struct pAMinusOmegaAYAFunctor
-	{
-		const scalar omega;
+    struct rAMinusAlphaAYAFunctor
+    {
+        const scalar alpha;
 
-		pAMinusOmegaAYAFunctor(scalar _omega): omega(_omega) {}
+        rAMinusAlphaAYAFunctor(scalar _alpha): alpha(_alpha) {}
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& pA, const scalar& AyA)
-		{
-				return pA - omega*AyA;
-		}
-	};
-	
-	struct rAPlusBetaResult1Functor
-	{
-		const scalar beta;
+        __HOST____DEVICE__
+        scalar operator()(const scalar& rA, const scalar& AyA)
+        {
+                return rA - alpha*AyA;
+        }
+    };
 
-		rAPlusBetaResult1Functor(scalar _beta): beta(_beta) {}
+    struct sAMinusOmegaTAFunctor
+    {
+        const scalar omega;
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& rA, const scalar& result1)
-		{
-				return rA + beta*result1;
-		}
-	};
-	
-	struct psiPlusOmegaZAFunctor
-	{
-		const scalar omega;
+        sAMinusOmegaTAFunctor(scalar _omega): omega(_omega) {}
 
-		psiPlusOmegaZAFunctor(scalar _omega): omega(_omega) {}
+        __HOST____DEVICE__
+        scalar operator()(const scalar& sA, const scalar& tA)
+        {
+                return sA - omega*tA;
+        }
+    };
 
-		__HOST____DEVICE__
-		scalar operator()(const scalar& psi, const scalar& zA)
-		{
-				return psi + omega*zA;
-		}
-	};
+    struct pAMinusOmegaAYAFunctor
+    {
+        const scalar omega;
+
+        pAMinusOmegaAYAFunctor(scalar _omega): omega(_omega) {}
+
+        __HOST____DEVICE__
+        scalar operator()(const scalar& pA, const scalar& AyA)
+        {
+                return pA - omega*AyA;
+        }
+    };
+
+    struct rAPlusBetaResult1Functor
+    {
+        const scalar beta;
+
+        rAPlusBetaResult1Functor(scalar _beta): beta(_beta) {}
+
+        __HOST____DEVICE__
+        scalar operator()(const scalar& rA, const scalar& result1)
+        {
+                return rA + beta*result1;
+        }
+    };
+
+    struct psiPlusOmegaZAFunctor
+    {
+        const scalar omega;
+
+        psiPlusOmegaZAFunctor(scalar _omega): omega(_omega) {}
+
+        __HOST____DEVICE__
+        scalar operator()(const scalar& psi, const scalar& zA)
+        {
+                return psi + omega*zA;
+        }
+    };
 
 }
 

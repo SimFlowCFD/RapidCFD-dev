@@ -16,10 +16,12 @@ class PCGCache
     static PtrList<scalargpuField> wTCache;
     static PtrList<scalargpuField> rTCache;
     
+    /*
     static PtrList<scalargpuField> yACache;
     static PtrList<scalargpuField> AyACache;
     static PtrList<scalargpuField> sACache;
     static PtrList<scalargpuField> zACache;
+    */
     static PtrList<scalargpuField> tACache;
     static PtrList<scalargpuField> result1Cache;
 
@@ -54,7 +56,7 @@ class PCGCache
     {
         return cache::retrieveConst(rTCache,level,size);
     }
-    
+    /*
     static const scalargpuField& yA(label level, label size)
     {
         return cache::retrieveConst(yACache,level,size);
@@ -74,7 +76,7 @@ class PCGCache
     {
         return cache::retrieveConst(zACache,level,size);
     }
-
+*/
     static const scalargpuField& tA(label level, label size)
     {
         return cache::retrieveConst(tACache,level,size);

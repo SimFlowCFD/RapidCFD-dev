@@ -170,6 +170,9 @@ export FOAM_JOB_DIR=$WM_PROJECT_INST_DIR/jobControl
 # wmake configuration
 export WM_DIR=$WM_PROJECT_DIR/wmake
 export WM_LINK_LANGUAGE=c++
+
+# Adjusting  WM_OPTIONS to inconporate GPU arch
+# Compiling for different gpu arch can coexist inside one Rapid CFD installation
 WM_SUFIX=${WM_GPU_ARCH^^}
 WM_SUFIX=${WM_SUFIX//_}
 export WM_OPTIONS=$WM_ARCH$WM_COMPILER$WM_PRECISION_OPTION$WM_COMPILE_OPTION${WM_SUFIX}

@@ -177,7 +177,8 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
 
     // Need R of the free-stream flow.  Assume R is independent of location
     // along patch so use face 0
-    scalar R = 1.0/(ppsi[0]*pT[0]);
+    // scalar R = 1.0/(ppsi[0]*pT[0]);
+    scalar R = 1.0/(ppsi.get(0)*pT.get(0));
 
     scalar MachInf = mag(UInf_)/sqrt(gamma_*R*TInf_);
 
@@ -232,26 +233,35 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
 
     forAll(Up, facei)
     {
-        if (pp[facei] >= pInf_) // If outflow
+        if (pp.get(facei) >= pInf_) // If outflow
         {
             // Assume supersonic outflow and calculate the boundary velocity
             // according to ???
 
+            // scalar fpp =
+            //     sqrt(sqr(MachInf) - 1)
+            //    /(gamma_*sqr(MachInf))*mag(Ut[facei])*log(pp[facei]/pInf_);
+
             scalar fpp =
                 sqrt(sqr(MachInf) - 1)
-               /(gamma_*sqr(MachInf))*mag(Ut[facei])*log(pp[facei]/pInf_);
+               /(gamma_*sqr(MachInf))*mag(Ut.get(facei))*log(pp.get(facei)/pInf_);
 
-            Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+            // Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+            Up.set(facei, Ut.get(facei) + fpp*nHatInf.get(facei));
 
             // Calculate the Mach number of the boundary velocity
-            scalar Mach = mag(Up[facei])/sqrt(gamma_/ppsi[facei]);
+            // scalar Mach = mag(Up[facei])/sqrt(gamma_/ppsi[facei]);
+            scalar Mach = mag(Up.get(facei))/sqrt(gamma_/ppsi.get(facei));
 
             if (Mach <= 1) // If subsonic
             {
                 // Zero-gradient subsonic outflow
 
-                Up[facei] = U[facei];
-                valueFraction()[facei] = 0;
+                // Up[facei] = U[facei];
+                // valueFraction()[facei] = 0;
+
+                Up.set(facei, U.get(facei));
+                valueFraction().set(facei, 0);
             }
         }
         else // if inflow
@@ -263,7 +273,7 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
                 sqrt
                 (
                     (2/(gamma_ - 1))*(1 + ((gamma_ - 1)/2)*sqr(MachInf))
-                   *pow(pp[facei]/pInf_, (1 - gamma_)/gamma_)
+                   *pow(pp.get(facei)/pInf_, (1 - gamma_)/gamma_)
                   - 2/(gamma_ - 1)
                 );
 
@@ -277,9 +287,11 @@ void Foam::supersonicFreestreamFvPatchVectorField::updateCoeffs()
                    *atan(sqrt((gamma_ - 1)/(gamma_ + 1)*(sqr(Mach) - 1)))
                   - atan(sqr(Mach) - 1);
 
-                scalar fpp = (nuMachInf - nuMachf)*mag(Ut[facei]);
+                // scalar fpp = (nuMachInf - nuMachf)*mag(Ut[facei]);
+                scalar fpp = (nuMachInf - nuMachf)*mag(Ut.get(facei));
 
-                Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+                // Up[facei] = Ut[facei] + fpp*nHatInf[facei];
+                Up.set(facei, Ut.get(facei) + fpp*nHatInf.get(facei));
             }
             else // If subsonic
             {
